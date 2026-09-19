@@ -2471,9 +2471,9 @@
       "a": "bitter_gourd",
       "b": "metformin",
       "severity": "major",
-      "effect": "Both lower blood sugar. A glass every morning alongside metformin can push it too low.",
+      "effect": "Bitter melon may add to the effects of glucose-lowering medicines. The combination needs pharmacist review; this does not establish the cause of dizziness.",
       "ask": "Ask whether she drinks karela juice — with metformin it can drop her sugar and explain dizziness before food.",
-      "source": "NHS · NIH Office of Dietary Supplements"
+      "source": "https://www.mskcc.org/cancer-care/integrative-medicine/herbs/bitter-melon"
     },
     {
       "a": "ciprofloxacin",
@@ -2481,7 +2481,7 @@
       "severity": "moderate",
       "effect": "Fluoroquinolones can disturb blood glucose in patients on antidiabetic medicines.",
       "ask": "Ask whether she is taking ciprofloxacin without a prescription — with metformin it can swing her sugar.",
-      "source": "Ciprofloxacin FDA label"
+      "source": "https://www.fda.gov/media/114192/download"
     }
   ]
 }

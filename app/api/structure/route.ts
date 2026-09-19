@@ -1,97 +1,89 @@
-import { NextResponse } from "next/server";
-import { getFile, saveFile } from "@/lib/files";
-import { computeFlags } from "@/lib/flags";
-import { describe, readMedList } from "@/lib/insights";
-import { hasStructureKey, structureTranscript, type StructureProvider } from "@/lib/structure";
-import { toRecording, type TranscriptInput } from "@/lib/transcript";
-import { STATUS_ORDER, type PatientFile } from "@/lib/types";
+import {
+  LLM_CONFIGURATION_ERROR,
+  LLM_TIMEOUT_ERROR,
+  prepareVisitReport,
+  structureRequestSchema,
+} from "@/lib/llm";
 
-export const maxDuration = 60;
+export const maxDuration = 30;
+const MAX_BODY_BYTES = 256 * 1024;
+const headers = { "Cache-Control": "no-store" };
 
-type Body = { fileId: string; transcript: TranscriptInput; provider?: StructureProvider };
+class BodyAbortError extends Error {}
 
-/**
- * Step 2 of the pipeline. Scribe hands us her Urdu and its English; this turns them into
- * the three lists (request, medList, questions), then reads the interaction table over
- * the result. Order matters and is not an accident: the vocabulary and the table are
- * loaded first and constrain the model, rather than the model being checked afterwards.
- */
-export async function POST(req: Request) {
-  const { fileId, transcript, provider: rawProvider } = (await req.json()) as Body;
-  const provider: StructureProvider = rawProvider === "xai" ? "xai" : "gemini";
+function error(message: string, status: number): Response {
+  return Response.json({ error: message }, { status, headers });
+}
 
-  if (!fileId || !transcript?.urdu?.trim()) {
-    return NextResponse.json({ error: "fileId and transcript.urdu are required" }, { status: 400 });
-  }
-
-  const current = await getFile(fileId);
-  if (!current) return NextResponse.json({ error: "not found" }, { status: 404 });
-
-  if (!hasStructureKey(provider)) {
-    const key = provider === "xai" ? "XAI-API_KEY" : "GOOGLE_GENERATIVE_AI_API_KEY";
-    return NextResponse.json(
-      { error: `${key} is not set`, hint: "add it to .env.local" },
-      { status: 503 },
-    );
-  }
-
-  let result;
-  try {
-    result = await structureTranscript({
-      recordingN: transcript.n,
-      urdu: transcript.urdu,
-      english: transcript.english,
-      words: transcript.words,
-      existingMedIds: current.medList.map(m => m.id),
-      existingQuestionIds: current.questions.map(q => q.id),
-    }, provider);
-  } catch (e) {
-    return NextResponse.json({ error: "structuring failed", detail: String(e) }, { status: 502 });
-  }
-
-  const recording = toRecording(transcript);
-
-  // Re-structuring a recording replaces what that recording produced, it does not add to
-  // it. Appending would double every item and put a second edge on the bubble map for
-  // one interaction. Items from other recordings and from documents are left alone.
-  const fromThisRecording = (ref: { recording: number } | { attachment: string }) =>
-    "recording" in ref && ref.recording === recording.n;
-
-  const medList = [
-    ...current.medList.filter(m => !fromThisRecording(m.at)),
-    ...result.medList,
-  ];
-
-  // Answered questions survive: the answer cost a real exchange at the counter, and the
-  // model has no way to reproduce it.
-  const questions = [
-    ...current.questions.filter(q => q.answeredIn || !q.from.every(fromThisRecording)),
-    ...result.questions,
-  ];
-
-  const next: PatientFile = {
-    ...current,
-    request: [...new Set([...current.request, ...result.request])],
-    recordings: [...current.recordings.filter(r => r.n !== recording.n), recording].sort((a, b) => a.n - b.n),
-    history: { urdu: recording.urdu, english: recording.english },
-    medList,
-    questions,
-    // Never from the model (ADR 0001).
-    flags: computeFlags(medList),
-    status: STATUS_ORDER.indexOf(current.status) < STATUS_ORDER.indexOf("structured") ? "structured" : current.status,
-  };
-
-  await saveFile(next);
-
-  const insights = readMedList(next.medList, next.questions);
-  return NextResponse.json({
-    file: next,
-    insights: {
-      flags: insights.flags.length,
-      owed: insights.owed.map(describe),
-      uncovered: insights.uncovered.map(describe),
-      rejectedTerms: result.rejectedTerms,
-      provider,
-    },
+async function readChunk(
+  reader: ReadableStreamDefaultReader<Uint8Array>,
+  signal: AbortSignal,
+): Promise<ReadableStreamReadResult<Uint8Array>> {
+  if (signal.aborted) throw new BodyAbortError();
+  let onAbort: (() => void) | undefined;
+  const aborted = new Promise<never>((_, reject) => {
+    onAbort = () => reject(new BodyAbortError());
+    signal.addEventListener("abort", onAbort, { once: true });
   });
+  try {
+    return await Promise.race([reader.read(), aborted]);
+  } finally {
+    if (onAbort) signal.removeEventListener("abort", onAbort);
+  }
+}
+
+export async function POST(request: Request): Promise<Response> {
+  const timeout = AbortSignal.timeout(25_000);
+  const signal = AbortSignal.any([request.signal, timeout]);
+  if (!request.headers.get("content-type")?.toLowerCase().startsWith("application/json")) {
+    return error("Content-Type must be application/json.", 415);
+  }
+  const declared = Number(request.headers.get("content-length") ?? 0);
+  if (Number.isFinite(declared) && declared > MAX_BODY_BYTES) return error("Request is too large.", 413);
+
+  const reader = request.body?.getReader();
+  if (!reader) return error("Request body is required.", 400);
+  const chunks: Uint8Array[] = [];
+  let bytes = 0;
+  try {
+    while (true) {
+      const { value, done } = await readChunk(reader, signal);
+      if (done) break;
+      bytes += value.byteLength;
+      if (bytes > MAX_BODY_BYTES) {
+        await reader.cancel();
+        return error("Request is too large.", 413);
+      }
+      chunks.push(value);
+    }
+  } catch {
+    if (signal.aborted) {
+      void reader.cancel(signal.reason).catch(() => undefined);
+      return timeout.aborted
+        ? error("English report preparation timed out. Please retry.", 504)
+        : error("Request was cancelled.", 499);
+    }
+    return error("Request body could not be read.", 400);
+  } finally {
+    try { reader.releaseLock(); } catch { /* cancellation settles the pending read */ }
+  }
+  const text = new TextDecoder().decode(Buffer.concat(chunks));
+
+  let input: unknown;
+  try {
+    input = JSON.parse(text);
+  } catch {
+    return error("Request body must be valid JSON.", 400);
+  }
+  const parsed = structureRequestSchema.safeParse(input);
+  if (!parsed.success) return error("Saved visit data is invalid.", 400);
+
+  try {
+    return Response.json(await prepareVisitReport(parsed.data, signal), { headers });
+  } catch (cause) {
+    const message = cause instanceof Error ? cause.message : "";
+    if (message.includes(LLM_CONFIGURATION_ERROR)) return error("English report preparation is not configured.", 503);
+    if (message.includes(LLM_TIMEOUT_ERROR) || signal.aborted) return error("English report preparation timed out. Please retry.", 504);
+    return error("English report preparation failed. Please retry.", 502);
+  }
 }

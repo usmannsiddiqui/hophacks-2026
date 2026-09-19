@@ -63,7 +63,7 @@ describe("the model cannot create a flag", () => {
         request: [],
         medList: [],
         questions: [
-          { urdu: "کیا؟", english: "She takes the powder daily.", why: "w" },
+          { urdu: "یہ کون سا سفوف ہے؟", english: "Which powder is it", why: "The powder was not identified." },
           { urdu: "کیا؟", english: "How long has she taken it?", why: "w" },
         ],
         questions_note: undefined,
@@ -71,7 +71,7 @@ describe("the model cannot create a flag", () => {
       input,
     );
     for (const q of out.questions) expect(q.text.english.endsWith("?")).toBe(true);
-    expect(out.questions[0].text.english).toBe("She takes the powder daily?");
+    expect(out.questions[0].text.english).toBe("Which powder is it?");
   });
 
   it("does not reuse ids already on the file", () => {

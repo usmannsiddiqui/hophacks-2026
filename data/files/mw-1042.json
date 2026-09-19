@@ -34,8 +34,8 @@
     { "id": "m6", "term": "unidentified", "herWords": "حکیم صاحب کا سفوف، رات کو", "source": "voice", "role": "remedy", "since": "two months", "at": { "recording": 1, "t": 141 } }
   ],
   "flags": [
-    { "id": "flag_m3_m5", "severity": "high", "a": "m3", "b": "m5", "reason": "Both lower blood sugar. A glass every morning alongside metformin can push it too low.", "citation": "NHS · NIH Office of Dietary Supplements" },
-    { "id": "flag_m2_m3", "severity": "moderate", "a": "m2", "b": "m3", "reason": "Fluoroquinolones can disturb blood glucose in patients on antidiabetic medicines.", "citation": "Ciprofloxacin FDA label" }
+    { "id": "flag_m3_m5", "severity": "high", "a": "m3", "b": "m5", "reason": "Bitter melon may add to the effects of glucose-lowering medicines. The combination needs pharmacist review; this does not establish the cause of dizziness.", "citation": "https://www.mskcc.org/cancer-care/integrative-medicine/herbs/bitter-melon" },
+    { "id": "flag_m2_m3", "severity": "moderate", "a": "m2", "b": "m3", "reason": "Fluoroquinolones can disturb blood glucose in patients on antidiabetic medicines.", "citation": "https://www.fda.gov/media/114192/download" }
   ],
   "questions": [
     { "id": "q1", "text": { "urdu": "حکیم صاحب کا سفوف کس چیز کے لیے ہے، اور کیا اُس کا لفافہ آپ کے پاس ہے؟", "english": "What is the hakeem's powder for, and do you have the packet?" }, "why": "An unidentified nightly remedy in a diabetic on metformin.", "from": [{ "recording": 1, "t": 141 }], "asked": "2026-09-19T14:04:00+05:00", "answeredIn": "t4" },

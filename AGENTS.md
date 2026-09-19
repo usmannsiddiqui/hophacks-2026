@@ -2,6 +2,18 @@
 
 Working name: **Mashwara** (not final). HopHacks Fall 2026, JHU. 36 hours, three people.
 
+## Shared context workflow
+
+The owner edits shared context in Obsidian `Hophacks/team-context`; the normal tracked
+repo copies remain available to every teammate. See `docs/context-workflow.md`.
+Before changing behavior, read the current build-order snapshot and accepted ADRs.
+After shipping, update build order, glossary and integration status with the code.
+If this checkout has `.context-sync.local.json`, run `rtk pnpm context:check`; import
+incoming teammate edits before vault edits, and export vault edits before the PR.
+Stop on a sync conflict and reconcile both copies; never hide tracked changes with
+`skip-worktree` or replace team docs with absolute symlinks. On teammates' checkouts
+without a configured vault, edit the repo docs normally.
+
 ## Read first
 
 1. `CONTEXT.md` — the glossary. Terms in code, tests and conversation match it.

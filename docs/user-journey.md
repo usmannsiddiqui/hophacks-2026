@@ -1,54 +1,29 @@
----
-title: "HopHacks F26 — User Journey (Nani)"
-tags: [hophacks, journey, spec]
-date: 2026-09-19
-status: draft
----
+# User journey: a community visit, a reviewed plan
 
-# User journey — Nani buys two fever meds
+Current product direction: ADR 0008, approved outreach wireframes. Gemini is the analytical provider; ElevenLabs handles speech.
 
-> [!ABSTRACT] Premise
-> In Pakistan (and similar markets) most counter "pharmacists" are unqualified. %% verify the 95% figure before it goes on a slide %%
-> The tool puts a **qualified, remote pharmacist** in the loop for free, using a **local English-speaking volunteer** as the bridge and **Urdu voice** as the patient's interface.
+1. Volunteer starts a visit at home, in the community, or at a counter.
+2. Patient speaks Urdu without needing an account or keyboard. A local volunteer records patient turns; an English-speaking volunteer will use interpretation.
+3. Volunteer checks the transcript and preserves both original transcription and corrections.
+4. Gemini translates and structures the reviewed account. The sourced table supplies supported interaction flags.
+5. Volunteer confirms the summary and sends it for remote review.
+6. English-speaking pharmacist reviews evidence, requests clarification if needed, and approves English advice.
+7. Advice is translated into Urdu. The volunteer returns or contacts the patient, plays/relays advice and checks understanding.
+8. Advice delivered is recorded separately from review submitted. The patient never needs to wait at the original visit.
 
-## Actors
+## What works now
 
-| Actor | Where | Speaks | Sees |
-|---|---|---|---|
-| **Nani** | at the counter | Urdu, voice only | nothing on screen; hears Urdu |
-| **The app** | volunteer's phone/tablet | — | everything |
-| **Volunteer** | behind the counter | English | live English transcript + flags |
-| **Pharmacist** | remote, first-world | English | case packet: transcript, chart, flags, photos |
+- /visit/new: real browser audio capture with pause/resume, upload fallback, server-side Scribe integration through the merged voice service, original/corrected Urdu transcript and tab-local saved drafts. Requires ELEVENLABS_API_KEY for live transcription.
+- Recordings stop after a three-minute session; upload duration is checked in the browser. Server enforces a 4 MiB audio / bounded multipart request limit, not an independently verified media-duration limit.
+- Transcription retries reuse the audio while this page stays open. Raw audio is not persisted across reloads.
+- Transcripts and English draft reports survive refresh in the same tab. They are not sent to a pharmacist or shared across devices.
+- After Save transcript, Prepare English report calls Gemini through lib/llm.ts. The printable draft includes the English patient account, medicine names paired with the patient's Urdu words, clarification questions and existing sourced table flags. Original and reviewed Urdu stay separate; corrections invalidate the report. Requires GOOGLE_GENERATIVE_AI_API_KEY.
+- Existing /file/new sample journey still demonstrates findings, questions, review, bilingual advice and report with fictional data. It retains older counter terminology and the old PatientFile lifecycle.
 
-## The journey (10 steps)
+## Next implementation slice
 
-| # | Actor | Does | App produces | Sponsor tech |
-|---|---|---|---|---|
-| 1 | Nani | Has a fever. Names 2 meds she wants to buy. | — | — |
-| 2 | Nani | Speaks in Urdu into the tablet. | Live Urdu → English transcript on the volunteer's screen. | ElevenLabs Scribe (STT) |
-| 3 | App | Asks the standard intake questions *in Urdu* — what else do you take, home remedies, anything from a hakeem. | Urdu voice prompts. | ElevenLabs Agent / TTS |
-| 4 | Volunteer | Reads English, asks follow-ups when Nani's answer is vague ("the green bottle"). Types nothing — just talks. | Follow-ups also transcribed. | Scribe |
-| 5 | Nani | Can't name a product → holds it up. | Photo → product identified ("Panadol CF", "karela extract"), added to transcript with her words beside it. | Gemini vision |
-| 6 | App | Transcript closes. Normalizes everything Nani said to a closed vocabulary (~200 meds, OTC, common desi remedies). | **Med list** with provenance: `{term, her_words, source: voice|photo}` | Gemini (structured output) |
-| 7 | App | Looks up interactions between: the 2 requested meds × everything she takes. | **Flags** (severity + source row from the verified table). Rendered as a bubble map. | Curated interaction table (deterministic, cited) |
-| 8 | Volunteer | Sees "2 flags" → immediate hold: *don't sell both yet*. | Case packet sent to pharmacist queue. | Backboard (case memory) |
-| 9 | Pharmacist | Opens packet: transcript, photos, flags. Checks the photo is the right strip. Writes advice in English. | Advice + stamp. | — |
-| 10 | App → Nani | Advice spoken back **in Urdu**. Clear plan: keep / stop / swap. Pharmacist sets a next-day follow-up. | Plan card (Urdu audio + text). Follow-up reminder. | ElevenLabs TTS, Backboard |
+Connect the saved English VisitReport to shared storage and the remote pharmacist queue. Migrate volunteer/pharmacist views to the outreach lifecycle, including concurrency, clarification, approved English advice, Urdu translation/TTS and delivery status. Visual/bubble-map research is deferred until this functional journey is complete.
 
-## The two screens that matter
+## Judge sequence after integration
 
-**Volunteer screen (live):** English transcript scrolling · med list building on the right · flag count badge · "Send to pharmacist" button.
-
-**Pharmacist screen (async):** case packet · bubble map (color = source: requested / disclosed / remedy; size = severity; edges = interactions) · photo strip · advice box · approve.
-
-## The demo beat (3 min)
-
-1. Open on Nani, not a dashboard. Urdu voice.
-2. She says "karela" — app doesn't know it yet, asks for a photo, identifies it.
-3. Flag appears: *karela + [her diabetes med] → hypoglycemia risk*. Volunteer holds the sale.
-4. Cut to pharmacist screen: reviews, approves with advice.
-5. Nani hears the plan in Urdu.
-
-## Where it lands on prizes
-
-Bloomberg (free, unqualified-pharmacy access gap) · ElevenLabs ×2 (Urdu agent + TTS) · Gemini (vision + normalization) · Backboard (case memory, follow-up) · Auctor (conversation → action: the hold + plan) · DigitalOcean · GoDaddy.
+Capture a real Urdu account during a home visit, show the English summary and a supported concern, switch to the pharmacist for review, and return to the volunteer for Urdu advice playback and delivery confirmation.

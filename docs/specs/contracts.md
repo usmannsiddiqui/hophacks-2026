@@ -127,3 +127,45 @@ item, edge = one flag, dashed = unidentified.
 Ciproxin), metformin (voice + photo), amlodipine (prescribed, not said), bitter gourd
 juice (remedy), unidentified powder (remedy). 2 flags, 4 questions (1 answered). Every
 screen after P2 can be built against it from hour 0.
+
+## Outreach capture boundary (ADR 0008)
+
+POST /api/transcribe accepts multipart field audio, a supported audio File. Audio must be
+nonempty and at most 4 MiB; total multipart bytes are bounded at 4 MiB + 64 KiB.
+Browser recording/upload limits are 3 minutes; the server does not independently parse
+media duration. Do not expose the paid route publicly without abuse controls and duration validation.
+
+Success: { text: string, language: "ur", words: [{ text: string, start: number, end: number }] }.
+Word timestamps come from Scribe; missing/invalid individual intervals are omitted without changing raw text. No voice diarization or inferred speaker identity.
+The only active transcription service is lib/voice/stt.ts using the adapted Scribe provider.
+Urdu and scribe_v2 are fixed on the server. Client provider/model overrides are unsupported.
+No automatic provider/SDK retry, Gemini/Grok transcription or canned success fallback.
+Errors: 400 malformed/missing audio; 413 size; 415 MIME; 422 no usable speech/audio;
+429 provider busy; 503 configuration; 504 timeout; 502 provider failure.
+Responses use no-store. No provider errors, keys, audio or transcripts are logged.
+
+VisitDraft is defined in lib/visit-draft.ts. It preserves raw transcription separately
+from reviewedUrdu and uses transcript-review/transcript-ready statuses. It is tab-local,
+not a PatientFile and not ready for clinical sign-off. Legacy bilingual contracts above
+remain in effect for existing /file routes until the next migration.
+
+
+## English pharmacist draft boundary
+
+`POST /api/structure` is the outreach report endpoint, replacing the earlier PR #6
+PatientFile/DB request. It accepts `{ draftId, rawUrdu, reviewedUrdu }` and translates
+only the reviewed Urdu. Client English and provider overrides are rejected. The
+original Urdu is preserved as provenance and is not substituted for corrections.
+
+`VisitReport` in `lib/visit-report.ts` is a versioned tab-local draft: exact visit
+and Urdu snapshots, generation time and model, English account and locally derived
+summary, extracted medicine items, draft questions, and deterministic table flags.
+`lib/llm.ts` is the sole active Gemini adapter. This endpoint neither writes a
+PatientFile nor sends or signs a case. No database configuration is needed.
+
+Every extracted medicine and question has a reviewed-Urdu source excerpt. Medicine
+names come from the closed vocabulary; unknown terms remain unidentified. The
+report does not reuse raw-word timestamps after corrections. Corrections invalidate
+a previous report; late results cannot attach to a different draft or source. Old
+transcript-only saved visits remain readable. Gemini errors never create a canned
+report or trigger another provider.

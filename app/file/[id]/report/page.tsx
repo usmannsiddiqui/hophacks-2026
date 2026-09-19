@@ -1,3 +1,15 @@
-export default function Page() {
-  return <main className="p-6"><p className="text-ink-muted text-sm">W4 Report</p><h1 className="text-2xl font-medium">Pharmacy consult record</h1><p className="mt-2 urdu text-xl">اپنی بات کریں۔</p></main>;
+import { FileProvider } from "@/components/file-provider";
+import { ReportView } from "@/components/advice-report";
+export default async function Page({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}) {
+  const { id } = await params;
+
+  return (
+    <FileProvider key={id} id={id}>
+      <ReportView />
+    </FileProvider>
+  );
 }

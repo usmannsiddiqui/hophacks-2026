@@ -15,7 +15,7 @@ function severityOf(s: string): Flag["severity"] | null {
  * The only function that can produce a Flag (ADR 0001).
  * Pure: medList × interactions table → Flag[]. A row without a citation is skipped.
  */
-export function computeFlags(medList: MedItem[]): Flag[] {
+export function computeFlags(medList: Array<Pick<MedItem, "id" | "term">>): Flag[] {
   const out: Flag[] = [];
   for (let i = 0; i < medList.length; i++) {
     for (let j = i + 1; j < medList.length; j++) {

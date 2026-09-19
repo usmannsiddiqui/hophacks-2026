@@ -1,5 +1,8 @@
 # CONTEXT — Mashwara glossary
 
+Owner's editable copy: Obsidian `Hophacks/team-context/CONTEXT.md`. This tracked file is
+the team export. See `docs/context-workflow.md`; code and tests define actual behavior.
+
 Domain glossary for this codebase. Code, tests, ADRs and conversation use these words
 with these meanings. Add a term here in the same commit that introduces it.
 
@@ -7,15 +10,14 @@ with these meanings. Add a term here in the same commit that introduces it.
 
 ## People
 
-**Patient.** The person at the counter. Speaks Urdu (Hindi fallback, ADR 0003). Never
-touches the screen; hears the app in her language. Our demo patient is **Nani**.
+**Patient.** A person visited at home, in the community, or at a counter. Speaks Urdu
+in the MVP. Does not need an account, keyboard or smartphone.
 
-**Counter operator.** Whoever holds the tablet behind the counter — the shopkeeper or a
-**volunteer**. Speaks English. Reads the live transcript, asks follow-ups out loud, holds
-the sale when a flag appears, sends the case. Types nothing.
+**Volunteer.** The person conducting the visit and delivering the remote pharmacist's
+response. May speak Urdu locally or need English/Urdu interpretation. Gives time.
 
-**Volunteer.** A counter operator who is giving time rather than working the shop. Same
-screen, same role. One of the two giving mechanisms in the philanthropic claim.
+**Counter operator.** Legacy name for the volunteer in the original pharmacy-specific
+sample journey. Counter/store/sale details are not prerequisites for outreach visits.
 
 **Pharmacist.** A qualified, remote, pro bono pharmacist. Opens cases from a queue,
 reviews, writes advice, approves. Asynchronous — minutes to hours (ADR 0004). The other
@@ -69,7 +71,7 @@ it sends the app back to ask a follow-up. Renders as a dashed card.
 
 **Closed vocabulary.** ~150 terms: common Pakistani OTC brands and generics, chronic
 meds, and common desi remedies. Gemini may only output a term from this list or
-`unrecognised`. Owned by stream A. File: `data/substances.json` (`substances[]`).
+`unidentified`. Owned by stream A. File: `data/substances.json` (`substances[]`).
 
 **Interaction table.** 105 rows of `{ a, b, severity, effect, ask, source? }`. The only
 thing that can produce a flag (ADR 0001). File: `data/substances.json` (`interactions[]`).
@@ -135,3 +137,40 @@ color or neutral; edges = interaction rows. Hover shows her words.
 
 **Nastaliq.** Noto Nastaliq Urdu, the typeface for every patient-facing string. RTL,
 line-height ~1.9. Urdu never falls back to a Latin face.
+
+## Rehearsal and shared context
+
+**Sample walkthrough.** An explicitly fictional visit with a `DEMO-` file identifier.
+Saved in this browser only; it is not a live consultation or cross-device store. The
+sample account, answers and review are loaded only by explicit user actions. Real
+files use Neon; writes fail clearly if storage is not configured.
+
+**Team context.** Shared product documents edited in the owner's Obsidian
+`Hophacks/team-context` folder and exported as normal tracked files here. See
+`docs/context-workflow.md`. Code and tests define actual behavior; update the build
+order and glossary in the same feature PR so the vault does not become stale.
+
+
+## Outreach capture
+**Scribe service.** The server-only transcription boundary in lib/voice/stt.ts, backed by
+Rayyan's adapted ElevenLabs provider. One Urdu Transcript contract; provider failures are
+errors rather than fabricated accounts. Gemini supplies analysis in the next slice.
+
+**VisitDraft.** A tab-local patient account, preceding a shared PatientFile. Contains
+patient details, immutable raw Scribe transcript and word timestamps, corrected Urdu,
+recording seconds and transcript-review/transcript-ready status. It has no English
+translation or clinical flags until the Gemini slice supplies validated output.
+**Transcript ready.** Volunteer has reviewed and saved Urdu text; does not mean sent,
+clinically reviewed, or delivered. Saved transcripts remain available when starting another visit.
+
+
+## English report slice
+
+- **VisitReport**: an AI-generated English draft derived from one saved VisitDraft's
+  reviewed Urdu. It includes the English account, extracted medicines, clarification
+  questions and sourced table flags. It is stored in the current browser tab; it is
+  neither sent nor pharmacist-reviewed/signed.
+- **Report source excerpt**: exact words from reviewed Urdu, kept alongside original
+  Scribe text. It does not claim a timestamp in the uncorrected recording.
+- **Prepare English report**: explicit volunteer action calling Gemini via lib/llm.ts
+  after transcript review. Editing the source invalidates the old report.
