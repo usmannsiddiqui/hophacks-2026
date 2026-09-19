@@ -46,9 +46,9 @@ export function VisitReportView({ draft }: { draft: VisitDraft }) {
                 <div className={`visit-report-item ${item.term === "unidentified" ? "unidentified" : ""}`} key={item.id}>
                   <h3>{item.term === "unidentified" ? "Unidentified" : item.name}</h3>
                   <p className="small">{roleLabel[item.role]}</p>
+                  <p className="urdu" lang="ur" dir="rtl">{item.herWords}</p>
                   <details className="visit-report-evidence">
-                    <summary>Urdu evidence</summary>
-                    <p className="urdu" lang="ur" dir="rtl">{item.herWords}</p>
+                    <summary>Source excerpt</summary>
                     <p className="urdu small muted" lang="ur" dir="rtl">
                       Source: {item.source.excerpt}
                     </p>

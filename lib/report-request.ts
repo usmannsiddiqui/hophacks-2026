@@ -6,6 +6,20 @@ type FetchReport = (
   init?: RequestInit,
 ) => Promise<Response>;
 
+async function readJson(response: Response, signal: AbortSignal): Promise<unknown> {
+  if (signal.aborted) throw signal.reason;
+  let onAbort: (() => void) | undefined;
+  const aborted = new Promise<never>((_resolve, reject) => {
+    onAbort = () => reject(signal.reason);
+    signal.addEventListener("abort", onAbort, { once: true });
+  });
+  try {
+    return await Promise.race([response.json(), aborted]);
+  } finally {
+    if (onAbort) signal.removeEventListener("abort", onAbort);
+  }
+}
+
 export type OwnedReportRequest = {
   readonly draftId: string;
   readonly signal: AbortSignal;
@@ -42,6 +56,7 @@ export async function requestVisitReport(
   const timer = setTimeout(() => deadline.abort(), 35_000);
   const requestSignal = AbortSignal.any([signal, deadline.signal]);
   let response: Response;
+  let body: unknown;
   try {
     response = await fetchReport("/api/structure", {
       method: "POST",
@@ -53,6 +68,16 @@ export async function requestVisitReport(
       }),
       signal: requestSignal,
     });
+    try {
+      body = await readJson(response, requestSignal);
+    } catch (cause) {
+      if (requestSignal.aborted) throw cause;
+      throw new Error(
+        response.ok
+          ? "The server returned an invalid report. Please retry."
+          : "English report preparation failed. Please retry.",
+      );
+    }
   } catch (cause) {
     if (deadline.signal.aborted && !signal.aborted) {
       throw new Error("English report preparation timed out. Please retry.");
@@ -60,17 +85,6 @@ export async function requestVisitReport(
     throw cause;
   } finally {
     clearTimeout(timer);
-  }
-
-  let body: unknown;
-  try {
-    body = await response.json();
-  } catch {
-    throw new Error(
-      response.ok
-        ? "The server returned an invalid report. Please retry."
-        : "English report preparation failed. Please retry.",
-    );
   }
 
   if (!response.ok) {

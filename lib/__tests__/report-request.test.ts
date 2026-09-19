@@ -152,4 +152,25 @@ describe("requestVisitReport", () => {
       vi.useRealTimers();
     }
   });
+
+  it("ends a stalled response body after the same report deadline", async () => {
+    vi.useFakeTimers();
+    try {
+      const draft = savedDraft();
+      const fetcher = vi.fn(async () =>
+        new Response(new ReadableStream({ start() {} }), {
+          status: 200,
+          headers: { "content-type": "application/json" },
+        }),
+      );
+
+      const result = expect(
+        requestVisitReport(draft, new AbortController().signal, fetcher),
+      ).rejects.toThrow("timed out");
+      await vi.advanceTimersByTimeAsync(35_000);
+      await result;
+    } finally {
+      vi.useRealTimers();
+    }
+  });
 });
