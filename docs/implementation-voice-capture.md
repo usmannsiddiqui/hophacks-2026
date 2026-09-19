@@ -37,7 +37,7 @@ Files: lib/audio-capture.ts; lib/visit-draft.ts; components/voice-visit.tsx; app
 - [x] Run application tests, lint, TypeScript and webpack production build.
 - [x] Inspect real browser intake, missing-key behavior, supported audio upload and saved/recovery states where credentials permit. Report unavailable live-provider/microphone validation explicitly.
 - [x] Update build order, glossary, contracts, README and pressure-test status. Export shared docs to Obsidian using the conflict-checked workflow.
-- [ ] Commit on voice-transcript-capture; open a draft PR stacked on judge-demo-journey.
+- [x] Commit on voice-transcript-capture; draft PR #5 is stacked on judge-demo-journey (#4).
 
 ## Subsequent slice
 Gemini through lib/llm.ts: translate and structure the reviewed Urdu into a validated case, recompute sourced flags, then connect asynchronous review. English-speaking volunteer interpretation and Urdu TTS follow the initial recording path.
