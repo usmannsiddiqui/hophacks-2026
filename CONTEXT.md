@@ -174,3 +174,14 @@ clinically reviewed, or delivered. Saved transcripts remain available when start
   Scribe text. It does not claim a timestamp in the uncorrected recording.
 - **Prepare English report**: explicit volunteer action calling Gemini via lib/llm.ts
   after transcript review. Editing the source invalidates the old report.
+
+
+## Result views
+
+**Details / Map.** Two views of the same saved VisitReport, selected with an
+icon-labelled sliding control. Details retains the full printable draft. Map shows
+medicine bubbles and only the report's sourced flag connections; selection exposes
+existing Urdu evidence and citations. Layout positions are transient, never stored.
+
+**Selected evidence.** The map's dismissible evidence panel (a bottom sheet on phones).
+An unidentified item explains the identification gap without becoming a flag.

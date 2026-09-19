@@ -11,14 +11,25 @@ Wireframes are the spec: `docs/specs/wireframes.html` (open in a browser). Contr
 every screen after P2 renders against it with no env vars.
 
 
-## Next session: visualization
+## Current slice: Details and Map result views
 
-The owner wants to design the next visualization using the `d3-viz` skill from
-https://github.com/chrisvoncsefalvay/claude-d3js-skill. Read
-`docs/handoffs/2026-09-19-voice-report-to-visualization.md` before starting.
-Inspect Ahmad's separate `origin/demo-scenario-scaffold` branch (observed at `4646645`)
-for existing D3 work before implementing another map. Fetch again; do not blindly merge
-its provider or route changes over the completed voice/report journey.
+Implemented on `flagged-items-visualization`, based on the integrated voice report and
+current main. PRs #5 and #4 were already merged when this branch began (main `54f2418`).
+The integration snapshots below are historical.
+
+- A ready report opens as its own result screen. An icon-labelled sliding selector
+  switches between Details (the complete printable report) and Map (D3 bubbles only).
+- Map nodes retain exact medicine IDs and English/Urdu pairs. Only existing sourced
+  flags create connections; selection reveals report evidence and citation links.
+- Unknown items remain dashed questions, never invented interactions. No-match states
+  retain the coverage limitation. D3 mutates disposable layout copies only.
+- Keyboard tabs/selection, zoom/reset, responsive layout and reduced-motion styles are
+  included. Mobile evidence opens in a bottom sheet; closing restores selection focus.
+- `/dev/report` is a development-only fictional preview for pairs, unidentified-only,
+  no-flag, empty and long-label cases. It calls no providers and writes no visit storage.
+- Backend, clinical data, persistence and the older sample/pharmacist map are unchanged.
+- Inspected Ahmad's `4646645` force map and the requested `d3-viz` skill; used a separate
+  report adapter and React SVG rendering to preserve the live report contract.
 
 ## Completed slice: English report after reviewed Urdu
 
@@ -79,7 +90,7 @@ This describes the sample walkthrough; the live voice/report status is above:
 
 ### Remaining integration roadmap
 
-The owner's immediate next priority is the visualization session above. After that:
+After review of the visualization slice above:
 
 1. A/B: connect the live report to shared review/delivery and ElevenLabs Urdu TTS.
    Gemini translation/structuring for /visit/new is complete.

@@ -20,9 +20,16 @@ Current product direction: ADR 0008, approved outreach wireframes. Gemini is the
 - After Save transcript, Prepare English report calls Gemini through lib/llm.ts. The printable draft includes the English patient account, medicine names paired with the patient's Urdu words, clarification questions and existing sourced table flags. Original and reviewed Urdu stay separate; corrections invalidate the report. Requires GOOGLE_GENERATIVE_AI_API_KEY.
 - Existing /file/new sample journey still demonstrates findings, questions, review, bilingual advice and report with fictional data. It retains older counter terminology and the old PatientFile lifecycle.
 
+## Result visualization
+
+A ready English report is a dedicated result screen. Details holds the full draft;
+Map holds the interactive medicine/flag visualization. Switch using the icon-labelled
+sliding selector. Choose a medicine or cited connection to inspect existing evidence.
+Edit transcript returns to review; changing Urdu invalidates its old report as before.
+
 ## Next implementation slice
 
-Connect the saved English VisitReport to shared storage and the remote pharmacist queue. Migrate volunteer/pharmacist views to the outreach lifecycle, including concurrency, clarification, approved English advice, Urdu translation/TTS and delivery status. Visual/bubble-map research is deferred until this functional journey is complete.
+Connect the saved English VisitReport to shared storage and the remote pharmacist queue. Migrate volunteer/pharmacist views to the outreach lifecycle, including concurrency, clarification, approved English advice, Urdu translation/TTS and delivery status. The first Details/Map visualization slice is implemented; shared review and delivery remain the next functional integration.
 
 ## Judge sequence after integration
 

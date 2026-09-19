@@ -83,3 +83,22 @@ New `demo-scenario-scaffold` (`a57a684`) is separate teammate visual/model work 
 was left untouched. PR #4 remains conflicting against main; PR #5 remains draft
 against judge-demo-journey. After user review, reconcile/merge #4 first, retarget #5
 to main, then merge #5 with a merge commit. No main merge is authorized or performed.
+
+
+## Follow-up: split result views (19 September)
+
+`flagged-items-visualization` adds a Details/Map selector and a dedicated ready-report
+screen. Details retains the report/print document; Map renders a D3-derived graph
+with React-owned SVG controls, exact medicine IDs, existing flag citations and Urdu
+provenance. It changes no provider, API, persisted schema or clinical table.
+
+The map uses stopped simulations on cloned layout objects and cleans up zoom/resize
+listeners. Its mobile layout preserves label scale; evidence uses a visible bottom
+sheet and restores keyboard focus when dismissed. Print CSS exposes Details even
+when Map is selected. Actual PDF output remains unverified.
+
+Development-only fictional QA: `/dev/report` (pairs, unknown-only, no flags, empty,
+long Urdu). No provider calls or sessionStorage writes. Browser checks cover selector
+click/keyboard, evidence selection, citations, mobile 390px and zero horizontal
+overflow. The offline map tests cover exact IDs, no invented edges, immutability,
+and finite bounds for empty/single/six/100 items. Live STT/Gemini were not rerun.

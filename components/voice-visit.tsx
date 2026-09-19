@@ -362,6 +362,19 @@ function VisitCapture() {
     }
   }
   const timer = `${Math.floor(seconds / 60)}:${String(seconds % 60).padStart(2, "0")}`;
+  if (stage === "saved" && draft?.report) {
+    return <>
+      <header className="result-topline">
+        <div><span className="eyebrow">Visit result</span><h1>{draft.patient.name}<span>{draft.patient.age} · {draft.patient.sex}</span></h1></div>
+        <div className="result-actions">
+          <button className="text-link" onClick={() => { reportRequest.current.cancel(); setReportBusy(false); setReportError(""); setStage("review"); }}>Edit transcript</button>
+          <button className="text-link" onClick={newVisit}>New visit ↗</button>
+        </div>
+      </header>
+      <VisitReportView key={`${draft.id}-${draft.report.generatedAt}`} draft={draft} />
+      {storageError && <p className="error-box" role="alert">{storageError}</p>}
+    </>;
+  }
   return (
     <>
       {stage === "setup" ? (
