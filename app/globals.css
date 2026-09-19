@@ -24,3 +24,11 @@ body {
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
 }
+
+/* Three densities (component sheet): Urdu over English, English ~0.7× in ink-muted. */
+@utility text-phone-ur { font-size: 25px; }
+@utility text-phone-en { font-size: 15px; color: var(--color-ink-muted); }
+@utility text-web-ur { font-size: 15px; }
+@utility text-web-en { font-size: 13px; color: var(--color-ink-muted); }
+@utility text-report-ur { font-size: 17px; }
+@utility text-report-en { font-size: 15px; color: var(--color-ink-muted); }
