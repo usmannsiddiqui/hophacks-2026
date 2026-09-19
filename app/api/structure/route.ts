@@ -48,8 +48,24 @@ export async function POST(req: Request) {
   }
 
   const recording = toRecording(transcript);
-  const medList = [...current.medList, ...result.medList];
-  const questions = [...current.questions, ...result.questions];
+
+  // Re-structuring a recording replaces what that recording produced, it does not add to
+  // it. Appending would double every item and put a second edge on the bubble map for
+  // one interaction. Items from other recordings and from documents are left alone.
+  const fromThisRecording = (ref: { recording: number } | { attachment: string }) =>
+    "recording" in ref && ref.recording === recording.n;
+
+  const medList = [
+    ...current.medList.filter(m => !fromThisRecording(m.at)),
+    ...result.medList,
+  ];
+
+  // Answered questions survive: the answer cost a real exchange at the counter, and the
+  // model has no way to reproduce it.
+  const questions = [
+    ...current.questions.filter(q => q.answeredIn || !q.from.every(fromThisRecording)),
+    ...result.questions,
+  ];
 
   const next: PatientFile = {
     ...current,

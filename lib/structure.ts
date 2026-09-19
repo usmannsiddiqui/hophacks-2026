@@ -78,8 +78,10 @@ function systemPrompt(): string {
     "   ASK-ONLY row, raise a question that would help a pharmacist settle it.",
     "6. Raise a question for every 'unidentified' item you list.",
     "",
-    "`role` means: requested = asked for at the counter now; takes = an ongoing medicine;",
-    "remedy = a home or herbal remedy; prescribed = a doctor put her on it.",
+    "`role` means: requested = asked for at the counter now; takes = an ongoing medicine,",
+    "including one a doctor started her on; remedy = a home, herbal or hakeem remedy.",
+    "Never use 'prescribed' here. It is reserved for items read off a document she brought,",
+    "and you are only ever given her voice.",
   ].join("\n");
 }
 
@@ -160,7 +162,9 @@ export function normalise(object: z.infer<typeof ModelOutput>, input: StructureI
       term,
       herWords,
       source: "voice",
-      role: row.role,
+      // `prescribed` means "read off a document she brought" (CONTEXT.md). Everything
+      // here came from her voice, so a doctor-started medicine is `takes`.
+      role: row.role === "prescribed" ? "takes" : row.role,
       ...(row.since?.trim() ? { since: row.since.trim() } : {}),
       at: sourceRef(input.recordingN, input.words, row.quote || herWords),
     });

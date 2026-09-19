@@ -93,6 +93,22 @@ describe("what comes back is not trusted", () => {
     expect(out.rejectedTerms).toEqual(["hakeem_powder_nightly"]);
   });
 
+  it("never marks a voice item as prescribed", async () => {
+    // `prescribed` means read off a document she brought (CONTEXT.md). Gemini reaches
+    // for it when she says a doctor started her on something; from voice it is `takes`.
+    generateObject.mockResolvedValue({
+      object: {
+        request: [],
+        medList: [{ term: "metformin", herWords: "شوگر کی گولی", role: "prescribed", quote: "گولی" }],
+        questions: [],
+      },
+    });
+
+    const out = await structureTranscript(input);
+    expect(out.medList[0].role).toBe("takes");
+    expect(out.medList[0].source).toBe("voice");
+  });
+
   it("keeps her own words on every item", async () => {
     const out = await structureTranscript(input);
     for (const m of out.medList) expect(m.herWords).toBeTruthy();
