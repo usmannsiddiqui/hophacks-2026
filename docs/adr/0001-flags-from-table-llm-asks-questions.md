@@ -13,10 +13,10 @@ January 2024, so there is no drop-in API to lean on either.
 ## Decision
 
 - A **flag** is produced only by matching two med items against
-  `data/interactions.json`, a hand-curated table (~40 rows) where every row carries a
+  `data/substances.json` (`interactions[]`), a hand-curated table (~40 rows) where every row carries a
   severity, a one-line reason and a citable source.
 - Gemini's only jobs are (1) map the patient's words to a term in
-  `data/vocabulary.json` or `unrecognised`, via structured output, and (2) optionally
+  `data/substances.json` (`substances[]`) or `unrecognised`, via structured output, and (2) optionally
   suggest a **question** for the pharmacist when it notices a gap the table does not
   cover.
 - Questions render interrogative (must end in `?`), in the `ask` color, with a `?`

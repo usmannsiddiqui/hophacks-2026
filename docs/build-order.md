@@ -19,16 +19,20 @@ Owners: A = ___ · B = ___ · C = ___ (fill in, then commit).
 - [ ] Urdu test: one Urdu sentence through ElevenLabs v3 TTS; one 15 s Urdu voice note
       through Scribe. Decide Urdu vs Hindi. Write the answer into ADR 0003.
 - [ ] Scaffold: `create-next-app`, Tailwind 4, Geist/Inter + Noto Nastaliq, `lib/types.ts`
-      from contracts, `data/vocabulary.json` (10 demo terms), `data/interactions.json`
-      (5 demo rows), `data/cases/nani.json`, `.env.example`.
+      from contracts, `data/cases/nani.json`, `.env.example`.
 - [ ] Assign owners above. Each stream branches.
 
 ## 2. Must — the demo dies without it
 
 ### Stream A — data + logic
-- [ ] `data/vocabulary.json` to ~150 terms (Pakistani OTC brands + generics + remedies).
-- [ ] `data/interactions.json` to ~40 sourced rows. Demo rows first: karela × metformin,
-      paracetamol × (second requested med), plus 3 more that touch Nani's list.
+- [x] `data/substances.json` — 142 substances, 103 interactions, screening questions (already on main).
+- [ ] Retarget it to Pakistan: add `aliases_ur` (Urdu script + roman Urdu), Pakistani
+      brand names (Panadol, Brufen, Flagyl, Augmentin…), desi remedies (karela, methi,
+      joshanda, hakeem powders). Drop/ignore `aliases_es`.
+- [ ] Add a `source` field to every interaction row (ADR 0001 — every flag is citable).
+      Demo rows first: karela × metformin, and whatever touches Nani's list.
+- [ ] Map severities: file uses `major/moderate/minor`; contracts use `high/moderate`.
+      Pick one, update `lib/types.ts`.
 - [ ] `lib/normalize.ts` — Gemini structured output: utterance → `MedItem[]` or
       `unrecognised`.
 - [ ] `lib/flags.ts` — pure function `medList × interactions → Flag[]`. Vitest for the

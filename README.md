@@ -6,6 +6,8 @@ A free tool that puts a qualified remote pharmacist behind an unqualified pharma
 counter. The patient speaks Urdu; the counter sees English and flags; a pro bono
 pharmacist approves; the patient hears the plan in Urdu.
 
+<img width="474" height="784" alt="journey sketch" src="https://github.com/user-attachments/assets/b47e1652-f827-4b3c-8218-4031b51e6858" />
+
 Start with `AGENTS.md`, then `CONTEXT.md`, then `docs/adr/`.
 
 | Doc | What |
@@ -18,4 +20,5 @@ Start with `AGENTS.md`, then `CONTEXT.md`, then `docs/adr/`.
 | `docs/user-journey.md` | 10 steps + the 3-minute demo |
 | `docs/prizes-and-rubrics.md` | every prize, every rubric |
 | `docs/specs/wireframe-prompt.md` | the Claude Design brief |
+| `data/substances.json` | closed vocabulary + interaction table (source of truth for what exists and what interacts) |
 | `docs/handoffs/` | earlier team handoffs (partly superseded — ADRs win) |

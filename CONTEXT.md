@@ -49,11 +49,11 @@ it sends the app back to ask a follow-up. Renders as a dashed card.
 
 **Closed vocabulary.** ~150 terms: common Pakistani OTC brands and generics, chronic
 meds, and common desi remedies. Gemini may only output a term from this list or
-`unrecognised`. Owned by stream A. File: `data/vocabulary.json`.
+`unrecognised`. Owned by stream A. File: `data/substances.json` (`substances[]`).
 
 **Interaction table.** ~40 rows of `{ termA, termB, severity, reason, source }`. The only
 thing that can produce a flag (ADR 0001). Every row has a citable source. File:
-`data/interactions.json`.
+`data/substances.json` (`interactions[]`).
 
 **Flag.** A row from the interaction table that matches two med items in the case.
 Carries severity (`high` | `moderate`), the reason and the source. Rendered in the `flag`

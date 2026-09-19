@@ -65,7 +65,7 @@ type Case = {
 
 ## Invariants (tests exist for these)
 
-1. `flags` contains only rows that exist in `data/interactions.json`.
+1. `flags` contains only rows that exist in `data/substances.json` (`interactions[]`).
 2. Every `Question.text` ends with `?`.
 3. Every `MedItem` has non-empty `herWords`.
 4. `status` moves forward only: listening → sent → approved.
