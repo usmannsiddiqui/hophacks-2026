@@ -13,6 +13,16 @@ import { sourceRef, type ScribeWord } from "@/lib/transcript";
 import { UNIDENTIFIED, interactionPrompt, isKnownTerm, vocabularyPrompt } from "@/lib/vocab";
 
 export const STRUCTURE_MODEL = "gemini-3.5-flash";
+export const STRUCTURE_XAI_MODEL = "grok-4.6";
+export type StructureProvider = "gemini" | "xai";
+
+function xaiApiKey(): string | undefined {
+  return process.env["XAI-API_KEY"] || process.env.XAI_API_KEY;
+}
+
+export function hasStructureKey(provider: StructureProvider = "gemini"): boolean {
+  return provider === "xai" ? Boolean(xaiApiKey()) : Boolean(process.env.GOOGLE_GENERATIVE_AI_API_KEY);
+}
 
 /** What the model is allowed to return. Note the absence of anything flag-shaped. */
 const ModelOutput = z.object({
@@ -123,7 +133,12 @@ function asQuestion(s: string): string {
  * question is forced interrogative, and anything without her words is dropped -- the
  * contract says a voice item must carry them.
  */
-export async function structureTranscript(input: StructureInput): Promise<StructureResult> {
+export async function structureTranscript(
+  input: StructureInput,
+  provider: StructureProvider = "gemini",
+): Promise<StructureResult> {
+  if (provider === "xai") return structureWithXai(input);
+
   if (!process.env.GOOGLE_GENERATIVE_AI_API_KEY) {
     throw new Error("GOOGLE_GENERATIVE_AI_API_KEY is not set");
   }
@@ -134,6 +149,94 @@ export async function structureTranscript(input: StructureInput): Promise<Struct
     system: systemPrompt(),
     prompt: userPrompt(input),
     temperature: 0,
+  });
+
+  return normalise(object, input);
+}
+
+const XAI_SCHEMA = {
+  type: "object",
+  additionalProperties: false,
+  required: ["request", "medList", "questions"],
+  properties: {
+    request: { type: "array", items: { type: "string" } },
+    medList: {
+      type: "array",
+      items: {
+        type: "object",
+        additionalProperties: false,
+        required: ["term", "herWords", "role", "since", "quote"],
+        properties: {
+          term: { type: "string" },
+          herWords: { type: "string" },
+          role: { type: "string", enum: ["requested", "takes", "remedy", "prescribed"] },
+          since: { type: "string" },
+          quote: { type: "string" },
+        },
+      },
+    },
+    questions: {
+      type: "array",
+      items: {
+        type: "object",
+        additionalProperties: false,
+        required: ["urdu", "english", "why", "quote"],
+        properties: {
+          urdu: { type: "string" },
+          english: { type: "string" },
+          why: { type: "string" },
+          quote: { type: "string" },
+        },
+      },
+    },
+  },
+} as const;
+
+async function structureWithXai(input: StructureInput): Promise<StructureResult> {
+  const apiKey = xaiApiKey();
+  if (!apiKey) throw new Error("XAI-API_KEY is not set");
+
+  const res = await fetch("https://api.x.ai/v1/chat/completions", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${apiKey}`,
+    },
+    body: JSON.stringify({
+      model: STRUCTURE_XAI_MODEL,
+      temperature: 0,
+      reasoning_effort: "low",
+      messages: [
+        { role: "system", content: systemPrompt() },
+        { role: "user", content: userPrompt(input) },
+      ],
+      response_format: {
+        type: "json_schema",
+        json_schema: { name: "structure_output", schema: XAI_SCHEMA, strict: true },
+      },
+    }),
+  });
+
+  const raw = await res.text();
+  if (!res.ok) {
+    throw new Error(`xAI ${res.status}: ${raw.slice(0, 400)}`);
+  }
+
+  const payload = JSON.parse(raw) as { choices?: Array<{ message?: { content?: string } }> };
+  const content = payload.choices?.[0]?.message?.content;
+  if (!content) throw new Error("xAI returned no content");
+
+  const parsed = JSON.parse(content) as z.infer<typeof ModelOutput>;
+  const object = ModelOutput.parse({
+    request: parsed.request ?? [],
+    medList: (parsed.medList ?? []).map(row => ({
+      ...row,
+      since: row.since?.trim() ? row.since : undefined,
+    })),
+    questions: (parsed.questions ?? []).map(q => ({
+      ...q,
+      quote: q.quote?.trim() ? q.quote : undefined,
+    })),
   });
 
   return normalise(object, input);

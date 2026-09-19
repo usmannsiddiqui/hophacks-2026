@@ -2,13 +2,13 @@ import { NextResponse } from "next/server";
 import { getFile, saveFile } from "@/lib/files";
 import { computeFlags } from "@/lib/flags";
 import { describe, readMedList } from "@/lib/insights";
-import { structureTranscript } from "@/lib/structure";
+import { hasStructureKey, structureTranscript, type StructureProvider } from "@/lib/structure";
 import { toRecording, type TranscriptInput } from "@/lib/transcript";
 import { STATUS_ORDER, type PatientFile } from "@/lib/types";
 
 export const maxDuration = 60;
 
-type Body = { fileId: string; transcript: TranscriptInput };
+type Body = { fileId: string; transcript: TranscriptInput; provider?: StructureProvider };
 
 /**
  * Step 2 of the pipeline. Scribe hands us her Urdu and its English; this turns them into
@@ -17,7 +17,8 @@ type Body = { fileId: string; transcript: TranscriptInput };
  * loaded first and constrain the model, rather than the model being checked afterwards.
  */
 export async function POST(req: Request) {
-  const { fileId, transcript } = (await req.json()) as Body;
+  const { fileId, transcript, provider: rawProvider } = (await req.json()) as Body;
+  const provider: StructureProvider = rawProvider === "xai" ? "xai" : "gemini";
 
   if (!fileId || !transcript?.urdu?.trim()) {
     return NextResponse.json({ error: "fileId and transcript.urdu are required" }, { status: 400 });
@@ -26,9 +27,10 @@ export async function POST(req: Request) {
   const current = await getFile(fileId);
   if (!current) return NextResponse.json({ error: "not found" }, { status: 404 });
 
-  if (!process.env.GOOGLE_GENERATIVE_AI_API_KEY) {
+  if (!hasStructureKey(provider)) {
+    const key = provider === "xai" ? "XAI-API_KEY" : "GOOGLE_GENERATIVE_AI_API_KEY";
     return NextResponse.json(
-      { error: "GOOGLE_GENERATIVE_AI_API_KEY is not set", hint: "add it to .env.local" },
+      { error: `${key} is not set`, hint: "add it to .env.local" },
       { status: 503 },
     );
   }
@@ -42,7 +44,7 @@ export async function POST(req: Request) {
       words: transcript.words,
       existingMedIds: current.medList.map(m => m.id),
       existingQuestionIds: current.questions.map(q => q.id),
-    });
+    }, provider);
   } catch (e) {
     return NextResponse.json({ error: "structuring failed", detail: String(e) }, { status: 502 });
   }
@@ -89,6 +91,7 @@ export async function POST(req: Request) {
       owed: insights.owed.map(describe),
       uncovered: insights.uncovered.map(describe),
       rejectedTerms: result.rejectedTerms,
+      provider,
     },
   });
 }
