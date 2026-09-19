@@ -10,6 +10,45 @@ Wireframes are the spec: `docs/specs/wireframes.html` (open in a browser). Contr
 every screen after P2 renders against it with no env vars.
 
 
+## Current slice: English report after reviewed Urdu
+
+The backend and frontend are implemented and reviewed on `voice-transcript-capture`.
+The full browser journey reached a live English report; final verification is recorded
+in the implementation note. Scope: patient Urdu recording → original
+Scribe transcript → volunteer corrections → saved visit → Gemini English translation
+and pharmacist draft. No visual/map redesign in this slice.
+
+- Gemini is called only through `lib/llm.ts`, using live-verified Gemini 3.6 Flash.
+- Reports preserve raw and reviewed Urdu, source-ground extracted quotes, and compute
+  flags only from the existing interaction table. No Grok or provider fallback.
+- Reports remain in the current browser tab. Shared queue, pharmacist approval, Urdu
+  advice/TTS and delivery tracking are the next integration slice.
+- See `docs/implementation-english-report.md` for validation evidence and limitations.
+
+## Latest integration: Rayyan's ElevenLabs branch (19 September)
+
+PR #6 (Ahmad's Gemini structure step) landed on main at `bfae2f8`. Main is now merged into `voice-transcript-capture` through `1875b05`, preserving Ahmad's commits and resolving the three frontend conflicts in favor of the approved outreach screens. Urdu-to-English report integration is in progress; see `docs/implementation-english-report.md`. PR #4 still needs separate reconciliation against main before its eventual merge.
+
+- Integrated `origin/ElevenLabs` (`6156436`) into `voice-transcript-capture` via merge commit `db99b32`; Rayyan's 12 commits and approved outreach UI are retained. Draft PR #5 is updated for review.
+- One Scribe-only backend and `/api/transcribe` contract. No active Grok, Gemini transcription fallback or canned transcript substitution.
+- Reuse Scribe adapter, language handling and Urdu fixtures; preserve bounded uploads, explicit errors, raw/corrected Urdu, cleanup, deliberate retries and previous drafts.
+- Keep flags derived from `data/substances.json`; Gemini translation/structuring is the next slice.
+- Live Scribe follow-up passed two real Urdu fixtures and browser transcription/correction/save/reload/history with the refreshed key. Physical-phone and TTS checks remain open; see `docs/pressure-test.md`.
+- Review order: PR #4 → main first; then retarget PR #5 → main and merge with a merge commit. Neither PR is authorized to merge yet. Never squash/rebase away Rayyan's ancestry.
+
+## Latest slice: Urdu voice capture (19 September, ~17:00)
+
+Approved direction is community outreach with asynchronous volunteer follow-up (ADR 0008).
+Gemini + ElevenLabs only. The counter-specific checklist below is historical.
+
+- /visit/new now records patient-only Urdu, pauses/resumes, uploads audio to Scribe,
+  and preserves raw plus corrected transcripts in tab-local drafts.
+- /api/transcribe validates bounded uploads and maps provider/configuration failures.
+- Live Scribe and browser upload/review/save were subsequently verified with the refreshed key; physical-microphone checks remain unverified.
+- Next: Gemini translation/structuring through lib/llm.ts, then outreach review/delivery
+  lifecycle and shared persistence. Existing sample walkthrough remains separate.
+- See docs/implementation-voice-capture.md for the slice's exact boundary and validation.
+
 ## Current implementation snapshot (19 September, Codex pass)
 
 The original scaffold checklist below is historical. This is the current status:
@@ -29,7 +68,7 @@ The original scaffold checklist below is historical. This is the current status:
 
 ### Next integration priorities
 
-1. A/B: connect Scribe capture, Gemini structure/translation, and ElevenLabs Urdu TTS.
+1. A/B: connect Gemini structure/translation to /visit/new, then ElevenLabs Urdu TTS.
    `RecordingView` and `SpeakButton` report unavailable services honestly; no fake live audio.
 2. A: Neon setup plus integration tests for shared persistence and concurrent writes.
 3. B: test actual Urdu speech and readback on a real phone over HTTPS.

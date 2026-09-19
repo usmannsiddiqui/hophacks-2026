@@ -1205,3 +1205,58 @@ textarea {
     break-after: avoid;
   }
 }
+
+/* First outreach slice: one patient account and transcript review. */
+.voice-page { min-height:100dvh; background:var(--color-surface); }
+.voice-preview-note { padding:10px 24px; font-size:12px; color:var(--color-ink-muted); border-bottom:1px solid var(--color-line); }
+.voice-card { max-width:520px; margin:40px auto; padding:32px; border:1px solid var(--color-line); border-radius:24px; background:var(--color-surface-raised); }
+.voice-card h1 { font-size:32px; margin:8px 0 24px; letter-spacing:-1px; }
+.voice-card label { margin:16px 0; }
+.voice-card audio { display:block; width:100%; margin:16px 0; }
+.voice-primary { width:100%; min-height:56px; margin:20px 0 16px; }
+.voice-prompt { margin:28px 0 12px; font-size:28px; }
+.voice-recorder { text-align:center; margin:28px 0; }
+.voice-timer { font-size:42px; font-variant-numeric:tabular-nums; letter-spacing:-1px; }
+.voice-recorder .actions { justify-content:center; margin-top:20px; }
+.voice-upload { margin:20px 0; }
+.voice-upload summary { cursor:pointer; min-height:44px; }
+.voice-saved { padding:24px 0; line-height:2.2; }
+@media(max-width:600px){ .voice-card{border:0;border-radius:0;margin:0;padding:28px 20px;} .voice-preview-note{padding:10px 20px;} }
+
+/* English draft produced from one reviewed outreach transcript. */
+.voice-card:has(.visit-report-shell) { max-width:900px; }
+.visit-report-shell { margin-top:32px; }
+.visit-report-toolbar { margin-bottom:12px; align-items:center; }
+.visit-report-sheet { padding:40px; overflow-wrap:anywhere; }
+.report-draft-label { font-size:12px; color:var(--color-ink-muted); }
+.visit-report-patient { display:grid; grid-template-columns:2fr 1fr 1fr; gap:16px; margin:24px 0 32px; }
+.visit-report-patient div { border-top:1px solid var(--color-line); padding-top:10px; }
+.visit-report-patient dt { color:var(--color-ink-muted); font-size:12px; }
+.visit-report-patient dd { margin:4px 0 0; font-weight:600; }
+.visit-report-list { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:12px; }
+.visit-report-item { border:1px solid var(--color-line); border-radius:10px; padding:16px; min-width:0; break-inside:avoid; }
+.visit-report-item.unidentified { border-style:dashed; }
+.visit-report-item h3,.visit-report-item p { margin:0 0 8px; }
+.visit-report-evidence { margin-top:10px; }
+.visit-report-evidence summary { cursor:pointer; font-size:12px; font-weight:600; }
+.visit-report-evidence p { margin-top:8px; }
+.visit-report-source { margin-top:28px; border-top:1px solid var(--color-line); padding-top:18px; }
+.visit-report-source summary { cursor:pointer; font-weight:600; }
+.visit-report-source h3 { margin-top:20px; font-size:13px; }
+@media(max-width:600px){
+  .visit-report-sheet{padding:28px 20px;}
+  .visit-report-patient,.visit-report-list{grid-template-columns:1fr;}
+  .visit-report-toolbar{align-items:flex-start;gap:12px;flex-direction:column;}
+}
+@media print {
+  .voice-page:has(.visit-report-shell) .topbar,
+  .voice-page:has(.visit-report-shell) .voice-preview-note,
+  .voice-page:has(.visit-report-shell) .voice-card > :not(.visit-report-shell),
+  .visit-report-toolbar { display:none !important; }
+  .voice-page:has(.visit-report-shell),
+  .voice-page:has(.visit-report-shell) .voice-card { margin:0; padding:0; border:0; max-width:none; }
+  .visit-report-shell { margin:0; }
+  .visit-report-list { grid-template-columns:1fr 1fr; }
+  .visit-report-evidence > :not(summary),
+  .visit-report-source > :not(summary) { display:block !important; }
+}
