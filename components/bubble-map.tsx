@@ -90,7 +90,7 @@ export function BubbleMap({ medList, flags }: { medList: MedItem[]; flags: Flag[
       <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
         <p className="text-xs text-ink-muted">
           {layout === "force"
-            ? "Click a medicine to zoom in. Click the paper to return."
+            ? "Click a medicine to zoom in. Move the pointer to drift the graph. Click the paper to return."
             : "Fixed ring. Switch to Force for the live layout."}
         </p>
         <div className="flex gap-1">

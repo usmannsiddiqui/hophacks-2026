@@ -75,13 +75,17 @@ body {
 }
 
 .force-bubble-map {
-  background: #f9faf7;
+  background: #f3f5f2;
   border: 1px solid #dee2de;
 }
 
 .force-bubble-map .is-dim {
-  opacity: 0.22;
-  transition: opacity 280ms ease;
+  opacity: 0.18;
+  transition: opacity 320ms ease;
+}
+
+.force-bubble-map .bubble-node {
+  transition: opacity 320ms ease;
 }
 
 .bubble-inner {
@@ -93,25 +97,32 @@ body {
   align-items: center;
   justify-content: center;
   overflow: hidden;
-  padding: 10px 12px;
+  padding: 18px 22px 20px;
   text-align: center;
-  border-radius: 50%;
   color: #2c2c2c;
   font-family: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
 }
 
 .bubble-inner strong {
   display: block;
-  font-size: 12px;
+  max-width: 100%;
+  font-size: 15px;
   font-weight: 500;
-  line-height: 1.2;
+  line-height: 1.25;
+  letter-spacing: -0.01em;
 }
 
 .bubble-inner p {
-  margin: 5px 0 0;
-  font-size: 9.5px;
-  line-height: 1.32;
+  display: -webkit-box;
+  margin: 8px 0 0;
+  max-width: 100%;
+  overflow: hidden;
+  font-size: 12.5px;
+  line-height: 1.4;
   color: #646464;
+  overflow-wrap: break-word;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 7;
 }
 
 /* Three densities (component sheet): Urdu over English, English ~0.7× in ink-muted. */

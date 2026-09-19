@@ -63,7 +63,8 @@ a document item has none and the row says so.
 invariant: a med item never appears without the words that produced it.
 
 **Unidentified.** (was: unrecognised) Gemini could not map her words to a vocabulary term. Not an error —
-it sends the app back to ask a follow-up. Renders as a dashed card.
+it sends the app back to ask a follow-up. Renders as a dashed card. Copy: it was detected as
+something she takes that could interact, but unnamed, so it stays a question, never a flag.
 
 ## Safety vocabulary
 

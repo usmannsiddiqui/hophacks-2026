@@ -3,12 +3,12 @@
 import { useEffect, useId, useRef } from "react";
 import type { D3DragEvent, SimulationLinkDatum, SimulationNodeDatum } from "d3";
 import type { Flag, MedItem } from "@/lib/types";
-import { displayOf } from "@/lib/vocab";
+import { displayOf, UNIDENTIFIED_WHY } from "@/lib/vocab";
 
-const WIDTH = 640;
-const HEIGHT = 420;
-const OPEN_R = 80;
-const INNER = OPEN_R * 1.42;
+const WIDTH = 720;
+const HEIGHT = 460;
+const OPEN_R = 140;
+const INNER = OPEN_R * 1.5;
 
 type SimNode = SimulationNodeDatum & {
   id: string;
@@ -49,11 +49,9 @@ function nodeBody(id: string, medList: MedItem[], flags: Flag[]): string {
   const hits = flags
     .filter(f => f.a === id || f.b === id)
     .sort((a, b) => Number(b.severity === "high") - Number(a.severity === "high"));
-  if (hits.length) {
-    return oneLine(hits[0].reason);
-  }
+  if (hits.length) return oneLine(hits[0].reason);
   if (med.term === "unidentified") {
-    return "Not on the closed vocabulary, so it only raises a question.";
+    return UNIDENTIFIED_WHY;
   }
   return "No cited interaction on this file.";
 }
@@ -61,13 +59,24 @@ function nodeBody(id: string, medList: MedItem[], flags: Flag[]): string {
 function fillOf(d: SimNode) {
   if (d.unidentified) return "#fdf4e6";
   if (d.sev) return "#fbeceb";
-  return "#f9faf7";
+  return "#fefffc";
 }
 
 function strokeOf(d: SimNode) {
   if (d.unidentified) return "#8a5a12";
   if (d.sev) return "#b3261e";
-  return "#dee2de";
+  return "#cfd4cc";
+}
+
+function wirePath(a: SimNode, b: SimNode) {
+  const x1 = a.x ?? 0;
+  const y1 = a.y ?? 0;
+  const x2 = b.x ?? 0;
+  const y2 = b.y ?? 0;
+  const mx = (x1 + x2) / 2;
+  const my = (y1 + y2) / 2;
+  const sag = Math.min(22, 8 + Math.hypot(x2 - x1, y2 - y1) * 0.06);
+  return `M${x1},${y1} Q${mx},${my + sag} ${x2},${y2}`;
 }
 
 export function ForceBubbleMap({ medList, flags }: { medList: MedItem[]; flags: Flag[] }) {
@@ -92,7 +101,7 @@ export function ForceBubbleMap({ medList, flags }: { medList: MedItem[]; flags: 
     };
   }, [graphKey, medList, flags, uid]);
 
-  return <div ref={host} className="force-bubble-map min-h-[360px] w-full overflow-hidden rounded-2xl" />;
+  return <div ref={host} className="force-bubble-map min-h-[380px] w-full overflow-hidden rounded-2xl" />;
 }
 
 function mountForceGraph(
@@ -111,11 +120,11 @@ function mountForceGraph(
       id: m.id,
       label: shortLabel(m.term),
       body: nodeBody(m.id, medList, flags),
-      r: sev === "high" ? 30 : sev === "moderate" ? 24 : 18,
+      r: sev === "high" ? 34 : sev === "moderate" ? 28 : 22,
       sev,
       unidentified: m.term === "unidentified",
-      x: WIDTH / 2 + 118 * Math.cos(angle),
-      y: HEIGHT / 2 + 86 * Math.sin(angle),
+      x: WIDTH / 2 + 128 * Math.cos(angle),
+      y: HEIGHT / 2 + 94 * Math.sin(angle),
     };
   });
 
@@ -128,27 +137,31 @@ function mountForceGraph(
     }));
 
   let selected: string | null = null;
+  let dragging = false;
+  const pointer = { x: WIDTH / 2, y: HEIGHT / 2 };
+  const pan = { x: 0, y: 0 };
+  let raf = 0;
 
   const simulation = d3
     .forceSimulation(nodes)
-    .alpha(0.5)
-    .alphaDecay(0.06)
-    .velocityDecay(0.64)
+    .alpha(0.48)
+    .alphaDecay(0.055)
+    .velocityDecay(0.66)
     .force(
       "link",
       d3
         .forceLink<SimNode, SimLink>(links)
         .id(d => d.id)
-        .distance(d => (d.severity === "high" ? 120 : 140))
-        .strength(0.7),
+        .distance(d => (d.severity === "high" ? 132 : 152))
+        .strength(0.72),
     )
-    .force("charge", d3.forceManyBody().strength(-280))
-    .force("center", d3.forceCenter(WIDTH / 2, HEIGHT / 2).strength(0.16))
-    .force("x", d3.forceX(WIDTH / 2).strength(0.05))
-    .force("y", d3.forceY(HEIGHT / 2).strength(0.05))
+    .force("charge", d3.forceManyBody().strength(-320))
+    .force("center", d3.forceCenter(WIDTH / 2, HEIGHT / 2).strength(0.14))
+    .force("x", d3.forceX(WIDTH / 2).strength(0.045))
+    .force("y", d3.forceY(HEIGHT / 2).strength(0.045))
     .force(
       "collide",
-      d3.forceCollide<SimNode>().radius(d => d.r + 22).iterations(2),
+      d3.forceCollide<SimNode>().radius(d => d.r + 26).iterations(2),
     )
     .on("tick", ticked)
     .on("end", pinAll);
@@ -164,30 +177,45 @@ function mountForceGraph(
     .style("max-width", "100%")
     .style("height", "auto")
     .style("display", "block")
-    .style("background", "#f9faf7")
     .style("cursor", "default");
 
   const defs = svg.append("defs");
+  const bg = defs
+    .append("radialGradient")
+    .attr("id", `paper-wash-${uid}`)
+    .attr("cx", "50%")
+    .attr("cy", "42%")
+    .attr("r", "68%");
+  bg.append("stop").attr("offset", "0%").attr("stop-color", "#fefffc");
+  bg.append("stop").attr("offset", "100%").attr("stop-color", "#f3f5f2");
+
   const shadow = defs
     .append("filter")
     .attr("id", `bubble-shadow-${uid}`)
-    .attr("x", "-30%")
-    .attr("y", "-30%")
-    .attr("width", "160%")
-    .attr("height", "160%");
-  shadow
-    .append("feDropShadow")
-    .attr("dx", 0)
-    .attr("dy", 1.2)
-    .attr("stdDeviation", 1.6)
-    .attr("flood-color", "#2c2c2c")
-    .attr("flood-opacity", 0.12);
+    .attr("x", "-40%")
+    .attr("y", "-40%")
+    .attr("width", "180%")
+    .attr("height", "180%");
+  shadow.append("feDropShadow").attr("dx", 0).attr("dy", 2).attr("stdDeviation", 2.4).attr("flood-color", "#2c2c2c").attr("flood-opacity", 0.1);
 
-  const scene = svg.append("g");
+  defs
+    .append("clipPath")
+    .attr("id", `bubble-clip-${uid}`)
+    .append("circle")
+    .attr("r", OPEN_R - 20);
+
+  svg
+    .append("rect")
+    .attr("width", WIDTH)
+    .attr("height", HEIGHT)
+    .attr("fill", `url(#paper-wash-${uid})`);
+
+  const panLayer = svg.append("g").attr("class", "bubble-pan");
+  const scene = panLayer.append("g").attr("class", "bubble-scene");
 
   const zoom = d3
     .zoom<SVGSVGElement, undefined>()
-    .scaleExtent([1, 4])
+    .scaleExtent([1, 5])
     .filter(() => false)
     .on("zoom", event => {
       scene.attr("transform", event.transform.toString());
@@ -197,13 +225,14 @@ function mountForceGraph(
 
   const link = scene
     .append("g")
+    .attr("fill", "none")
     .attr("stroke-linecap", "round")
-    .selectAll("line")
+    .selectAll("path")
     .data(links)
-    .join("line")
+    .join("path")
     .attr("stroke", d => (d.severity === "high" ? "#b3261e" : "#8a5a12"))
-    .attr("stroke-opacity", 0.85)
-    .attr("stroke-width", d => (d.severity === "high" ? 2.5 : 1.5));
+    .attr("stroke-opacity", 0.55)
+    .attr("stroke-width", d => (d.severity === "high" ? 2.2 : 1.4));
 
   const node = scene
     .append("g")
@@ -227,36 +256,50 @@ function mountForceGraph(
     .attr("r", d => d.r)
     .attr("fill", fillOf)
     .attr("stroke", strokeOf)
-    .attr("stroke-width", 1.5)
+    .attr("stroke-width", 1.4)
     .attr("stroke-dasharray", d => (d.unidentified ? "4 3" : null))
     .attr("filter", `url(#bubble-shadow-${uid})`);
+
+  node
+    .append("ellipse")
+    .attr("class", "bubble-sheen")
+    .attr("cx", 0)
+    .attr("cy", d => -d.r * 0.32)
+    .attr("rx", d => d.r * 0.42)
+    .attr("ry", d => d.r * 0.22)
+    .attr("fill", "#ffffff")
+    .attr("opacity", 0.45)
+    .style("pointer-events", "none");
 
   const label = node
     .append("text")
     .attr("class", "bubble-name")
     .text(d => d.label)
     .attr("text-anchor", "middle")
-    .attr("dy", d => d.r + 14)
-    .attr("font-size", 11)
+    .attr("dy", d => d.r + 16)
+    .attr("font-size", 12)
     .attr("fill", "#2c2c2c")
     .style("pointer-events", "none");
 
-  const card = node
+  const cardLayer = node
+    .append("g")
+    .attr("class", "bubble-card-layer")
+    .attr("clip-path", `url(#bubble-clip-${uid})`);
+
+  const card = cardLayer
     .append("foreignObject")
     .attr("class", "bubble-card")
     .attr("x", 0)
     .attr("y", 0)
     .attr("width", 0)
     .attr("height", 0)
-    .style("overflow", "visible")
+    .style("overflow", "hidden")
     .style("pointer-events", "none")
     .style("opacity", 0);
 
-  card.append("xhtml:div").attr("class", "bubble-inner").html(d => {
-    const title = d.label;
-    const body = d.body;
-    return `<strong>${escapeHtml(title)}</strong><p>${escapeHtml(body)}</p>`;
-  });
+  card.append("xhtml:div").attr("class", "bubble-inner").html(d => (
+    `<strong>${escapeHtml(d.label)}</strong><p>${escapeHtml(d.body)}</p>`
+  ));
 
   node.each(function (d) {
     this.addEventListener("click", event => {
@@ -265,11 +308,21 @@ function mountForceGraph(
     });
   });
 
-  svg.on("click", event => {
-    const t = event.target as Element | null;
-    if (t?.closest(".bubble-node")) return;
-    applySelect(null);
-  });
+  svg
+    .on("click", event => {
+      const t = event.target as Element | null;
+      if (t?.closest(".bubble-node")) return;
+      applySelect(null);
+    })
+    .on("pointermove", (event: PointerEvent) => {
+      const [x, y] = d3.pointer(event, svg.node());
+      pointer.x = x;
+      pointer.y = y;
+    })
+    .on("pointerleave", () => {
+      pointer.x = WIDTH / 2;
+      pointer.y = HEIGHT / 2;
+    });
 
   function pinAll() {
     for (const n of nodes) {
@@ -281,11 +334,7 @@ function mountForceGraph(
   }
 
   function ticked() {
-    link
-      .attr("x1", d => asNode(d.source).x ?? 0)
-      .attr("y1", d => asNode(d.source).y ?? 0)
-      .attr("x2", d => asNode(d.target).x ?? 0)
-      .attr("y2", d => asNode(d.target).y ?? 0);
+    link.attr("d", d => wirePath(asNode(d.source), asNode(d.target)));
     node.attr("transform", d => `translate(${d.x ?? 0},${d.y ?? 0})`);
   }
 
@@ -300,17 +349,24 @@ function mountForceGraph(
       if (!selected) return false;
       return asNode(d.source).id !== selected && asNode(d.target).id !== selected;
     });
+    node.filter(d => d.id === selected).raise();
 
     node
       .select<SVGCircleElement>("circle.bubble-core")
       .transition()
-      .duration(520)
+      .duration(560)
       .attr("r", radiusOf);
 
-    label
+    node
+      .select<SVGEllipseElement>("ellipse.bubble-sheen")
       .transition()
-      .duration(220)
-      .style("opacity", d => (selected === d.id ? 0 : 1));
+      .duration(280)
+      .style("opacity", d => (selected === d.id ? 0 : 0.45))
+      .attr("cy", d => -radiusOf(d) * 0.34)
+      .attr("rx", d => radiusOf(d) * 0.38)
+      .attr("ry", d => radiusOf(d) * 0.18);
+
+    label.transition().duration(200).style("opacity", d => (selected === d.id ? 0 : 1));
 
     card
       .attr("x", d => (selected === d.id ? -INNER / 2 : 0))
@@ -323,18 +379,16 @@ function mountForceGraph(
   }
 
   function zoomTo(d: SimNode | null) {
-    const svgNode = svg.node();
-    if (!svgNode) return;
     if (!d) {
       svg.transition().duration(560).ease(d3.easeCubicInOut).call(zoom.transform, d3.zoomIdentity);
       return;
     }
-    const k = (Math.min(WIDTH, HEIGHT) * 0.28) / OPEN_R;
+    const k = (Math.min(WIDTH, HEIGHT) * 0.4) / OPEN_R;
     const x = WIDTH / 2 - k * (d.x ?? 0);
     const y = HEIGHT / 2 - k * (d.y ?? 0);
     svg
       .transition()
-      .duration(640)
+      .duration(680)
       .ease(d3.easeCubicInOut)
       .call(zoom.transform, d3.zoomIdentity.translate(x, y).scale(k));
   }
@@ -348,6 +402,7 @@ function mountForceGraph(
 
   function dragstarted(this: SVGGElement, event: D3DragEvent<SVGGElement, SimNode, SimNode>) {
     if (selected) return;
+    dragging = true;
     event.subject.fx = event.subject.x;
     event.subject.fy = event.subject.y;
   }
@@ -363,16 +418,29 @@ function mountForceGraph(
 
   function dragended(this: SVGGElement, event: D3DragEvent<SVGGElement, SimNode, SimNode>) {
     if (selected) return;
+    dragging = false;
     event.subject.fx = event.subject.x;
     event.subject.fy = event.subject.y;
   }
+
+  function frame() {
+    const factor = selected ? 0.028 : 0.055;
+    const tx = dragging ? pan.x : (pointer.x - WIDTH / 2) * factor;
+    const ty = dragging ? pan.y : (pointer.y - HEIGHT / 2) * factor;
+    pan.x += (tx - pan.x) * 0.08;
+    pan.y += (ty - pan.y) * 0.08;
+    panLayer.attr("transform", `translate(${pan.x},${pan.y})`);
+    raf = requestAnimationFrame(frame);
+  }
+  raf = requestAnimationFrame(frame);
 
   root.append(svg.node()!);
 
   return () => {
     window.clearTimeout(freezeTimer);
+    cancelAnimationFrame(raf);
     simulation.stop();
-    svg.on("click", null);
+    svg.on("click", null).on("pointermove", null).on("pointerleave", null);
     svg.on(".zoom", null);
     root.replaceChildren();
   };
