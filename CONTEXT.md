@@ -126,7 +126,9 @@ what to ask, importing a document, the report. The counter operator's desk view.
 **Status.** `new → recording → structured → asking → sent → signed`. Forward only.
 
 **Bubble map.** Nodes = med items; size = worst severity touching the node; fill = status
-color or neutral; edges = interaction rows. Hover shows her words.
+color or neutral; edges = interaction rows. Hover shows her words. Two layouts: a static
+ring, and a D3 force-directed graph. The force layout settles and stays put; click a node
+to zoom in, with the one-sentence reason inside the bubble.
 
 ## Design words
 

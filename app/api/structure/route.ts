@@ -2,13 +2,20 @@ import { NextResponse } from "next/server";
 import { getFile, saveFile } from "@/lib/files";
 import { computeFlags } from "@/lib/flags";
 import { describe, readMedList } from "@/lib/insights";
-import { hasStructureKey, structureTranscript, type StructureProvider } from "@/lib/structure";
+import { hasStructureKey, structureTranscript } from "@/lib/structure";
+import { laneMeta, parseStructureLane, type StructureLane } from "@/lib/structure-lanes";
 import { toRecording, type TranscriptInput } from "@/lib/transcript";
 import { STATUS_ORDER, type PatientFile } from "@/lib/types";
 
 export const maxDuration = 60;
 
-type Body = { fileId: string; transcript: TranscriptInput; provider?: StructureProvider };
+type Body = {
+  fileId: string;
+  transcript: TranscriptInput;
+  provider?: StructureLane;
+  /** Replace the file's voice-derived lists instead of merging onto canned items. */
+  fresh?: boolean;
+};
 
 /**
  * Step 2 of the pipeline. Scribe hands us her Urdu and its English; this turns them into
@@ -17,8 +24,10 @@ type Body = { fileId: string; transcript: TranscriptInput; provider?: StructureP
  * loaded first and constrain the model, rather than the model being checked afterwards.
  */
 export async function POST(req: Request) {
-  const { fileId, transcript, provider: rawProvider } = (await req.json()) as Body;
-  const provider: StructureProvider = rawProvider === "xai" ? "xai" : "gemini";
+  const { fileId, transcript, provider: rawProvider, fresh } = (await req.json()) as Body;
+  const provider = parseStructureLane(rawProvider);
+  const meta = laneMeta(provider);
+  const started = Date.now();
 
   if (!fileId || !transcript?.urdu?.trim()) {
     return NextResponse.json({ error: "fileId and transcript.urdu are required" }, { status: 400 });
@@ -28,7 +37,7 @@ export async function POST(req: Request) {
   if (!current) return NextResponse.json({ error: "not found" }, { status: 404 });
 
   if (!hasStructureKey(provider)) {
-    const key = provider === "xai" ? "XAI-API_KEY" : "GOOGLE_GENERATIVE_AI_API_KEY";
+    const key = provider === "gemini" ? "GOOGLE_GENERATIVE_AI_API_KEY" : "XAI-API_KEY";
     return NextResponse.json(
       { error: `${key} is not set`, hint: "add it to .env.local" },
       { status: 503 },
@@ -42,8 +51,8 @@ export async function POST(req: Request) {
       urdu: transcript.urdu,
       english: transcript.english,
       words: transcript.words,
-      existingMedIds: current.medList.map(m => m.id),
-      existingQuestionIds: current.questions.map(q => q.id),
+      existingMedIds: fresh ? [] : current.medList.map(m => m.id),
+      existingQuestionIds: fresh ? [] : current.questions.map(q => q.id),
     }, provider);
   } catch (e) {
     return NextResponse.json({ error: "structuring failed", detail: String(e) }, { status: 502 });
@@ -57,22 +66,26 @@ export async function POST(req: Request) {
   const fromThisRecording = (ref: { recording: number } | { attachment: string }) =>
     "recording" in ref && ref.recording === recording.n;
 
-  const medList = [
-    ...current.medList.filter(m => !fromThisRecording(m.at)),
-    ...result.medList,
-  ];
+  const medList = fresh
+    ? result.medList
+    : [...current.medList.filter(m => !fromThisRecording(m.at)), ...result.medList];
 
   // Answered questions survive: the answer cost a real exchange at the counter, and the
-  // model has no way to reproduce it.
-  const questions = [
-    ...current.questions.filter(q => q.answeredIn || !q.from.every(fromThisRecording)),
-    ...result.questions,
-  ];
+  // model has no way to reproduce it. A fresh demo run starts the questions from this
+  // transcript alone, so canned follow-ups do not leak onto the bubble map.
+  const questions = fresh
+    ? result.questions
+    : [
+        ...current.questions.filter(q => q.answeredIn || !q.from.every(fromThisRecording)),
+        ...result.questions,
+      ];
 
   const next: PatientFile = {
     ...current,
-    request: [...new Set([...current.request, ...result.request])],
-    recordings: [...current.recordings.filter(r => r.n !== recording.n), recording].sort((a, b) => a.n - b.n),
+    request: fresh ? result.request : [...new Set([...current.request, ...result.request])],
+    recordings: fresh
+      ? [recording]
+      : [...current.recordings.filter(r => r.n !== recording.n), recording].sort((a, b) => a.n - b.n),
     history: { urdu: recording.urdu, english: recording.english },
     medList,
     questions,
@@ -92,6 +105,8 @@ export async function POST(req: Request) {
       uncovered: insights.uncovered.map(describe),
       rejectedTerms: result.rejectedTerms,
       provider,
+      model: meta.model,
+      ms: Date.now() - started,
     },
   });
 }

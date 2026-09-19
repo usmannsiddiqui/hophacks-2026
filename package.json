@@ -15,6 +15,7 @@
     "@elevenlabs/elevenlabs-js": "^2.68.0",
     "@neondatabase/serverless": "^1.1.0",
     "ai": "^7.0.107",
+    "d3": "^7.9.0",
     "drizzle-orm": "^0.45.2",
     "nanoid": "^6.0.1",
     "next": "16.3.5",
@@ -24,6 +25,7 @@
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",
+    "@types/d3": "^7.4.3",
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",

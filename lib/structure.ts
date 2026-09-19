@@ -11,17 +11,21 @@ import { z } from "zod";
 import type { MedItem, Question } from "@/lib/types";
 import { sourceRef, type ScribeWord } from "@/lib/transcript";
 import { UNIDENTIFIED, interactionPrompt, isKnownTerm, vocabularyPrompt } from "@/lib/vocab";
+import { laneMeta, parseStructureLane, type StructureLane } from "@/lib/structure-lanes";
 
+export { STRUCTURE_LANES, parseStructureLane, type StructureLane } from "@/lib/structure-lanes";
 export const STRUCTURE_MODEL = "gemini-3.5-flash";
 export const STRUCTURE_XAI_MODEL = "grok-4.6";
-export type StructureProvider = "gemini" | "xai";
+export type StructureProvider = StructureLane;
 
 function xaiApiKey(): string | undefined {
   return process.env["XAI-API_KEY"] || process.env.XAI_API_KEY;
 }
 
-export function hasStructureKey(provider: StructureProvider = "gemini"): boolean {
-  return provider === "xai" ? Boolean(xaiApiKey()) : Boolean(process.env.GOOGLE_GENERATIVE_AI_API_KEY);
+export function hasStructureKey(provider: StructureLane = "gemini"): boolean {
+  return provider === "gemini"
+    ? Boolean(process.env.GOOGLE_GENERATIVE_AI_API_KEY)
+    : Boolean(xaiApiKey());
 }
 
 /** What the model is allowed to return. Note the absence of anything flag-shaped. */
@@ -135,9 +139,10 @@ function asQuestion(s: string): string {
  */
 export async function structureTranscript(
   input: StructureInput,
-  provider: StructureProvider = "gemini",
+  provider: StructureLane = "gemini",
 ): Promise<StructureResult> {
-  if (provider === "xai") return structureWithXai(input);
+  const lane = parseStructureLane(provider);
+  if (lane !== "gemini") return structureWithXai(input, laneMeta(lane).model);
 
   if (!process.env.GOOGLE_GENERATIVE_AI_API_KEY) {
     throw new Error("GOOGLE_GENERATIVE_AI_API_KEY is not set");
@@ -192,9 +197,24 @@ const XAI_SCHEMA = {
   },
 } as const;
 
-async function structureWithXai(input: StructureInput): Promise<StructureResult> {
+async function structureWithXai(input: StructureInput, model: string): Promise<StructureResult> {
   const apiKey = xaiApiKey();
   if (!apiKey) throw new Error("XAI-API_KEY is not set");
+
+  const body: Record<string, unknown> = {
+    model,
+    temperature: 0,
+    messages: [
+      { role: "system", content: systemPrompt() },
+      { role: "user", content: userPrompt(input) },
+    ],
+    response_format: {
+      type: "json_schema",
+      json_schema: { name: "structure_output", schema: XAI_SCHEMA, strict: true },
+    },
+  };
+  // grok-4.6 reasons by default; pin it low. Fast models reject this field.
+  if (model === "grok-4.6") body.reasoning_effort = "low";
 
   const res = await fetch("https://api.x.ai/v1/chat/completions", {
     method: "POST",
@@ -202,19 +222,7 @@ async function structureWithXai(input: StructureInput): Promise<StructureResult>
       "Content-Type": "application/json",
       Authorization: `Bearer ${apiKey}`,
     },
-    body: JSON.stringify({
-      model: STRUCTURE_XAI_MODEL,
-      temperature: 0,
-      reasoning_effort: "low",
-      messages: [
-        { role: "system", content: systemPrompt() },
-        { role: "user", content: userPrompt(input) },
-      ],
-      response_format: {
-        type: "json_schema",
-        json_schema: { name: "structure_output", schema: XAI_SCHEMA, strict: true },
-      },
-    }),
+    body: JSON.stringify(body),
   });
 
   const raw = await res.text();
