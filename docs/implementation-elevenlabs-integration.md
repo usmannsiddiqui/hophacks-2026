@@ -41,3 +41,10 @@ Controller owns .gitignore, docs/** outside lib/voice, context-files.json, READM
 Merge commit `db99b32` has parents `46f2876` and Rayyan's `6156436`; all 12 teammate commits are retained. The branch is pushed and draft PR #5 updated, with neither PR merged into main. Final independent review found no blocking defects.
 
 Validation: 62 tests passed and 3 live checks were skipped; lint, TypeScript and the webpack production build passed. Browser checks covered Urdu fixture upload, missing-key errors, deliberate retries and the 390px layout. No confirmed replacement key was available, so live transcription and the physical microphone remain unverified. PR #4's conflicts with main after concurrent PR #6 are documented for separate reconciliation.
+
+
+## Follow-up status
+
+The replacement-key follow-up subsequently passed both real Urdu FLEURS clips and browser upload → Scribe → correction → save → reload → restore. The earlier missing-key validation above is a historical checkpoint, not the current credential state.
+
+Main, including Ahmad’s Gemini groundwork, is merged into the voice feature in `1875b05`; the approved frontend won the three UI conflicts. English-report implementation is tracked separately in `docs/implementation-english-report.md`. Neither PR #4 nor PR #5 has been merged into main.

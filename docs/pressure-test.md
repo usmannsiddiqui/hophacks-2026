@@ -124,3 +124,13 @@ not a downloadable file; no broken PDF link is exposed.
 - GIC reference: https://claude.ai/artifact/JqHZX2RGakx9sDDq9BZoU3
 - Bitter melon: https://www.mskcc.org/cancer-care/integrative-medicine/herbs/bitter-melon
 - FDA fluoroquinolone warning: https://www.fda.gov/media/114192/download
+
+
+## English report integration checkpoint (19 September, ~18:45)
+
+English report integration passed 100 automated tests (3 opt-in/live skips), lint,
+TypeScript and webpack build; independent final review approved. Live Gemini and
+browser evidence, current branch heads, exact fictional-vs-recorded input boundary
+and remaining limitations are in `docs/implementation-english-report.md`. Reports
+survive reload/history restoration; provider failures/cancel preserve saved Urdu.
+The bubble-map/data expansion remains deferred.

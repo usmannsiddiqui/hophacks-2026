@@ -16,12 +16,13 @@ Current product direction: ADR 0008, approved outreach wireframes. Gemini is the
 - /visit/new: real browser audio capture with pause/resume, upload fallback, server-side Scribe integration through the merged voice service, original/corrected Urdu transcript and tab-local saved drafts. Requires ELEVENLABS_API_KEY for live transcription.
 - Recordings stop after a three-minute session; upload duration is checked in the browser. Server enforces a 4 MiB audio / bounded multipart request limit, not an independently verified media-duration limit.
 - Transcription retries reuse the audio while this page stays open. Raw audio is not persisted across reloads.
-- Transcripts survive refresh in the same tab. They are not sent to a pharmacist or shared across devices.
+- Transcripts and English draft reports survive refresh in the same tab. They are not sent to a pharmacist or shared across devices.
+- After Save transcript, Prepare English report calls Gemini through lib/llm.ts. The printable draft includes the English patient account, medicine names paired with the patient's Urdu words, clarification questions and existing sourced table flags. Original and reviewed Urdu stay separate; corrections invalidate the report. Requires GOOGLE_GENERATIVE_AI_API_KEY.
 - Existing /file/new sample journey still demonstrates findings, questions, review, bilingual advice and report with fictional data. It retains older counter terminology and the old PatientFile lifecycle.
 
 ## Next implementation slice
 
-Reconcile/reuse Ahmad's Gemini structure work now on main (PR #6), connecting translation and validated structuring to the reviewed VisitDraft. Keep Gemini as the sole analytical provider; its provider seam belongs in lib/llm.ts. Keep original and corrected transcript provenance, do not let the model invent table flags. Then migrate volunteer/pharmacist views to the outreach lifecycle, connect Neon concurrency, clarification, Urdu TTS and delivery status.
+Connect the saved English VisitReport to shared storage and the remote pharmacist queue. Migrate volunteer/pharmacist views to the outreach lifecycle, including concurrency, clarification, approved English advice, Urdu translation/TTS and delivery status. Visual/bubble-map research is deferred until this functional journey is complete.
 
 ## Judge sequence after integration
 

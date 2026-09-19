@@ -162,3 +162,15 @@ recording seconds and transcript-review/transcript-ready status. It has no Engli
 translation or clinical flags until the Gemini slice supplies validated output.
 **Transcript ready.** Volunteer has reviewed and saved Urdu text; does not mean sent,
 clinically reviewed, or delivered. Saved transcripts remain available when starting another visit.
+
+
+## English report slice
+
+- **VisitReport**: an AI-generated English draft derived from one saved VisitDraft's
+  reviewed Urdu. It includes the English account, extracted medicines, clarification
+  questions and sourced table flags. It is stored in the current browser tab; it is
+  neither sent nor pharmacist-reviewed/signed.
+- **Report source excerpt**: exact words from reviewed Urdu, kept alongside original
+  Scribe text. It does not claim a timestamp in the uncorrected recording.
+- **Prepare English report**: explicit volunteer action calling Gemini via lib/llm.ts
+  after transcript review. Editing the source invalidates the old report.

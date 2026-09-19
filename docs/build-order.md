@@ -10,9 +10,24 @@ Wireframes are the spec: `docs/specs/wireframes.html` (open in a browser). Contr
 every screen after P2 renders against it with no env vars.
 
 
+## Current slice: English report after reviewed Urdu
+
+The backend and frontend are implemented and reviewed on `voice-transcript-capture`.
+The full browser journey reached a live English report; final verification is recorded
+in the implementation note. Scope: patient Urdu recording → original
+Scribe transcript → volunteer corrections → saved visit → Gemini English translation
+and pharmacist draft. No visual/map redesign in this slice.
+
+- Gemini is called only through `lib/llm.ts`, using live-verified Gemini 3.6 Flash.
+- Reports preserve raw and reviewed Urdu, source-ground extracted quotes, and compute
+  flags only from the existing interaction table. No Grok or provider fallback.
+- Reports remain in the current browser tab. Shared queue, pharmacist approval, Urdu
+  advice/TTS and delivery tracking are the next integration slice.
+- See `docs/implementation-english-report.md` for validation evidence and limitations.
+
 ## Latest integration: Rayyan's ElevenLabs branch (19 September)
 
-Remote update observed during integration: PR #6 (Ahmad's Gemini structure step) is now on main at `bfae2f8`. It is not imported into this voice-only branch. Next outreach integration should reuse/reconcile that work, including its optional Grok path and competing file/findings UI, while preserving the approved frontend. PR #4 must be reconciled with current main before the eventual merge order below.
+PR #6 (Ahmad's Gemini structure step) landed on main at `bfae2f8`. Main is now merged into `voice-transcript-capture` through `1875b05`, preserving Ahmad's commits and resolving the three frontend conflicts in favor of the approved outreach screens. Urdu-to-English report integration is in progress; see `docs/implementation-english-report.md`. PR #4 still needs separate reconciliation against main before its eventual merge.
 
 - Integrated `origin/ElevenLabs` (`6156436`) into `voice-transcript-capture` via merge commit `db99b32`; Rayyan's 12 commits and approved outreach UI are retained. Draft PR #5 is updated for review.
 - One Scribe-only backend and `/api/transcribe` contract. No active Grok, Gemini transcription fallback or canned transcript substitution.
