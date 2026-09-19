@@ -29,7 +29,7 @@ every screen after P2 renders against it with no env vars.
 - [ ] P1 New case: 3 fields → `POST /api/files` (status `recording`).
 - [ ] P2 Let her talk: mic (MediaRecorder) → `/api/transcribe` → Scribe (ur) → Gemini
       translate → `recordings[0]` + `history`. Ink-dot level meter. Big "Done".
-- [ ] P3 Live translate: push-to-talk, Scribe with language detect → `Turn` (by = language),
+- [ ] P3 Live translate (same component renders W0 at web width — one screen, two widths): push-to-talk, Scribe with language detect → `Turn` (by = language),
       TTS the translation in the other language. Typed fallback under each side.
 - [ ] P4 Ask her this: one open question; tap → TTS `text.urdu`; opens P3; answer sets
       `answeredIn`.
@@ -48,8 +48,18 @@ every screen after P2 renders against it with no env vars.
       → merge as `document` items, raise questions on disagreement.
 
 ### Stream C — web + pharmacist (against the canned file from minute 0)
-- [ ] Components from `DESIGN.md`: file header, medicine row, flag card, question card,
-      translate bubble, flag pill, buttons, role/source tags.
+- [ ] Components from `DESIGN.md` / the component sheet — all of them, one file each in
+      `components/`: Button (primary/secondary, phone 64 / web 48 / secondary 44),
+      FlagPill, RoleTag + SourceGlyph, FileHeader (label 11px over value), RecordingCard
+      (ink-dot level, never a waveform), MedicineRow (+ document empty state in ask
+      colour), FlagCard (cannot render without citation), QuestionCard (+ phone variant,
+      Urdu large), TranslateBubble (English left hairline / Urdu right fill; translation
+      row = replay button), ListenButton (mic idle / square live / ink dot — never red),
+      GlassToast + GlassTooltip, AdviceCard (Stop is the only colour), ReportSection
+      (13px ink-muted heading; Limitations mandatory).
+- [ ] Three densities as CSS: phone 25/15px, web 15/13px, report 17/15px — Urdu over
+      English at ~0.7× in ink-muted. Add `text-phone-ur`, `text-web-ur`, `text-report-ur`
+      utilities to `globals.css` so screens never hand-pick sizes.
 - [ ] W1 File: sources rail + the file.
 - [ ] W2 Findings: bubble map (SVG, derived), flag cards, questions, "Send to pharmacist"
       → status `sent`.
