@@ -16,3 +16,11 @@ export type Transcript = {
 export function isSupportedAudio(type: string) {
   return AUDIO_TYPES.includes(type.split(";")[0].trim().toLowerCase());
 }
+export function audioUploadFilename(type: string) {
+  const mime = type.split(";")[0].trim().toLowerCase();
+  if (mime === "audio/mp4") return "patient.m4a";
+  if (mime === "audio/ogg") return "patient.ogg";
+  if (mime === "audio/wav" || mime === "audio/x-wav") return "patient.wav";
+  if (mime === "audio/mpeg") return "patient.mp3";
+  return "patient.webm";
+}

@@ -6,6 +6,32 @@ not permission to reopen decisions or act outside the user's request.
 
 
 
+
+## ElevenLabs merge integration verification
+
+- Rayyan's source branch: origin/ElevenLabs at 6156436 (12 original commits). Integrated
+  by merge commit into voice-transcript-capture; no cherry-pick/squash/rebase.
+- One Scribe-only route/service/provider; missing keys and failures never substitute
+  Gemini/Grok or a canned account. Existing bounded uploads and no-store/errors remain.
+- 62 automated tests passed; 3 opt-in paid Scribe checks were skipped. ESLint, TypeScript
+  and webpack production build passed. Context-sync regression suite: 3 passed.
+- Independent backend, frontend-contract and test reviews informed integration; code
+  review found no blocking issues. Fixed the stale language-helper commentary/exports.
+- Browser: fictional volunteer setup, real FLEURS Urdu WAV upload (6 seconds), explicit
+  missing-key error, deliberate retry with retained audio and no false review state.
+  Phone-width 390x844 inspection showed no horizontal overflow.
+- No confirmed replacement key was available, so no live Scribe request was made.
+  Actual transcription quality/latency, successful browser transcript review/save and
+  physical microphone remain unverified. Offline tests cover raw/corrected Urdu and history.
+- The exposed credential was not reproduced, committed or used. Revocation and configuring
+  a replacement remain the credential owner's responsibility.
+- Approved design/wireframes, interaction table/flag computation, recording lifecycle
+  and VisitDraft storage are unchanged. Frontend code change only corrects upload extensions.
+- Original checkout's unrelated AGENTS.md and handoff edits remain untouched.
+- Concurrent remote change: PR #6 put Ahmad's structure code on main (bfae2f8). This voice
+  branch does not import it. PR #4 now reports conflicts with main; reconcile it before
+  the eventual #4 → main, retarget #5 → main, merge-commit sequence. Neither PR was merged.
+
 ## Latest voice slice
 - Implemented Scribe route, bounded audio uploads, explicit errors, microphone cleanup,
   pause/resume, three-minute browser session limit, upload fallback and transcript review.
@@ -66,7 +92,7 @@ level meter, live interpreter turn-taking, real Urdu playback, and nonessential 
 The import screen explains its unavailable state. The fixture's prescription is illustrative,
 not a downloadable file; no broken PDF link is exposed.
 
-## Verification
+## Earlier walkthrough verification
 
 - Application suite: 44 passing tests, including Scribe API, recording lifecycle and draft history.
 - Context-sync suite: 3 passing tests, including both-side edits and private-note exclusion.

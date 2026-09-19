@@ -48,3 +48,6 @@ next-env.d.ts
 .context-sync-state.json
 .context-sync.local.json
 __pycache__/
+# Local-only research notes
+docs/research/
+CLAUDE.local.md

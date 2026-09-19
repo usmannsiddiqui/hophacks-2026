@@ -136,7 +136,10 @@ Browser recording/upload limits are 3 minutes; the server does not independently
 media duration. Do not expose the paid route publicly without abuse controls and duration validation.
 
 Success: { text: string, language: "ur", words: [{ text: string, start: number, end: number }] }.
-Word timestamps come from Scribe; no voice diarization or inferred speaker identity.
+Word timestamps come from Scribe; missing/invalid individual intervals are omitted without changing raw text. No voice diarization or inferred speaker identity.
+The only active transcription service is lib/voice/stt.ts using the adapted Scribe provider.
+Urdu and scribe_v2 are fixed on the server. Client provider/model overrides are unsupported.
+No automatic provider/SDK retry, Gemini/Grok transcription or canned success fallback.
 Errors: 400 malformed/missing audio; 413 size; 415 MIME; 422 no usable speech/audio;
 429 provider busy; 503 configuration; 504 timeout; 502 provider failure.
 Responses use no-store. No provider errors, keys, audio or transcripts are logged.

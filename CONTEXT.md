@@ -137,6 +137,10 @@ order and glossary in the same feature PR so the vault does not become stale.
 
 
 ## Outreach capture
+**Scribe service.** The server-only transcription boundary in lib/voice/stt.ts, backed by
+Rayyan's adapted ElevenLabs provider. One Urdu Transcript contract; provider failures are
+errors rather than fabricated accounts. Gemini supplies analysis in the next slice.
+
 **VisitDraft.** A tab-local patient account, preceding a shared PatientFile. Contains
 patient details, immutable raw Scribe transcript and word timestamps, corrected Urdu,
 recording seconds and transcript-review/transcript-ready status. It has no English

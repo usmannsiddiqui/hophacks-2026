@@ -13,6 +13,7 @@ import {
   type CapturedAudio,
 } from "@/lib/audio-capture";
 import {
+  audioUploadFilename,
   isSupportedAudio,
   MAX_AUDIO_BYTES,
   MAX_RECORDING_SECONDS,
@@ -281,15 +282,9 @@ function VisitCapture() {
       const type = audio.blob.type.split(";")[0];
       form.set(
         "audio",
-        new File(
-          [audio.blob],
-          type === "audio/mp4"
-            ? "patient.m4a"
-            : type === "audio/ogg"
-              ? "patient.ogg"
-              : "patient.webm",
-          { type: audio.blob.type },
-        ),
+        new File([audio.blob], audioUploadFilename(type), {
+          type: audio.blob.type,
+        }),
       );
       const response = await fetch("/api/transcribe", {
         method: "POST",

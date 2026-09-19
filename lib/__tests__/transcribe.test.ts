@@ -1,7 +1,13 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-const { convert } = vi.hoisted(() => ({ convert: vi.fn() }));
+const { clientConfig, convert } = vi.hoisted(() => ({
+  clientConfig: vi.fn(),
+  convert: vi.fn(),
+}));
 vi.mock("@elevenlabs/elevenlabs-js", () => ({
   ElevenLabsClient: class {
+    constructor(config: unknown) {
+      clientConfig(config);
+    }
     speechToText = { convert };
   },
 }));
@@ -20,6 +26,7 @@ function request(bytes = 100, type = "audio/webm") {
 }
 beforeEach(() => {
   vi.stubEnv("ELEVENLABS_API_KEY", "test-only-key");
+  clientConfig.mockReset();
   convert.mockReset();
   convert.mockResolvedValue({
     text: "مجھے چکر آتے ہیں۔",
@@ -45,6 +52,7 @@ describe("POST /api/transcribe", () => {
         { text: "چکر", start: 0.4, end: 0.8 },
       ],
     });
+    expect(clientConfig).toHaveBeenCalledWith({ apiKey: "test-only-key" });
     expect(convert).toHaveBeenCalledWith(
       expect.objectContaining({
         file: expect.any(File),
@@ -52,9 +60,69 @@ describe("POST /api/transcribe", () => {
         diarize: false,
         tagAudioEvents: false,
         modelId: "scribe_v2",
+        timestampsGranularity: "word",
       }),
-      expect.objectContaining({ maxRetries: 0, timeoutInSeconds: 45 }),
+      expect.objectContaining({
+        maxRetries: 0,
+        timeoutInSeconds: 45,
+        abortSignal: expect.any(AbortSignal),
+      }),
     );
+  });
+  it("preserves the provider's raw whitespace byte-for-byte", async () => {
+    convert.mockResolvedValue({
+      text: "  Panadol کے بعد؟\n",
+      languageCode: "urd",
+      words: [],
+    });
+    const result = await POST(request());
+    expect(result.status).toBe(200);
+    expect((await result.json()).text).toBe("  Panadol کے بعد؟\n");
+  });
+  it.each(["ur", "urd", "urdu", "ur-PK"])(
+    "accepts the Urdu language alias %s",
+    async (languageCode) => {
+      convert.mockResolvedValue({
+        text: "Panadol 500mg",
+        languageCode,
+        words: [],
+      });
+      expect((await POST(request())).status).toBe(200);
+    },
+  );
+  it("rejects an explicitly non-Urdu result", async () => {
+    convert.mockResolvedValue({
+      text: "I feel dizzy",
+      languageCode: "eng",
+      words: [],
+    });
+    expect((await POST(request())).status).toBe(422);
+  });
+  it("filters unusable word timestamps while retaining valid words", async () => {
+    convert.mockResolvedValue({
+      text: "اصل متن",
+      languageCode: "urd",
+      words: [
+        { text: "اصل", type: "word", start: 0, end: 0.3 },
+        { text: "متن", type: "word", start: null, end: 0.7 },
+        { text: "غلط", type: "word", start: 1, end: 0.5 },
+        { text: "منفی", type: "word", start: -1, end: 0.5 },
+        { text: "خراب", type: "word", start: "soon", end: 2 },
+        null,
+        { text: "event", type: "audio_event", start: 1, end: 2 },
+      ],
+    });
+    const result = await POST(request());
+    expect(await result.json()).toEqual({
+      text: "اصل متن",
+      language: "ur",
+      words: [{ text: "اصل", start: 0, end: 0.3 }],
+    });
+  });
+  it("trims the configured key before constructing the provider client", async () => {
+    vi.stubEnv("ELEVENLABS_API_KEY", "  test-only-key  ");
+    expect((await POST(request())).status).toBe(200);
+    expect(clientConfig).toHaveBeenCalledWith({ apiKey: "test-only-key" });
   });
   it("rejects missing audio before paying for a provider call", async () => {
     const response = await POST(
@@ -120,6 +188,7 @@ describe("POST /api/transcribe", () => {
       expect(JSON.stringify(await result.json())).not.toContain(
         "secret provider details",
       );
+      expect(convert).toHaveBeenCalledTimes(1);
     },
   );
   it("maps provider timeouts", async () => {

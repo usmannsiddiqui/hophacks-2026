@@ -13,7 +13,7 @@ Current product direction: ADR 0008, approved outreach wireframes. Gemini is the
 
 ## What works now
 
-- /visit/new: real browser audio capture with pause/resume, upload fallback, server-side Scribe integration, original/corrected Urdu transcript and tab-local saved drafts. Requires ELEVENLABS_API_KEY for live transcription.
+- /visit/new: real browser audio capture with pause/resume, upload fallback, server-side Scribe integration through the merged voice service, original/corrected Urdu transcript and tab-local saved drafts. Requires ELEVENLABS_API_KEY for live transcription.
 - Recordings stop after a three-minute session; upload duration is checked in the browser. Server enforces a 4 MiB audio / bounded multipart request limit, not an independently verified media-duration limit.
 - Transcription retries reuse the audio while this page stays open. Raw audio is not persisted across reloads.
 - Transcripts survive refresh in the same tab. They are not sent to a pharmacist or shared across devices.
@@ -21,7 +21,7 @@ Current product direction: ADR 0008, approved outreach wireframes. Gemini is the
 
 ## Next implementation slice
 
-Gemini translation and validated structuring through lib/llm.ts. Keep original and corrected transcript provenance, do not let the model invent table flags. Then migrate volunteer/pharmacist views to the outreach lifecycle, connect Neon concurrency, clarification, Urdu TTS and delivery status.
+Reconcile/reuse Ahmad's Gemini structure work now on main (PR #6), connecting translation and validated structuring to the reviewed VisitDraft. Keep Gemini as the sole analytical provider; its provider seam belongs in lib/llm.ts. Keep original and corrected transcript provenance, do not let the model invent table flags. Then migrate volunteer/pharmacist views to the outreach lifecycle, connect Neon concurrency, clarification, Urdu TTS and delivery status.
 
 ## Judge sequence after integration
 

@@ -1,5 +1,5 @@
 import { MAX_AUDIO_BYTES, isSupportedAudio } from "@/lib/audio";
-import { transcribeAudio, TranscriptionError } from "@/lib/transcription";
+import { transcribeAudio, TranscriptionError } from "@/lib/voice/stt";
 
 export const runtime = "nodejs";
 export const maxDuration = 60;
