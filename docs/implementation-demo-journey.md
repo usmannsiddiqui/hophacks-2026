@@ -12,6 +12,8 @@ Design: GIC-inspired neutral surfaces, Inter and Nastaliq, 8/16/24 radii, monoch
 - [x] Foundations: restore missing CSS tokens; implement shell, patient header, medicine provenance, sourced flags, questions, and derived interaction map in `components/`.
 - [x] Journey: implement counter file/findings, pharmacist queue/review, signed advice/report and a clearly labeled sample intake/rehearsal. Keep live provider integration status truthful.
 - [x] Verification: run `pnpm test`, `pnpm lint`, `pnpm build`; exercise the sample journey in-browser at desktop and 390px; verify signed report and persistence after refresh.
-- [ ] Handoff: update build order and pressure-test findings with exact remaining blockers. Commit only this task's files, push the branch and open a draft PR.
+- [x] Handoff: update build order and pressure-test findings with exact remaining blockers. Commit only this task's files, push the branch and open a draft PR.
 
 Scope boundaries: live Scribe/Gemini/TTS integrations and document extraction remain Stream A/B work. Never fake a successful microphone request, translation or remote sign-off. Without DATABASE_URL, real writes must fail clearly. Browser-local sample files are fictional rehearsal only, not durable cross-device storage.
+
+Review: draft PR https://github.com/usmannsiddiqui/hophacks-2026/pull/4 on `judge-demo-journey`.
