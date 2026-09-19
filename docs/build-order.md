@@ -1,78 +1,72 @@
 # Build order
 
-Hacking ends **Sunday Sep 20, ~8:45 AM ET**. Last commit before that. Reserve the last
-3 hours for rehearsal, video and Devpost writeups.
+**Now: Saturday ~14:00. Hacking ends Sunday ~08:45.** ~18 hours. Reserve the last 3 for
+rehearsal, video and Devpost. That leaves ~15 build hours × 3 people.
 
-Owners: A = ___ · B = ___ · C = ___ (fill in, then commit).
+Owners: A = ___ · B = ___ · C = ___ (fill in, commit).
+
+Wireframes are the spec: `docs/specs/wireframes.html` (open in a browser). Contract:
+`docs/specs/contracts.md` ↔ `lib/types.ts`. Canned file: `data/files/mw-1042.json` —
+every screen after P2 renders against it with no env vars.
 
 ## 0. Done
+- [x] Repo, collaborators, docs, ADRs 0001–0007, glossary.
+- [x] Wireframes: 16 boards (P1–P5 phone, W0–W4 web, 2A–2C pharmacist, sheet, flow, contract).
+- [x] Scaffold: Next 16, Tailwind 4 tokens, Inter + Nastaliq, manifest (PWA), all 11 routes
+      as placeholders, `lib/types.ts`, `lib/flags.ts` (pure, tested), `lib/files.ts`
+      (Neon or canned), `/api/files` GET/POST, `/api/files/[id]` GET/PATCH, Drizzle schema.
+- [x] `data/substances.json` patched: bitter_gourd, Pakistani aliases, 2 sourced demo rows.
 
-- [x] Repo, collaborators, first commit after 9 PM Friday.
-- [x] Idea locked: Nani, counter operator, remote pharmacist, Urdu, flags from a table.
-- [x] Glossary (`CONTEXT.md`), ADRs 0001–0006, contracts (`docs/specs/contracts.md`).
-- [x] Wireframe prompt written; wireframes underway in Claude Design.
+## 1. Next 30 min — everyone
+- [ ] `pnpm i && pnpm dev` → open `/` → click every route.
+- [ ] Redeem perks (DO $200, ElevenLabs Creator, Cursor). Create Neon DB, put
+      `DATABASE_URL` in `.env.local`, `pnpm db:push`.
+- [ ] Assign owners. Branch.
 
-## 1. Hour 0–2 — everyone, together
+## 2. Must — in demo order
 
-- [ ] Redeem capped perks: Cursor Pro (400 seats), Grok credits (250), ElevenLabs
-      Creator via Discord `#coupon-codes`, DigitalOcean $200.
-- [ ] Urdu test: one Urdu sentence through ElevenLabs v3 TTS; one 15 s Urdu voice note
-      through Scribe. Decide Urdu vs Hindi. Write the answer into ADR 0003.
-- [ ] Scaffold: `create-next-app`, Tailwind 4, Geist/Inter + Noto Nastaliq, `lib/types.ts`
-      from contracts, `data/cases/nani.json`, `.env.example`.
-- [ ] Assign owners above. Each stream branches.
+### Stream B — phone (P1 → P2 → P3 → P4 → P5)
+- [ ] P1 New case: 3 fields → `POST /api/files` (status `recording`).
+- [ ] P2 Let her talk: mic (MediaRecorder) → `/api/transcribe` → Scribe (ur) → Gemini
+      translate → `recordings[0]` + `history`. Ink-dot level meter. Big "Done".
+- [ ] P3 Live translate: push-to-talk, Scribe with language detect → `Turn` (by = language),
+      TTS the translation in the other language. Typed fallback under each side.
+- [ ] P4 Ask her this: one open question; tap → TTS `text.urdu`; opens P3; answer sets
+      `answeredIn`.
+- [ ] P5 Advice: `advice.urdu` large, Play in Urdu (TTS), verdict chips.
 
-## 2. Must — the demo dies without it
+### Stream A — the file's brain
+- [ ] `/api/structure`: Recording 1 english+urdu → Gemini structured output →
+      `request[]`, `medList[]` (term ∈ substances ∪ unidentified, herWords mandatory),
+      `questions[]` (english ends with `?`, why, from). Then `computeFlags`. Status →
+      `structured`.
+- [ ] `source` on every interaction row; Urdu aliases on the ~30 substances the demo could
+      touch. Rows without source never flag — that is intended.
+- [ ] `/api/tts` (ElevenLabs v3, ur) and `/api/transcribe` (Scribe) thin wrappers so B
+      does not block on keys.
+- [ ] W3 Import (only if above is green by 20:00): PDF/photo → Gemini → `Attachment.extracted`
+      → merge as `document` items, raise questions on disagreement.
 
-### Stream A — data + logic
-- [x] `data/substances.json` — 142 substances, 103 interactions, screening questions (already on main).
-- [ ] Retarget it to Pakistan: add `aliases_ur` (Urdu script + roman Urdu), Pakistani
-      brand names (Panadol, Brufen, Flagyl, Augmentin…), desi remedies (karela, methi,
-      joshanda, hakeem powders). Drop/ignore `aliases_es`.
-- [ ] Add a `source` field to every interaction row (ADR 0001 — every flag is citable).
-      Demo rows first: karela × metformin, and whatever touches Nani's list.
-- [ ] Map severities: file uses `major/moderate/minor`; contracts use `high/moderate`.
-      Pick one, update `lib/types.ts`.
-- [ ] `lib/normalize.ts` — Gemini structured output: utterance → `MedItem[]` or
-      `unrecognised`.
-- [ ] `lib/flags.ts` — pure function `medList × interactions → Flag[]`. Vitest for the
-      four invariants.
-- [ ] Neon `cases` table, Drizzle schema, `drizzle-kit push`.
-- [ ] Routes: `POST /api/cases`, `PATCH /api/cases/:id` (append utterance / med item /
-      status), `GET /api/cases`, `GET /api/cases/:id`, `POST /api/cases/:id/advice`.
+### Stream C — web + pharmacist (against the canned file from minute 0)
+- [ ] Components from `DESIGN.md`: file header, medicine row, flag card, question card,
+      translate bubble, flag pill, buttons, role/source tags.
+- [ ] W1 File: sources rail + the file.
+- [ ] W2 Findings: bubble map (SVG, derived), flag cards, questions, "Send to pharmacist"
+      → status `sent`.
+- [ ] 2A Queue (poll `/api/files` every 3 s) → 2B File open (map + advice draft +
+      verdict radios + impression) → 2C Signed (PATCH advice, reviewedBy, status `signed`).
+- [ ] W4 Report (print stylesheet). Limitations section always.
 
-### Stream B — voice + counter screen
-- [ ] Scribe streaming STT → `Utterance` with `original` + `english`.
-- [ ] Urdu prompts for the three intake questions (TTS; Agent if time).
-- [ ] Counter screen states: idle → listening → flag → sent → advice.
-- [ ] Hold banner on first flag.
-- [ ] Readback: advice `textUr` → TTS → play button.
+## 3. Saturday 20:00 — deploy (must: mic + camera need HTTPS on a phone)
+- [ ] DigitalOcean App Platform, env vars, `DATABASE_URL`. Add to Home Screen on the demo phone.
+- [ ] GoDaddy domain once the name is final.
 
-### Stream C — design + pharmacist console
-- [ ] `DESIGN.md` + `app/globals.css` tokens (ADR 0006).
-- [ ] Components: button, med-item card, flag card, question card, hold banner, plan
-      card, transcript pair, queue row, flag pill, Urdu/English text pair.
-- [ ] Pharmacist console: queue → case open (transcript / bubble map / action) →
-      approved. Built against `data/cases/nani.json` from hour 2.
-- [ ] Bubble map (nodes = med items, size = severity, edges = flags).
-
-## 3. Cheap prizes — Saturday evening, ~1 h total
-- [ ] Deploy to DigitalOcean App Platform.
-- [ ] Register domain via GoDaddy (needs the final name).
-
-## 4. Nice — only if section 2 is green by Saturday 6 PM
-- [ ] Photo → product ID (Gemini vision) as a second `MedItem.source`.
-- [ ] Gemini "question for pharmacist" fallback (ADR 0001 §2).
-- [ ] ElevenLabs Agents Platform for real turn-taking instead of scripted prompts.
-
-## 5. Last 3 hours — everyone
-- [ ] Rehearse the 3-minute demo twice (open on Nani, Urdu live, flag, hold, cut to
-      pharmacist, readback).
-- [ ] Product video (fallback if live voice fails).
-- [ ] Devpost: main + Bloomberg + ElevenLabs ×2 + Gemini + DigitalOcean + GoDaddy +
-      Auctor. Seven writeups.
-- [ ] ElevenLabs showcase PR + feedback form (swag).
+## 4. Sunday 05:45 — stop building
+- [ ] Rehearse twice: P1 → P2 (real Urdu) → W2 → P4 → P3 → 2B → 2C → P5.
+- [ ] Product video (fallback).
+- [ ] Devpost ×7: main, Bloomberg, ElevenLabs, ElevenLabs/MLH, Gemini/MLH, DigitalOcean/MLH,
+      GoDaddy/MLH, Auctor. ElevenLabs showcase PR.
 
 ## Cut — do not reopen
-Patient history, Backboard, Synthea chart, notifications, follow-up scheduling, WhatsApp,
-auth, multi-pharmacist routing, dark mode, Solana / Tiger / Snowflake / SpaceXAI / OPEF.
+Patient history across visits, Backboard, Synthea, notifications, WhatsApp, auth,
+multi-pharmacist routing, dark mode, Solana / Tiger / Snowflake / SpaceXAI / OPEF.

@@ -1,0 +1,53 @@
+{
+  "id": "MW-1042",
+  "createdAt": "2026-09-19T13:56:00+05:00",
+  "patient": { "name": "Nasreen Bibi", "age": 64, "sex": "F", "language": "ur" },
+  "place": { "shop": "Al-Shifa Medical Store", "area": "Gulshan-e-Iqbal", "city": "Karachi" },
+  "takenBy": "Imran Ali, counter volunteer",
+  "request": ["Panadol", "Ciproxin"],
+  "recordings": [
+    {
+      "n": 1,
+      "speaker": "patient",
+      "seconds": 192,
+      "urdu": "تین دن سے بخار ہے اور جسم میں درد ہے۔ پیناڈول اور سیپروکسن لینے آئی ہوں، پچھلی بار پڑوسن کو سیپروکسن سے آرام آیا تھا۔ چھ سال سے روز صبح شوگر کی ایک سفید گولی لیتی ہوں۔ روز صبح ایک گلاس کریلے کا جوس پیتی ہوں۔ حکیم صاحب نے کمزوری کے لیے ایک سفوف دیا ہے، رات کو لیتی ہوں، دو مہینے ہو گئے۔ صبح اٹھتے وقت چکر آتا ہے، عمر کی وجہ سے ہوگا۔ شوگر چھ مہینے سے چیک نہیں کروائی۔",
+      "english": "Fever for three days with body aches. I came for Panadol and Ciproxin — Ciproxin helped a neighbour last time. For six years I have taken one white sugar tablet every morning. I drink a glass of bitter gourd juice every morning. The hakeem gave me a powder for weakness, I take it at night, two months now. I get dizzy on standing in the morning — it must be my age. Sugar not checked in six months.",
+      "answers": []
+    }
+  ],
+  "turns": [
+    { "id": "t1", "by": "volunteer", "heard": "en", "spoken": "Tell me about the powder the hakeem gave you.", "translated": "حکیم صاحب نے جو سفوف دیا ہے، اُس کے بارے میں بتائیں۔", "at": "2026-09-19T14:04:10+05:00" },
+    { "id": "t2", "by": "patient", "heard": "ur", "spoken": "کمزوری کے لیے دیا تھا، رات کو لیتی ہوں۔", "translated": "He gave it for weakness. I take it at night.", "at": "2026-09-19T14:04:32+05:00", "answers": "q1" },
+    { "id": "t3", "by": "volunteer", "heard": "en", "spoken": "Do you have the packet with you?", "translated": "کیا ڈبی یا لفافہ آپ کے پاس ہے؟", "at": "2026-09-19T14:05:01+05:00" },
+    { "id": "t4", "by": "patient", "heard": "ur", "spoken": "نہیں، گھر پر ہے۔ اُس پر کچھ لکھا نہیں۔", "translated": "No, it's at home. Nothing is written on it.", "at": "2026-09-19T14:05:20+05:00", "answers": "q1" }
+  ],
+  "history": {
+    "urdu": "تین دن سے بخار اور جسم میں درد۔ پیناڈول اور سیپروکسن لینے آئی ہیں۔ چھ سال سے صبح شوگر کی گولی۔ روز صبح کریلے کا جوس۔ حکیم کا سفوف رات کو، دو مہینے سے۔ صبح اٹھتے وقت چکر۔ شوگر چھ مہینے سے چیک نہیں۔",
+    "english": "Fever for three days with body aches. Came for Panadol and Ciproxin. Sugar tablet every morning for six years. A glass of bitter gourd juice every morning. A powder from a hakeem at night, two months. Dizzy on standing in the morning — she puts it down to her age. Sugar not checked in six months."
+  },
+  "medList": [
+    { "id": "m1", "term": "acetaminophen", "herWords": "پیناڈول", "source": "voice", "role": "requested", "at": { "recording": 1, "t": 9 } },
+    { "id": "m2", "term": "ciprofloxacin", "herWords": "سیپروکسن", "source": "voice", "role": "requested", "at": { "recording": 1, "t": 11 } },
+    { "id": "m3", "term": "metformin", "herWords": "روز صبح ایک سفید گولی", "source": "voice", "role": "takes", "since": "about six years", "at": { "recording": 1, "t": 124 } },
+    { "id": "m4", "term": "amlodipine", "herWords": null, "source": "document", "role": "prescribed", "at": { "attachment": "rx-2026-08-12" } },
+    { "id": "m5", "term": "bitter_gourd", "herWords": "روز صبح ایک گلاس کریلے کا جوس", "source": "voice", "role": "remedy", "at": { "recording": 1, "t": 130 } },
+    { "id": "m6", "term": "unidentified", "herWords": "حکیم صاحب کا سفوف، رات کو", "source": "voice", "role": "remedy", "since": "two months", "at": { "recording": 1, "t": 141 } }
+  ],
+  "flags": [
+    { "id": "flag_m3_m5", "severity": "high", "a": "m3", "b": "m5", "reason": "Both lower blood sugar. A glass every morning alongside metformin can push it too low.", "citation": "NHS · NIH Office of Dietary Supplements" },
+    { "id": "flag_m2_m3", "severity": "moderate", "a": "m2", "b": "m3", "reason": "Fluoroquinolones can disturb blood glucose in patients on antidiabetic medicines.", "citation": "Ciprofloxacin FDA label" }
+  ],
+  "questions": [
+    { "id": "q1", "text": { "urdu": "حکیم صاحب کا سفوف کس چیز کے لیے ہے، اور کیا اُس کا لفافہ آپ کے پاس ہے؟", "english": "What is the hakeem's powder for, and do you have the packet?" }, "why": "An unidentified nightly remedy in a diabetic on metformin.", "from": [{ "recording": 1, "t": 141 }], "asked": "2026-09-19T14:04:00+05:00", "answeredIn": "t4" },
+    { "id": "q2", "text": { "urdu": "صبح جو چکر آتا ہے، وہ ناشتے سے پہلے آتا ہے یا بعد میں؟ کچھ کھا لینے سے آرام آ جاتا ہے؟", "english": "The dizziness in the morning — does it come before breakfast or after, and does it settle once she eats?" }, "why": "She put the dizziness down to her age. Before food and settling after food would point at her blood sugar — she is on metformin plus a daily glass of karela juice.", "from": [{ "recording": 1, "t": 148 }] },
+    { "id": "q3", "text": { "urdu": "شوگر کی گولی دن میں ایک بار لیتی ہیں یا دو بار؟", "english": "Does she take the sugar tablet once a day or twice?" }, "why": "The prescription says twice daily; her account says one tablet each morning.", "from": [{ "recording": 1, "t": 124 }, { "attachment": "rx-2026-08-12" }] },
+    { "id": "q4", "text": { "urdu": "کیا آپ اب بھی بلڈ پریشر کی گولی (ایملوڈپین) لیتی ہیں؟", "english": "Is she still taking the blood pressure tablet (amlodipine)?" }, "why": "On the August prescription; not mentioned in her account.", "from": [{ "attachment": "rx-2026-08-12" }] }
+  ],
+  "attachments": [
+    { "id": "rx-2026-08-12", "kind": "prescription", "label": "Prescription — Dr. Farhan Siddiqui, Gulshan Clinic", "date": "2026-08-12", "url": "/fixtures/rx-2026-08-12.pdf", "extracted": [
+      { "id": "x1", "term": "metformin", "herWords": null, "source": "document", "role": "prescribed", "at": { "attachment": "rx-2026-08-12" } },
+      { "id": "x2", "term": "amlodipine", "herWords": null, "source": "document", "role": "prescribed", "at": { "attachment": "rx-2026-08-12" } }
+    ] }
+  ],
+  "status": "sent"
+}

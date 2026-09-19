@@ -7,7 +7,8 @@
     "scope_note": "Curated for a 36-hour demo, not exhaustive. Covers commonly prescribed drugs plus heavy coverage of systematically under-reported substances (supplements, herbals, OTC, alcohol), which is where the product's value sits.",
     "NOT_A_CLINICAL_REFERENCE": "Assembled for a hackathon prototype. Interactions listed are textbook-level and well established, but this file has not been clinically reviewed and must never be used to make real patient decisions. Every output is phrased as a question for a clinician, never as advice to a patient.",
     "source_of_truth_boundary": "This is the source of truth for WHICH SUBSTANCES EXIST and WHAT INTERACTS. It is NOT the source of truth for what any patient takes -- that is the chart (Disclosed) and the intake transcript (Undisclosed). See docs/adr/0002.",
-    "translation_note": "English informal aliases are the load-bearing ones. Spanish aliases are a starting set. Haitian Creole aliases need a native-speaker pass before demo."
+    "translation_note": "English informal aliases are the load-bearing ones. Spanish aliases are a starting set. Haitian Creole aliases need a native-speaker pass before demo.",
+    "source_field_note": "`source` on an interaction is the citation shown on the flag card. Rows without `source` never become flags (ADR 0001). Stream A: add a source to every row."
   },
   "severity_levels": {
     "major": "Avoid or requires close monitoring. Surface first, largest bubble.",
@@ -22,15 +23,89 @@
     "lifestyle": "Alcohol, tobacco, cannabis, caffeine, foods with known interactions."
   },
   "screening_questions": [
-    { "id": "sq_supplements", "always_ask": true, "targets": ["supplement", "herbal"], "text": "Besides what the doctor prescribed, do you take any vitamins, teas, or remedies?", "why": "Patients do not classify these as medication, so a question about 'medications' misses them entirely." },
-    { "id": "sq_herbal_home", "always_ask": true, "targets": ["herbal"], "text": "Does anyone send you teas or remedies from home, or do you make any yourself?", "why": "Traditional remedies sent by family are common and almost never disclosed. This is the Marie-Ange question." },
-    { "id": "sq_otc", "always_ask": true, "targets": ["otc"], "text": "Do you take anything for pain, sleep, allergies, or your stomach that you buy yourself?", "why": "NSAIDs, acetaminophen, antihistamines and sleep aids carry real interactions and are seen as harmless." },
-    { "id": "sq_alcohol", "always_ask": true, "targets": ["lifestyle"], "text": "Do you drink alcohol? Roughly how often in a normal week?", "why": "Interacts with a large share of the formulary and is under-reported to clinicians specifically." },
-    { "id": "sq_melatonin", "always_ask": true, "targets": ["otc", "supplement"], "text": "Do you take anything to help you sleep?", "why": "Melatonin, diphenhydramine and doxylamine are all treated as non-medication by patients." },
-    { "id": "sq_borrowed", "always_ask": true, "targets": ["prescription"], "text": "Have you ever taken medication that was prescribed to someone else, like a family member?", "why": "Borrowed prescriptions never appear in any chart. Ask without judgement or the answer is always no." },
-    { "id": "sq_stopped", "always_ask": true, "targets": ["prescription"], "text": "Is there anything the doctor prescribed that you stopped taking, or take less often than it says?", "why": "The inverse of undisclosed: the chart says they take it and they do not. Equally invisible." },
-    { "id": "sq_cannabis", "always_ask": false, "targets": ["lifestyle"], "text": "Do you use cannabis or CBD, in any form?", "why": "Additive sedation with a long list of drugs; CBD affects hepatic metabolism." },
-    { "id": "sq_grapefruit", "always_ask": false, "targets": ["lifestyle"], "text": "Do you eat grapefruit or drink grapefruit juice?", "why": "Ask only when a statin, amlodipine or tacrolimus is on the chart." }
+    {
+      "id": "sq_supplements",
+      "always_ask": true,
+      "targets": [
+        "supplement",
+        "herbal"
+      ],
+      "text": "Besides what the doctor prescribed, do you take any vitamins, teas, or remedies?",
+      "why": "Patients do not classify these as medication, so a question about 'medications' misses them entirely."
+    },
+    {
+      "id": "sq_herbal_home",
+      "always_ask": true,
+      "targets": [
+        "herbal"
+      ],
+      "text": "Does anyone send you teas or remedies from home, or do you make any yourself?",
+      "why": "Traditional remedies sent by family are common and almost never disclosed. This is the Marie-Ange question."
+    },
+    {
+      "id": "sq_otc",
+      "always_ask": true,
+      "targets": [
+        "otc"
+      ],
+      "text": "Do you take anything for pain, sleep, allergies, or your stomach that you buy yourself?",
+      "why": "NSAIDs, acetaminophen, antihistamines and sleep aids carry real interactions and are seen as harmless."
+    },
+    {
+      "id": "sq_alcohol",
+      "always_ask": true,
+      "targets": [
+        "lifestyle"
+      ],
+      "text": "Do you drink alcohol? Roughly how often in a normal week?",
+      "why": "Interacts with a large share of the formulary and is under-reported to clinicians specifically."
+    },
+    {
+      "id": "sq_melatonin",
+      "always_ask": true,
+      "targets": [
+        "otc",
+        "supplement"
+      ],
+      "text": "Do you take anything to help you sleep?",
+      "why": "Melatonin, diphenhydramine and doxylamine are all treated as non-medication by patients."
+    },
+    {
+      "id": "sq_borrowed",
+      "always_ask": true,
+      "targets": [
+        "prescription"
+      ],
+      "text": "Have you ever taken medication that was prescribed to someone else, like a family member?",
+      "why": "Borrowed prescriptions never appear in any chart. Ask without judgement or the answer is always no."
+    },
+    {
+      "id": "sq_stopped",
+      "always_ask": true,
+      "targets": [
+        "prescription"
+      ],
+      "text": "Is there anything the doctor prescribed that you stopped taking, or take less often than it says?",
+      "why": "The inverse of undisclosed: the chart says they take it and they do not. Equally invisible."
+    },
+    {
+      "id": "sq_cannabis",
+      "always_ask": false,
+      "targets": [
+        "lifestyle"
+      ],
+      "text": "Do you use cannabis or CBD, in any form?",
+      "why": "Additive sedation with a long list of drugs; CBD affects hepatic metabolism."
+    },
+    {
+      "id": "sq_grapefruit",
+      "always_ask": false,
+      "targets": [
+        "lifestyle"
+      ],
+      "text": "Do you eat grapefruit or drink grapefruit juice?",
+      "why": "Ask only when a statin, amlodipine or tacrolimus is on the chart."
+    }
   ],
   "classes": {
     "anticoagulant": "Warfarin and direct oral anticoagulants",
@@ -63,252 +138,2350 @@
     "polyvalent_cation": "Calcium, iron, magnesium, zinc, antacids -- bind other drugs in the gut"
   },
   "substances": [
-    { "id": "warfarin", "display": "Warfarin", "category": "prescription", "class": "anticoagulant", "aliases": ["coumadin", "blood thinner", "the INR pill"], "aliases_es": ["anticoagulante", "adelgazante de sangre"], "under_reported": false },
-    { "id": "apixaban", "display": "Apixaban", "category": "prescription", "class": "anticoagulant", "aliases": ["eliquis", "blood thinner"], "under_reported": false },
-    { "id": "rivaroxaban", "display": "Rivaroxaban", "category": "prescription", "class": "anticoagulant", "aliases": ["xarelto", "blood thinner"], "under_reported": false },
-    { "id": "clopidogrel", "display": "Clopidogrel", "category": "prescription", "class": "antiplatelet", "aliases": ["plavix"], "under_reported": false },
-    { "id": "aspirin", "display": "Aspirin", "category": "otc", "class": "antiplatelet", "aliases": ["baby aspirin", "asa", "bayer", "81mg"], "aliases_es": ["aspirina"], "under_reported": true },
-    { "id": "ibuprofen", "display": "Ibuprofen", "category": "otc", "class": "nsaid", "aliases": ["advil", "motrin", "brufen"], "aliases_es": ["ibuprofeno"], "under_reported": true },
-    { "id": "naproxen", "display": "Naproxen", "category": "otc", "class": "nsaid", "aliases": ["aleve", "naprosyn"], "under_reported": true },
-    { "id": "diclofenac", "display": "Diclofenac", "category": "prescription", "class": "nsaid", "aliases": ["voltaren", "the gel for my knee"], "under_reported": true },
-    { "id": "celecoxib", "display": "Celecoxib", "category": "prescription", "class": "nsaid", "aliases": ["celebrex"], "under_reported": false },
-    { "id": "acetaminophen", "display": "Acetaminophen", "category": "otc", "class": null, "aliases": ["tylenol", "paracetamol", "panadol"], "aliases_es": ["paracetamol"], "under_reported": true },
-    { "id": "sertraline", "display": "Sertraline", "category": "prescription", "class": "ssri", "aliases": ["zoloft"], "under_reported": false },
-    { "id": "fluoxetine", "display": "Fluoxetine", "category": "prescription", "class": "ssri", "aliases": ["prozac"], "under_reported": false },
-    { "id": "escitalopram", "display": "Escitalopram", "category": "prescription", "class": "ssri", "aliases": ["lexapro"], "under_reported": false },
-    { "id": "citalopram", "display": "Citalopram", "category": "prescription", "class": "ssri", "aliases": ["celexa"], "under_reported": false },
-    { "id": "paroxetine", "display": "Paroxetine", "category": "prescription", "class": "ssri", "aliases": ["paxil"], "under_reported": false },
-    { "id": "venlafaxine", "display": "Venlafaxine", "category": "prescription", "class": "snri", "aliases": ["effexor"], "under_reported": false },
-    { "id": "duloxetine", "display": "Duloxetine", "category": "prescription", "class": "snri", "aliases": ["cymbalta"], "under_reported": false },
-    { "id": "bupropion", "display": "Bupropion", "category": "prescription", "class": null, "aliases": ["wellbutrin", "zyban", "the quit smoking pill"], "under_reported": false },
-    { "id": "trazodone", "display": "Trazodone", "category": "prescription", "class": null, "aliases": ["desyrel", "my sleep pill"], "under_reported": false },
-    { "id": "amitriptyline", "display": "Amitriptyline", "category": "prescription", "class": "tca", "aliases": ["elavil"], "under_reported": false },
-    { "id": "nortriptyline", "display": "Nortriptyline", "category": "prescription", "class": "tca", "aliases": ["pamelor"], "under_reported": false },
-    { "id": "phenelzine", "display": "Phenelzine", "category": "prescription", "class": "maoi", "aliases": ["nardil"], "under_reported": false },
-    { "id": "tranylcypromine", "display": "Tranylcypromine", "category": "prescription", "class": "maoi", "aliases": ["parnate"], "under_reported": false },
-    { "id": "lithium", "display": "Lithium", "category": "prescription", "class": null, "aliases": ["lithobid"], "under_reported": false },
-    { "id": "quetiapine", "display": "Quetiapine", "category": "prescription", "class": null, "aliases": ["seroquel"], "under_reported": false },
-    { "id": "risperidone", "display": "Risperidone", "category": "prescription", "class": null, "aliases": ["risperdal"], "under_reported": false },
-    { "id": "aripiprazole", "display": "Aripiprazole", "category": "prescription", "class": null, "aliases": ["abilify"], "under_reported": false },
-    { "id": "alprazolam", "display": "Alprazolam", "category": "prescription", "class": "benzodiazepine", "aliases": ["xanax", "my nerve pill"], "under_reported": false },
-    { "id": "lorazepam", "display": "Lorazepam", "category": "prescription", "class": "benzodiazepine", "aliases": ["ativan"], "under_reported": false },
-    { "id": "clonazepam", "display": "Clonazepam", "category": "prescription", "class": "benzodiazepine", "aliases": ["klonopin"], "under_reported": false },
-    { "id": "diazepam", "display": "Diazepam", "category": "prescription", "class": "benzodiazepine", "aliases": ["valium"], "under_reported": false },
-    { "id": "zolpidem", "display": "Zolpidem", "category": "prescription", "class": "z_drug", "aliases": ["ambien"], "under_reported": false },
-    { "id": "oxycodone", "display": "Oxycodone", "category": "prescription", "class": "opioid", "aliases": ["percocet", "oxycontin", "my pain pill"], "under_reported": false },
-    { "id": "hydrocodone", "display": "Hydrocodone", "category": "prescription", "class": "opioid", "aliases": ["vicodin", "norco"], "under_reported": false },
-    { "id": "tramadol", "display": "Tramadol", "category": "prescription", "class": "opioid", "aliases": ["ultram"], "under_reported": false },
-    { "id": "morphine", "display": "Morphine", "category": "prescription", "class": "opioid", "aliases": ["ms contin"], "under_reported": false },
-    { "id": "codeine", "display": "Codeine", "category": "prescription", "class": "opioid", "aliases": ["cough syrup with codeine"], "under_reported": true },
-    { "id": "methadone", "display": "Methadone", "category": "prescription", "class": "opioid", "aliases": ["dolophine"], "under_reported": false },
-    { "id": "buprenorphine", "display": "Buprenorphine", "category": "prescription", "class": "opioid", "aliases": ["suboxone", "subutex"], "under_reported": true },
-    { "id": "gabapentin", "display": "Gabapentin", "category": "prescription", "class": "gabapentinoid", "aliases": ["neurontin", "nerve pain pill"], "under_reported": false },
-    { "id": "pregabalin", "display": "Pregabalin", "category": "prescription", "class": "gabapentinoid", "aliases": ["lyrica"], "under_reported": false },
-    { "id": "atorvastatin", "display": "Atorvastatin", "category": "prescription", "class": "statin", "aliases": ["lipitor", "cholesterol pill"], "under_reported": false },
-    { "id": "simvastatin", "display": "Simvastatin", "category": "prescription", "class": "statin", "aliases": ["zocor"], "under_reported": false },
-    { "id": "rosuvastatin", "display": "Rosuvastatin", "category": "prescription", "class": "statin", "aliases": ["crestor"], "under_reported": false },
-    { "id": "pravastatin", "display": "Pravastatin", "category": "prescription", "class": "statin", "aliases": ["pravachol"], "under_reported": false },
-    { "id": "lisinopril", "display": "Lisinopril", "category": "prescription", "class": "ace_inhibitor", "aliases": ["zestril", "prinivil", "my pressure pill"], "aliases_es": ["pastilla para la presion"], "under_reported": false },
-    { "id": "enalapril", "display": "Enalapril", "category": "prescription", "class": "ace_inhibitor", "aliases": ["vasotec"], "under_reported": false },
-    { "id": "losartan", "display": "Losartan", "category": "prescription", "class": "arb", "aliases": ["cozaar"], "under_reported": false },
-    { "id": "valsartan", "display": "Valsartan", "category": "prescription", "class": "arb", "aliases": ["diovan"], "under_reported": false },
-    { "id": "amlodipine", "display": "Amlodipine", "category": "prescription", "class": null, "aliases": ["norvasc"], "under_reported": false },
-    { "id": "metoprolol", "display": "Metoprolol", "category": "prescription", "class": "beta_blocker", "aliases": ["lopressor", "toprol"], "under_reported": false },
-    { "id": "carvedilol", "display": "Carvedilol", "category": "prescription", "class": "beta_blocker", "aliases": ["coreg"], "under_reported": false },
-    { "id": "atenolol", "display": "Atenolol", "category": "prescription", "class": "beta_blocker", "aliases": ["tenormin"], "under_reported": false },
-    { "id": "hydrochlorothiazide", "display": "Hydrochlorothiazide", "category": "prescription", "class": "thiazide", "aliases": ["hctz", "water pill"], "aliases_es": ["pastilla de agua"], "under_reported": false },
-    { "id": "furosemide", "display": "Furosemide", "category": "prescription", "class": "loop_diuretic", "aliases": ["lasix", "water pill"], "under_reported": false },
-    { "id": "spironolactone", "display": "Spironolactone", "category": "prescription", "class": "k_sparing_diuretic", "aliases": ["aldactone"], "under_reported": false },
-    { "id": "digoxin", "display": "Digoxin", "category": "prescription", "class": null, "aliases": ["lanoxin", "heart pill"], "under_reported": false },
-    { "id": "amiodarone", "display": "Amiodarone", "category": "prescription", "class": null, "aliases": ["cordarone", "pacerone"], "under_reported": false },
-    { "id": "nitroglycerin", "display": "Nitroglycerin", "category": "prescription", "class": null, "aliases": ["nitro", "the spray under my tongue"], "under_reported": false },
-    { "id": "sildenafil", "display": "Sildenafil", "category": "prescription", "class": null, "aliases": ["viagra", "the blue pill"], "under_reported": true },
-    { "id": "metformin", "display": "Metformin", "category": "prescription", "class": null, "aliases": ["glucophage", "sugar pill", "diabetes pill"], "aliases_es": ["pastilla para el azucar"], "under_reported": false },
-    { "id": "glipizide", "display": "Glipizide", "category": "prescription", "class": null, "aliases": ["glucotrol"], "under_reported": false },
-    { "id": "insulin", "display": "Insulin", "category": "prescription", "class": null, "aliases": ["lantus", "humalog", "my shot"], "under_reported": false },
-    { "id": "empagliflozin", "display": "Empagliflozin", "category": "prescription", "class": null, "aliases": ["jardiance"], "under_reported": false },
-    { "id": "semaglutide", "display": "Semaglutide", "category": "prescription", "class": null, "aliases": ["ozempic", "wegovy", "the weight shot"], "under_reported": true },
-    { "id": "levothyroxine", "display": "Levothyroxine", "category": "prescription", "class": null, "aliases": ["synthroid", "thyroid pill"], "under_reported": false },
-    { "id": "omeprazole", "display": "Omeprazole", "category": "otc", "class": "ppi", "aliases": ["prilosec", "my stomach pill"], "under_reported": true },
-    { "id": "pantoprazole", "display": "Pantoprazole", "category": "prescription", "class": "ppi", "aliases": ["protonix"], "under_reported": false },
-    { "id": "famotidine", "display": "Famotidine", "category": "otc", "class": null, "aliases": ["pepcid"], "under_reported": true },
-    { "id": "amoxicillin", "display": "Amoxicillin", "category": "prescription", "class": null, "aliases": ["amoxil", "augmentin"], "under_reported": false },
-    { "id": "azithromycin", "display": "Azithromycin", "category": "prescription", "class": "macrolide", "aliases": ["zithromax", "z-pak"], "under_reported": false },
-    { "id": "clarithromycin", "display": "Clarithromycin", "category": "prescription", "class": "macrolide", "aliases": ["biaxin"], "under_reported": false },
-    { "id": "ciprofloxacin", "display": "Ciprofloxacin", "category": "prescription", "class": "fluoroquinolone", "aliases": ["cipro"], "under_reported": false },
-    { "id": "levofloxacin", "display": "Levofloxacin", "category": "prescription", "class": "fluoroquinolone", "aliases": ["levaquin"], "under_reported": false },
-    { "id": "doxycycline", "display": "Doxycycline", "category": "prescription", "class": "tetracycline", "aliases": ["vibramycin"], "under_reported": false },
-    { "id": "metronidazole", "display": "Metronidazole", "category": "prescription", "class": null, "aliases": ["flagyl"], "under_reported": false },
-    { "id": "trimethoprim_sulfamethoxazole", "display": "Trimethoprim-sulfamethoxazole", "category": "prescription", "class": null, "aliases": ["bactrim", "septra"], "under_reported": false },
-    { "id": "nitrofurantoin", "display": "Nitrofurantoin", "category": "prescription", "class": null, "aliases": ["macrobid"], "under_reported": false },
-    { "id": "fluconazole", "display": "Fluconazole", "category": "prescription", "class": "azole_antifungal", "aliases": ["diflucan", "the yeast pill"], "under_reported": true },
-    { "id": "ketoconazole", "display": "Ketoconazole", "category": "prescription", "class": "azole_antifungal", "aliases": ["nizoral"], "under_reported": false },
-    { "id": "prednisone", "display": "Prednisone", "category": "prescription", "class": "corticosteroid", "aliases": ["deltasone", "steroid pack"], "under_reported": false },
-    { "id": "methotrexate", "display": "Methotrexate", "category": "prescription", "class": "immunosuppressant", "aliases": ["trexall", "my weekly pill"], "under_reported": false },
-    { "id": "azathioprine", "display": "Azathioprine", "category": "prescription", "class": "immunosuppressant", "aliases": ["imuran"], "under_reported": false },
-    { "id": "tacrolimus", "display": "Tacrolimus", "category": "prescription", "class": "immunosuppressant", "aliases": ["prograf"], "under_reported": false },
-    { "id": "allopurinol", "display": "Allopurinol", "category": "prescription", "class": null, "aliases": ["zyloprim", "gout pill"], "under_reported": false },
-    { "id": "colchicine", "display": "Colchicine", "category": "prescription", "class": null, "aliases": ["colcrys"], "under_reported": false },
-    { "id": "levetiracetam", "display": "Levetiracetam", "category": "prescription", "class": null, "aliases": ["keppra"], "under_reported": false },
-    { "id": "phenytoin", "display": "Phenytoin", "category": "prescription", "class": null, "aliases": ["dilantin"], "under_reported": false },
-    { "id": "carbamazepine", "display": "Carbamazepine", "category": "prescription", "class": null, "aliases": ["tegretol"], "under_reported": false },
-    { "id": "valproate", "display": "Valproate", "category": "prescription", "class": null, "aliases": ["depakote", "valproic acid"], "under_reported": false },
-    { "id": "lamotrigine", "display": "Lamotrigine", "category": "prescription", "class": null, "aliases": ["lamictal"], "under_reported": false },
-    { "id": "theophylline", "display": "Theophylline", "category": "prescription", "class": null, "aliases": ["theo-24"], "under_reported": false },
-    { "id": "albuterol", "display": "Albuterol", "category": "prescription", "class": null, "aliases": ["ventolin", "proair", "my inhaler", "rescue inhaler"], "under_reported": false },
-    { "id": "montelukast", "display": "Montelukast", "category": "prescription", "class": null, "aliases": ["singulair"], "under_reported": false },
-    { "id": "sumatriptan", "display": "Sumatriptan", "category": "prescription", "class": "triptan", "aliases": ["imitrex", "migraine pill"], "under_reported": false },
-    { "id": "diphenhydramine", "display": "Diphenhydramine", "category": "otc", "class": "sedating_antihistamine", "aliases": ["benadryl", "pink sleep pill", "zzzquil"], "under_reported": true },
-    { "id": "doxylamine", "display": "Doxylamine", "category": "otc", "class": "sedating_antihistamine", "aliases": ["unisom", "sleep aid"], "under_reported": true },
-    { "id": "loratadine", "display": "Loratadine", "category": "otc", "class": null, "aliases": ["claritin"], "under_reported": true },
-    { "id": "cetirizine", "display": "Cetirizine", "category": "otc", "class": null, "aliases": ["zyrtec"], "under_reported": true },
-    { "id": "pseudoephedrine", "display": "Pseudoephedrine", "category": "otc", "class": null, "aliases": ["sudafed", "cold pill"], "under_reported": true },
-    { "id": "potassium_chloride", "display": "Potassium chloride", "category": "prescription", "class": null, "aliases": ["k-dur", "potassium pill", "salt substitute"], "under_reported": true },
-    { "id": "melatonin", "display": "Melatonin", "category": "otc", "class": null, "aliases": ["sleep gummy", "the sleep thing", "gummies"], "aliases_es": ["melatonina"], "under_reported": true },
-    { "id": "st_johns_wort", "display": "St. John's wort", "category": "herbal", "class": null, "aliases": ["hypericum", "mood herb", "the yellow flower pill"], "under_reported": true },
-    { "id": "ginkgo", "display": "Ginkgo biloba", "category": "herbal", "class": null, "aliases": ["memory herb"], "under_reported": true },
-    { "id": "ginseng", "display": "Ginseng", "category": "herbal", "class": null, "aliases": ["panax"], "under_reported": true },
-    { "id": "garlic_supplement", "display": "Garlic supplement", "category": "herbal", "class": null, "aliases": ["garlic pills", "odorless garlic"], "under_reported": true },
-    { "id": "turmeric", "display": "Turmeric / curcumin", "category": "herbal", "class": null, "aliases": ["curcumin", "golden milk", "the yellow spice"], "under_reported": true },
-    { "id": "ginger", "display": "Ginger", "category": "herbal", "class": null, "aliases": ["ginger tea", "ginger root"], "under_reported": true },
-    { "id": "valerian", "display": "Valerian root", "category": "herbal", "class": null, "aliases": ["valerian tea", "sleep tea"], "under_reported": true },
-    { "id": "kava", "display": "Kava", "category": "herbal", "class": null, "aliases": ["kava kava"], "under_reported": true },
-    { "id": "chamomile", "display": "Chamomile", "category": "herbal", "class": null, "aliases": ["chamomile tea", "calming tea"], "aliases_es": ["manzanilla"], "under_reported": true },
-    { "id": "soursop", "display": "Soursop / graviola", "category": "herbal", "class": null, "aliases": ["graviola", "corossol", "guanabana", "soursop tea", "the tea from home"], "aliases_es": ["guanabana"], "under_reported": true, "note": "Common in Caribbean and Haitian households. Ask about it directly -- it is the archetypal 'tea my sister sends'." },
-    { "id": "moringa", "display": "Moringa", "category": "herbal", "class": null, "aliases": ["moringa tea", "drumstick tree"], "under_reported": true },
-    { "id": "licorice_root", "display": "Licorice root", "category": "herbal", "class": null, "aliases": ["liquorice tea", "glycyrrhiza"], "under_reported": true },
-    { "id": "echinacea", "display": "Echinacea", "category": "herbal", "class": null, "aliases": ["cold herb"], "under_reported": true },
-    { "id": "saw_palmetto", "display": "Saw palmetto", "category": "herbal", "class": null, "aliases": ["prostate herb"], "under_reported": true },
-    { "id": "black_cohosh", "display": "Black cohosh", "category": "herbal", "class": null, "aliases": ["menopause herb"], "under_reported": true },
-    { "id": "ashwagandha", "display": "Ashwagandha", "category": "herbal", "class": null, "aliases": ["stress herb"], "under_reported": true },
-    { "id": "red_yeast_rice", "display": "Red yeast rice", "category": "herbal", "class": null, "aliases": ["natural cholesterol supplement"], "under_reported": true },
-    { "id": "bitter_orange", "display": "Bitter orange", "category": "herbal", "class": null, "aliases": ["synephrine", "diet supplement"], "under_reported": true },
-    { "id": "yohimbe", "display": "Yohimbe", "category": "herbal", "class": null, "aliases": ["yohimbine"], "under_reported": true },
-    { "id": "cbd", "display": "CBD", "category": "herbal", "class": null, "aliases": ["cbd oil", "hemp oil", "cbd gummies"], "under_reported": true },
-    { "id": "kratom", "display": "Kratom", "category": "herbal", "class": null, "aliases": ["mitragyna"], "under_reported": true },
-    { "id": "aloe_oral", "display": "Aloe vera, taken orally", "category": "herbal", "class": null, "aliases": ["aloe juice", "aloe drink"], "under_reported": true },
-    { "id": "green_tea_extract", "display": "Green tea extract", "category": "herbal", "class": null, "aliases": ["green tea pills"], "under_reported": true },
-    { "id": "vitamin_k", "display": "Vitamin K", "category": "supplement", "class": null, "aliases": ["k2", "mk-7"], "under_reported": true },
-    { "id": "vitamin_d", "display": "Vitamin D", "category": "supplement", "class": null, "aliases": ["d3", "the sunshine vitamin"], "under_reported": true },
-    { "id": "calcium", "display": "Calcium", "category": "supplement", "class": "polyvalent_cation", "aliases": ["calcium pills", "caltrate"], "under_reported": true },
-    { "id": "iron", "display": "Iron", "category": "supplement", "class": "polyvalent_cation", "aliases": ["ferrous sulfate", "iron pills", "blood builder"], "under_reported": true },
-    { "id": "magnesium", "display": "Magnesium", "category": "supplement", "class": "polyvalent_cation", "aliases": ["mag", "magnesium citrate"], "under_reported": true },
-    { "id": "zinc", "display": "Zinc", "category": "supplement", "class": "polyvalent_cation", "aliases": ["zinc lozenges"], "under_reported": true },
-    { "id": "antacid", "display": "Antacid", "category": "otc", "class": "polyvalent_cation", "aliases": ["tums", "maalox", "mylanta", "rolaids"], "under_reported": true },
-    { "id": "fish_oil", "display": "Fish oil / omega-3", "category": "supplement", "class": null, "aliases": ["omega 3", "krill oil", "cod liver oil"], "under_reported": true },
-    { "id": "multivitamin", "display": "Multivitamin", "category": "supplement", "class": null, "aliases": ["one a day", "centrum", "my vitamin"], "under_reported": true },
-    { "id": "biotin", "display": "Biotin", "category": "supplement", "class": null, "aliases": ["hair skin and nails"], "under_reported": true, "note": "No major drug interactions, but interferes with several lab immunoassays including troponin and thyroid panels. Worth asking before bloodwork." },
-    { "id": "probiotics", "display": "Probiotics", "category": "supplement", "class": null, "aliases": ["gut pills", "acidophilus"], "under_reported": true },
-    { "id": "alcohol", "display": "Alcohol", "category": "lifestyle", "class": null, "aliases": ["drink", "beer", "wine", "liquor", "a nightcap", "social drinking"], "aliases_es": ["alcohol", "trago"], "under_reported": true },
-    { "id": "tobacco", "display": "Tobacco", "category": "lifestyle", "class": null, "aliases": ["cigarettes", "smoking", "vape", "nicotine"], "under_reported": true },
-    { "id": "cannabis", "display": "Cannabis", "category": "lifestyle", "class": null, "aliases": ["marijuana", "weed", "edibles", "thc"], "under_reported": true },
-    { "id": "caffeine", "display": "Caffeine", "category": "lifestyle", "class": null, "aliases": ["coffee", "energy drink", "red bull", "pre-workout"], "under_reported": true },
-    { "id": "grapefruit", "display": "Grapefruit", "category": "lifestyle", "class": null, "aliases": ["grapefruit juice", "pomelo"], "aliases_es": ["toronja", "pomelo"], "under_reported": true },
-    { "id": "tyramine_foods", "display": "Aged / fermented foods", "category": "lifestyle", "class": null, "aliases": ["aged cheese", "cured meat", "soy sauce", "fermented food"], "under_reported": true }
+    {
+      "id": "warfarin",
+      "display": "Warfarin",
+      "category": "prescription",
+      "class": "anticoagulant",
+      "aliases": [
+        "coumadin",
+        "blood thinner",
+        "the INR pill"
+      ],
+      "aliases_es": [
+        "anticoagulante",
+        "adelgazante de sangre"
+      ],
+      "under_reported": false
+    },
+    {
+      "id": "apixaban",
+      "display": "Apixaban",
+      "category": "prescription",
+      "class": "anticoagulant",
+      "aliases": [
+        "eliquis",
+        "blood thinner"
+      ],
+      "under_reported": false
+    },
+    {
+      "id": "rivaroxaban",
+      "display": "Rivaroxaban",
+      "category": "prescription",
+      "class": "anticoagulant",
+      "aliases": [
+        "xarelto",
+        "blood thinner"
+      ],
+      "under_reported": false
+    },
+    {
+      "id": "clopidogrel",
+      "display": "Clopidogrel",
+      "category": "prescription",
+      "class": "antiplatelet",
+      "aliases": [
+        "plavix"
+      ],
+      "under_reported": false
+    },
+    {
+      "id": "aspirin",
+      "display": "Aspirin",
+      "category": "otc",
+      "class": "antiplatelet",
+      "aliases": [
+        "baby aspirin",
+        "asa",
+        "bayer",
+        "81mg"
+      ],
+      "aliases_es": [
+        "aspirina"
+      ],
+      "under_reported": true
+    },
+    {
+      "id": "ibuprofen",
+      "display": "Ibuprofen",
+      "category": "otc",
+      "class": "nsaid",
+      "aliases": [
+        "advil",
+        "motrin",
+        "brufen"
+      ],
+      "aliases_es": [
+        "ibuprofeno"
+      ],
+      "under_reported": true
+    },
+    {
+      "id": "naproxen",
+      "display": "Naproxen",
+      "category": "otc",
+      "class": "nsaid",
+      "aliases": [
+        "aleve",
+        "naprosyn"
+      ],
+      "under_reported": true
+    },
+    {
+      "id": "diclofenac",
+      "display": "Diclofenac",
+      "category": "prescription",
+      "class": "nsaid",
+      "aliases": [
+        "voltaren",
+        "the gel for my knee"
+      ],
+      "under_reported": true
+    },
+    {
+      "id": "celecoxib",
+      "display": "Celecoxib",
+      "category": "prescription",
+      "class": "nsaid",
+      "aliases": [
+        "celebrex"
+      ],
+      "under_reported": false
+    },
+    {
+      "id": "acetaminophen",
+      "display": "Acetaminophen",
+      "category": "otc",
+      "class": null,
+      "aliases": [
+        "tylenol",
+        "paracetamol",
+        "panadol",
+        "panadol",
+        "paracetamol",
+        "calpol"
+      ],
+      "aliases_es": [
+        "paracetamol"
+      ],
+      "under_reported": true,
+      "aliases_ur": [
+        "پیناڈول",
+        "بخار کی گولی"
+      ]
+    },
+    {
+      "id": "sertraline",
+      "display": "Sertraline",
+      "category": "prescription",
+      "class": "ssri",
+      "aliases": [
+        "zoloft"
+      ],
+      "under_reported": false
+    },
+    {
+      "id": "fluoxetine",
+      "display": "Fluoxetine",
+      "category": "prescription",
+      "class": "ssri",
+      "aliases": [
+        "prozac"
+      ],
+      "under_reported": false
+    },
+    {
+      "id": "escitalopram",
+      "display": "Escitalopram",
+      "category": "prescription",
+      "class": "ssri",
+      "aliases": [
+        "lexapro"
+      ],
+      "under_reported": false
+    },
+    {
+      "id": "citalopram",
+      "display": "Citalopram",
+      "category": "prescription",
+      "class": "ssri",
+      "aliases": [
+        "celexa"
+      ],
+      "under_reported": false
+    },
+    {
+      "id": "paroxetine",
+      "display": "Paroxetine",
+      "category": "prescription",
+      "class": "ssri",
+      "aliases": [
+        "paxil"
+      ],
+      "under_reported": false
+    },
+    {
+      "id": "venlafaxine",
+      "display": "Venlafaxine",
+      "category": "prescription",
+      "class": "snri",
+      "aliases": [
+        "effexor"
+      ],
+      "under_reported": false
+    },
+    {
+      "id": "duloxetine",
+      "display": "Duloxetine",
+      "category": "prescription",
+      "class": "snri",
+      "aliases": [
+        "cymbalta"
+      ],
+      "under_reported": false
+    },
+    {
+      "id": "bupropion",
+      "display": "Bupropion",
+      "category": "prescription",
+      "class": null,
+      "aliases": [
+        "wellbutrin",
+        "zyban",
+        "the quit smoking pill"
+      ],
+      "under_reported": false
+    },
+    {
+      "id": "trazodone",
+      "display": "Trazodone",
+      "category": "prescription",
+      "class": null,
+      "aliases": [
+        "desyrel",
+        "my sleep pill"
+      ],
+      "under_reported": false
+    },
+    {
+      "id": "amitriptyline",
+      "display": "Amitriptyline",
+      "category": "prescription",
+      "class": "tca",
+      "aliases": [
+        "elavil"
+      ],
+      "under_reported": false
+    },
+    {
+      "id": "nortriptyline",
+      "display": "Nortriptyline",
+      "category": "prescription",
+      "class": "tca",
+      "aliases": [
+        "pamelor"
+      ],
+      "under_reported": false
+    },
+    {
+      "id": "phenelzine",
+      "display": "Phenelzine",
+      "category": "prescription",
+      "class": "maoi",
+      "aliases": [
+        "nardil"
+      ],
+      "under_reported": false
+    },
+    {
+      "id": "tranylcypromine",
+      "display": "Tranylcypromine",
+      "category": "prescription",
+      "class": "maoi",
+      "aliases": [
+        "parnate"
+      ],
+      "under_reported": false
+    },
+    {
+      "id": "lithium",
+      "display": "Lithium",
+      "category": "prescription",
+      "class": null,
+      "aliases": [
+        "lithobid"
+      ],
+      "under_reported": false
+    },
+    {
+      "id": "quetiapine",
+      "display": "Quetiapine",
+      "category": "prescription",
+      "class": null,
+      "aliases": [
+        "seroquel"
+      ],
+      "under_reported": false
+    },
+    {
+      "id": "risperidone",
+      "display": "Risperidone",
+      "category": "prescription",
+      "class": null,
+      "aliases": [
+        "risperdal"
+      ],
+      "under_reported": false
+    },
+    {
+      "id": "aripiprazole",
+      "display": "Aripiprazole",
+      "category": "prescription",
+      "class": null,
+      "aliases": [
+        "abilify"
+      ],
+      "under_reported": false
+    },
+    {
+      "id": "alprazolam",
+      "display": "Alprazolam",
+      "category": "prescription",
+      "class": "benzodiazepine",
+      "aliases": [
+        "xanax",
+        "my nerve pill"
+      ],
+      "under_reported": false
+    },
+    {
+      "id": "lorazepam",
+      "display": "Lorazepam",
+      "category": "prescription",
+      "class": "benzodiazepine",
+      "aliases": [
+        "ativan"
+      ],
+      "under_reported": false
+    },
+    {
+      "id": "clonazepam",
+      "display": "Clonazepam",
+      "category": "prescription",
+      "class": "benzodiazepine",
+      "aliases": [
+        "klonopin"
+      ],
+      "under_reported": false
+    },
+    {
+      "id": "diazepam",
+      "display": "Diazepam",
+      "category": "prescription",
+      "class": "benzodiazepine",
+      "aliases": [
+        "valium"
+      ],
+      "under_reported": false
+    },
+    {
+      "id": "zolpidem",
+      "display": "Zolpidem",
+      "category": "prescription",
+      "class": "z_drug",
+      "aliases": [
+        "ambien"
+      ],
+      "under_reported": false
+    },
+    {
+      "id": "oxycodone",
+      "display": "Oxycodone",
+      "category": "prescription",
+      "class": "opioid",
+      "aliases": [
+        "percocet",
+        "oxycontin",
+        "my pain pill"
+      ],
+      "under_reported": false
+    },
+    {
+      "id": "hydrocodone",
+      "display": "Hydrocodone",
+      "category": "prescription",
+      "class": "opioid",
+      "aliases": [
+        "vicodin",
+        "norco"
+      ],
+      "under_reported": false
+    },
+    {
+      "id": "tramadol",
+      "display": "Tramadol",
+      "category": "prescription",
+      "class": "opioid",
+      "aliases": [
+        "ultram"
+      ],
+      "under_reported": false
+    },
+    {
+      "id": "morphine",
+      "display": "Morphine",
+      "category": "prescription",
+      "class": "opioid",
+      "aliases": [
+        "ms contin"
+      ],
+      "under_reported": false
+    },
+    {
+      "id": "codeine",
+      "display": "Codeine",
+      "category": "prescription",
+      "class": "opioid",
+      "aliases": [
+        "cough syrup with codeine"
+      ],
+      "under_reported": true
+    },
+    {
+      "id": "methadone",
+      "display": "Methadone",
+      "category": "prescription",
+      "class": "opioid",
+      "aliases": [
+        "dolophine"
+      ],
+      "under_reported": false
+    },
+    {
+      "id": "buprenorphine",
+      "display": "Buprenorphine",
+      "category": "prescription",
+      "class": "opioid",
+      "aliases": [
+        "suboxone",
+        "subutex"
+      ],
+      "under_reported": true
+    },
+    {
+      "id": "gabapentin",
+      "display": "Gabapentin",
+      "category": "prescription",
+      "class": "gabapentinoid",
+      "aliases": [
+        "neurontin",
+        "nerve pain pill"
+      ],
+      "under_reported": false
+    },
+    {
+      "id": "pregabalin",
+      "display": "Pregabalin",
+      "category": "prescription",
+      "class": "gabapentinoid",
+      "aliases": [
+        "lyrica"
+      ],
+      "under_reported": false
+    },
+    {
+      "id": "atorvastatin",
+      "display": "Atorvastatin",
+      "category": "prescription",
+      "class": "statin",
+      "aliases": [
+        "lipitor",
+        "cholesterol pill"
+      ],
+      "under_reported": false
+    },
+    {
+      "id": "simvastatin",
+      "display": "Simvastatin",
+      "category": "prescription",
+      "class": "statin",
+      "aliases": [
+        "zocor"
+      ],
+      "under_reported": false
+    },
+    {
+      "id": "rosuvastatin",
+      "display": "Rosuvastatin",
+      "category": "prescription",
+      "class": "statin",
+      "aliases": [
+        "crestor"
+      ],
+      "under_reported": false
+    },
+    {
+      "id": "pravastatin",
+      "display": "Pravastatin",
+      "category": "prescription",
+      "class": "statin",
+      "aliases": [
+        "pravachol"
+      ],
+      "under_reported": false
+    },
+    {
+      "id": "lisinopril",
+      "display": "Lisinopril",
+      "category": "prescription",
+      "class": "ace_inhibitor",
+      "aliases": [
+        "zestril",
+        "prinivil",
+        "my pressure pill"
+      ],
+      "aliases_es": [
+        "pastilla para la presion"
+      ],
+      "under_reported": false
+    },
+    {
+      "id": "enalapril",
+      "display": "Enalapril",
+      "category": "prescription",
+      "class": "ace_inhibitor",
+      "aliases": [
+        "vasotec"
+      ],
+      "under_reported": false
+    },
+    {
+      "id": "losartan",
+      "display": "Losartan",
+      "category": "prescription",
+      "class": "arb",
+      "aliases": [
+        "cozaar"
+      ],
+      "under_reported": false
+    },
+    {
+      "id": "valsartan",
+      "display": "Valsartan",
+      "category": "prescription",
+      "class": "arb",
+      "aliases": [
+        "diovan"
+      ],
+      "under_reported": false
+    },
+    {
+      "id": "amlodipine",
+      "display": "Amlodipine",
+      "category": "prescription",
+      "class": null,
+      "aliases": [
+        "norvasc"
+      ],
+      "under_reported": false,
+      "aliases_ur": []
+    },
+    {
+      "id": "metoprolol",
+      "display": "Metoprolol",
+      "category": "prescription",
+      "class": "beta_blocker",
+      "aliases": [
+        "lopressor",
+        "toprol"
+      ],
+      "under_reported": false
+    },
+    {
+      "id": "carvedilol",
+      "display": "Carvedilol",
+      "category": "prescription",
+      "class": "beta_blocker",
+      "aliases": [
+        "coreg"
+      ],
+      "under_reported": false
+    },
+    {
+      "id": "atenolol",
+      "display": "Atenolol",
+      "category": "prescription",
+      "class": "beta_blocker",
+      "aliases": [
+        "tenormin"
+      ],
+      "under_reported": false
+    },
+    {
+      "id": "hydrochlorothiazide",
+      "display": "Hydrochlorothiazide",
+      "category": "prescription",
+      "class": "thiazide",
+      "aliases": [
+        "hctz",
+        "water pill"
+      ],
+      "aliases_es": [
+        "pastilla de agua"
+      ],
+      "under_reported": false
+    },
+    {
+      "id": "furosemide",
+      "display": "Furosemide",
+      "category": "prescription",
+      "class": "loop_diuretic",
+      "aliases": [
+        "lasix",
+        "water pill"
+      ],
+      "under_reported": false
+    },
+    {
+      "id": "spironolactone",
+      "display": "Spironolactone",
+      "category": "prescription",
+      "class": "k_sparing_diuretic",
+      "aliases": [
+        "aldactone"
+      ],
+      "under_reported": false
+    },
+    {
+      "id": "digoxin",
+      "display": "Digoxin",
+      "category": "prescription",
+      "class": null,
+      "aliases": [
+        "lanoxin",
+        "heart pill"
+      ],
+      "under_reported": false
+    },
+    {
+      "id": "amiodarone",
+      "display": "Amiodarone",
+      "category": "prescription",
+      "class": null,
+      "aliases": [
+        "cordarone",
+        "pacerone"
+      ],
+      "under_reported": false
+    },
+    {
+      "id": "nitroglycerin",
+      "display": "Nitroglycerin",
+      "category": "prescription",
+      "class": null,
+      "aliases": [
+        "nitro",
+        "the spray under my tongue"
+      ],
+      "under_reported": false
+    },
+    {
+      "id": "sildenafil",
+      "display": "Sildenafil",
+      "category": "prescription",
+      "class": null,
+      "aliases": [
+        "viagra",
+        "the blue pill"
+      ],
+      "under_reported": true
+    },
+    {
+      "id": "metformin",
+      "display": "Metformin",
+      "category": "prescription",
+      "class": null,
+      "aliases": [
+        "glucophage",
+        "sugar pill",
+        "diabetes pill"
+      ],
+      "aliases_es": [
+        "pastilla para el azucar"
+      ],
+      "under_reported": false,
+      "aliases_ur": [
+        "شوگر کی گولی",
+        "میٹفارمن"
+      ]
+    },
+    {
+      "id": "glipizide",
+      "display": "Glipizide",
+      "category": "prescription",
+      "class": null,
+      "aliases": [
+        "glucotrol"
+      ],
+      "under_reported": false
+    },
+    {
+      "id": "insulin",
+      "display": "Insulin",
+      "category": "prescription",
+      "class": null,
+      "aliases": [
+        "lantus",
+        "humalog",
+        "my shot"
+      ],
+      "under_reported": false
+    },
+    {
+      "id": "empagliflozin",
+      "display": "Empagliflozin",
+      "category": "prescription",
+      "class": null,
+      "aliases": [
+        "jardiance"
+      ],
+      "under_reported": false
+    },
+    {
+      "id": "semaglutide",
+      "display": "Semaglutide",
+      "category": "prescription",
+      "class": null,
+      "aliases": [
+        "ozempic",
+        "wegovy",
+        "the weight shot"
+      ],
+      "under_reported": true
+    },
+    {
+      "id": "levothyroxine",
+      "display": "Levothyroxine",
+      "category": "prescription",
+      "class": null,
+      "aliases": [
+        "synthroid",
+        "thyroid pill"
+      ],
+      "under_reported": false
+    },
+    {
+      "id": "omeprazole",
+      "display": "Omeprazole",
+      "category": "otc",
+      "class": "ppi",
+      "aliases": [
+        "prilosec",
+        "my stomach pill"
+      ],
+      "under_reported": true
+    },
+    {
+      "id": "pantoprazole",
+      "display": "Pantoprazole",
+      "category": "prescription",
+      "class": "ppi",
+      "aliases": [
+        "protonix"
+      ],
+      "under_reported": false
+    },
+    {
+      "id": "famotidine",
+      "display": "Famotidine",
+      "category": "otc",
+      "class": null,
+      "aliases": [
+        "pepcid"
+      ],
+      "under_reported": true
+    },
+    {
+      "id": "amoxicillin",
+      "display": "Amoxicillin",
+      "category": "prescription",
+      "class": null,
+      "aliases": [
+        "amoxil",
+        "augmentin"
+      ],
+      "under_reported": false
+    },
+    {
+      "id": "azithromycin",
+      "display": "Azithromycin",
+      "category": "prescription",
+      "class": "macrolide",
+      "aliases": [
+        "zithromax",
+        "z-pak"
+      ],
+      "under_reported": false
+    },
+    {
+      "id": "clarithromycin",
+      "display": "Clarithromycin",
+      "category": "prescription",
+      "class": "macrolide",
+      "aliases": [
+        "biaxin"
+      ],
+      "under_reported": false
+    },
+    {
+      "id": "ciprofloxacin",
+      "display": "Ciprofloxacin",
+      "category": "prescription",
+      "class": "fluoroquinolone",
+      "aliases": [
+        "cipro",
+        "ciproxin",
+        "cipro"
+      ],
+      "under_reported": false,
+      "aliases_ur": [
+        "سیپروکسن"
+      ]
+    },
+    {
+      "id": "levofloxacin",
+      "display": "Levofloxacin",
+      "category": "prescription",
+      "class": "fluoroquinolone",
+      "aliases": [
+        "levaquin"
+      ],
+      "under_reported": false
+    },
+    {
+      "id": "doxycycline",
+      "display": "Doxycycline",
+      "category": "prescription",
+      "class": "tetracycline",
+      "aliases": [
+        "vibramycin"
+      ],
+      "under_reported": false
+    },
+    {
+      "id": "metronidazole",
+      "display": "Metronidazole",
+      "category": "prescription",
+      "class": null,
+      "aliases": [
+        "flagyl"
+      ],
+      "under_reported": false
+    },
+    {
+      "id": "trimethoprim_sulfamethoxazole",
+      "display": "Trimethoprim-sulfamethoxazole",
+      "category": "prescription",
+      "class": null,
+      "aliases": [
+        "bactrim",
+        "septra"
+      ],
+      "under_reported": false
+    },
+    {
+      "id": "nitrofurantoin",
+      "display": "Nitrofurantoin",
+      "category": "prescription",
+      "class": null,
+      "aliases": [
+        "macrobid"
+      ],
+      "under_reported": false
+    },
+    {
+      "id": "fluconazole",
+      "display": "Fluconazole",
+      "category": "prescription",
+      "class": "azole_antifungal",
+      "aliases": [
+        "diflucan",
+        "the yeast pill"
+      ],
+      "under_reported": true
+    },
+    {
+      "id": "ketoconazole",
+      "display": "Ketoconazole",
+      "category": "prescription",
+      "class": "azole_antifungal",
+      "aliases": [
+        "nizoral"
+      ],
+      "under_reported": false
+    },
+    {
+      "id": "prednisone",
+      "display": "Prednisone",
+      "category": "prescription",
+      "class": "corticosteroid",
+      "aliases": [
+        "deltasone",
+        "steroid pack"
+      ],
+      "under_reported": false
+    },
+    {
+      "id": "methotrexate",
+      "display": "Methotrexate",
+      "category": "prescription",
+      "class": "immunosuppressant",
+      "aliases": [
+        "trexall",
+        "my weekly pill"
+      ],
+      "under_reported": false
+    },
+    {
+      "id": "azathioprine",
+      "display": "Azathioprine",
+      "category": "prescription",
+      "class": "immunosuppressant",
+      "aliases": [
+        "imuran"
+      ],
+      "under_reported": false
+    },
+    {
+      "id": "tacrolimus",
+      "display": "Tacrolimus",
+      "category": "prescription",
+      "class": "immunosuppressant",
+      "aliases": [
+        "prograf"
+      ],
+      "under_reported": false
+    },
+    {
+      "id": "allopurinol",
+      "display": "Allopurinol",
+      "category": "prescription",
+      "class": null,
+      "aliases": [
+        "zyloprim",
+        "gout pill"
+      ],
+      "under_reported": false
+    },
+    {
+      "id": "colchicine",
+      "display": "Colchicine",
+      "category": "prescription",
+      "class": null,
+      "aliases": [
+        "colcrys"
+      ],
+      "under_reported": false
+    },
+    {
+      "id": "levetiracetam",
+      "display": "Levetiracetam",
+      "category": "prescription",
+      "class": null,
+      "aliases": [
+        "keppra"
+      ],
+      "under_reported": false
+    },
+    {
+      "id": "phenytoin",
+      "display": "Phenytoin",
+      "category": "prescription",
+      "class": null,
+      "aliases": [
+        "dilantin"
+      ],
+      "under_reported": false
+    },
+    {
+      "id": "carbamazepine",
+      "display": "Carbamazepine",
+      "category": "prescription",
+      "class": null,
+      "aliases": [
+        "tegretol"
+      ],
+      "under_reported": false
+    },
+    {
+      "id": "valproate",
+      "display": "Valproate",
+      "category": "prescription",
+      "class": null,
+      "aliases": [
+        "depakote",
+        "valproic acid"
+      ],
+      "under_reported": false
+    },
+    {
+      "id": "lamotrigine",
+      "display": "Lamotrigine",
+      "category": "prescription",
+      "class": null,
+      "aliases": [
+        "lamictal"
+      ],
+      "under_reported": false
+    },
+    {
+      "id": "theophylline",
+      "display": "Theophylline",
+      "category": "prescription",
+      "class": null,
+      "aliases": [
+        "theo-24"
+      ],
+      "under_reported": false
+    },
+    {
+      "id": "albuterol",
+      "display": "Albuterol",
+      "category": "prescription",
+      "class": null,
+      "aliases": [
+        "ventolin",
+        "proair",
+        "my inhaler",
+        "rescue inhaler"
+      ],
+      "under_reported": false
+    },
+    {
+      "id": "montelukast",
+      "display": "Montelukast",
+      "category": "prescription",
+      "class": null,
+      "aliases": [
+        "singulair"
+      ],
+      "under_reported": false
+    },
+    {
+      "id": "sumatriptan",
+      "display": "Sumatriptan",
+      "category": "prescription",
+      "class": "triptan",
+      "aliases": [
+        "imitrex",
+        "migraine pill"
+      ],
+      "under_reported": false
+    },
+    {
+      "id": "diphenhydramine",
+      "display": "Diphenhydramine",
+      "category": "otc",
+      "class": "sedating_antihistamine",
+      "aliases": [
+        "benadryl",
+        "pink sleep pill",
+        "zzzquil"
+      ],
+      "under_reported": true
+    },
+    {
+      "id": "doxylamine",
+      "display": "Doxylamine",
+      "category": "otc",
+      "class": "sedating_antihistamine",
+      "aliases": [
+        "unisom",
+        "sleep aid"
+      ],
+      "under_reported": true
+    },
+    {
+      "id": "loratadine",
+      "display": "Loratadine",
+      "category": "otc",
+      "class": null,
+      "aliases": [
+        "claritin"
+      ],
+      "under_reported": true
+    },
+    {
+      "id": "cetirizine",
+      "display": "Cetirizine",
+      "category": "otc",
+      "class": null,
+      "aliases": [
+        "zyrtec"
+      ],
+      "under_reported": true
+    },
+    {
+      "id": "pseudoephedrine",
+      "display": "Pseudoephedrine",
+      "category": "otc",
+      "class": null,
+      "aliases": [
+        "sudafed",
+        "cold pill"
+      ],
+      "under_reported": true
+    },
+    {
+      "id": "potassium_chloride",
+      "display": "Potassium chloride",
+      "category": "prescription",
+      "class": null,
+      "aliases": [
+        "k-dur",
+        "potassium pill",
+        "salt substitute"
+      ],
+      "under_reported": true
+    },
+    {
+      "id": "melatonin",
+      "display": "Melatonin",
+      "category": "otc",
+      "class": null,
+      "aliases": [
+        "sleep gummy",
+        "the sleep thing",
+        "gummies"
+      ],
+      "aliases_es": [
+        "melatonina"
+      ],
+      "under_reported": true
+    },
+    {
+      "id": "st_johns_wort",
+      "display": "St. John's wort",
+      "category": "herbal",
+      "class": null,
+      "aliases": [
+        "hypericum",
+        "mood herb",
+        "the yellow flower pill"
+      ],
+      "under_reported": true
+    },
+    {
+      "id": "ginkgo",
+      "display": "Ginkgo biloba",
+      "category": "herbal",
+      "class": null,
+      "aliases": [
+        "memory herb"
+      ],
+      "under_reported": true
+    },
+    {
+      "id": "ginseng",
+      "display": "Ginseng",
+      "category": "herbal",
+      "class": null,
+      "aliases": [
+        "panax"
+      ],
+      "under_reported": true
+    },
+    {
+      "id": "garlic_supplement",
+      "display": "Garlic supplement",
+      "category": "herbal",
+      "class": null,
+      "aliases": [
+        "garlic pills",
+        "odorless garlic"
+      ],
+      "under_reported": true
+    },
+    {
+      "id": "turmeric",
+      "display": "Turmeric / curcumin",
+      "category": "herbal",
+      "class": null,
+      "aliases": [
+        "curcumin",
+        "golden milk",
+        "the yellow spice"
+      ],
+      "under_reported": true
+    },
+    {
+      "id": "ginger",
+      "display": "Ginger",
+      "category": "herbal",
+      "class": null,
+      "aliases": [
+        "ginger tea",
+        "ginger root"
+      ],
+      "under_reported": true
+    },
+    {
+      "id": "valerian",
+      "display": "Valerian root",
+      "category": "herbal",
+      "class": null,
+      "aliases": [
+        "valerian tea",
+        "sleep tea"
+      ],
+      "under_reported": true
+    },
+    {
+      "id": "kava",
+      "display": "Kava",
+      "category": "herbal",
+      "class": null,
+      "aliases": [
+        "kava kava"
+      ],
+      "under_reported": true
+    },
+    {
+      "id": "chamomile",
+      "display": "Chamomile",
+      "category": "herbal",
+      "class": null,
+      "aliases": [
+        "chamomile tea",
+        "calming tea"
+      ],
+      "aliases_es": [
+        "manzanilla"
+      ],
+      "under_reported": true
+    },
+    {
+      "id": "soursop",
+      "display": "Soursop / graviola",
+      "category": "herbal",
+      "class": null,
+      "aliases": [
+        "graviola",
+        "corossol",
+        "guanabana",
+        "soursop tea",
+        "the tea from home"
+      ],
+      "aliases_es": [
+        "guanabana"
+      ],
+      "under_reported": true,
+      "note": "Common in Caribbean and Haitian households. Ask about it directly -- it is the archetypal 'tea my sister sends'."
+    },
+    {
+      "id": "moringa",
+      "display": "Moringa",
+      "category": "herbal",
+      "class": null,
+      "aliases": [
+        "moringa tea",
+        "drumstick tree"
+      ],
+      "under_reported": true
+    },
+    {
+      "id": "licorice_root",
+      "display": "Licorice root",
+      "category": "herbal",
+      "class": null,
+      "aliases": [
+        "liquorice tea",
+        "glycyrrhiza"
+      ],
+      "under_reported": true
+    },
+    {
+      "id": "echinacea",
+      "display": "Echinacea",
+      "category": "herbal",
+      "class": null,
+      "aliases": [
+        "cold herb"
+      ],
+      "under_reported": true
+    },
+    {
+      "id": "saw_palmetto",
+      "display": "Saw palmetto",
+      "category": "herbal",
+      "class": null,
+      "aliases": [
+        "prostate herb"
+      ],
+      "under_reported": true
+    },
+    {
+      "id": "black_cohosh",
+      "display": "Black cohosh",
+      "category": "herbal",
+      "class": null,
+      "aliases": [
+        "menopause herb"
+      ],
+      "under_reported": true
+    },
+    {
+      "id": "ashwagandha",
+      "display": "Ashwagandha",
+      "category": "herbal",
+      "class": null,
+      "aliases": [
+        "stress herb"
+      ],
+      "under_reported": true
+    },
+    {
+      "id": "red_yeast_rice",
+      "display": "Red yeast rice",
+      "category": "herbal",
+      "class": null,
+      "aliases": [
+        "natural cholesterol supplement"
+      ],
+      "under_reported": true
+    },
+    {
+      "id": "bitter_orange",
+      "display": "Bitter orange",
+      "category": "herbal",
+      "class": null,
+      "aliases": [
+        "synephrine",
+        "diet supplement"
+      ],
+      "under_reported": true
+    },
+    {
+      "id": "yohimbe",
+      "display": "Yohimbe",
+      "category": "herbal",
+      "class": null,
+      "aliases": [
+        "yohimbine"
+      ],
+      "under_reported": true
+    },
+    {
+      "id": "cbd",
+      "display": "CBD",
+      "category": "herbal",
+      "class": null,
+      "aliases": [
+        "cbd oil",
+        "hemp oil",
+        "cbd gummies"
+      ],
+      "under_reported": true
+    },
+    {
+      "id": "kratom",
+      "display": "Kratom",
+      "category": "herbal",
+      "class": null,
+      "aliases": [
+        "mitragyna"
+      ],
+      "under_reported": true
+    },
+    {
+      "id": "aloe_oral",
+      "display": "Aloe vera, taken orally",
+      "category": "herbal",
+      "class": null,
+      "aliases": [
+        "aloe juice",
+        "aloe drink"
+      ],
+      "under_reported": true
+    },
+    {
+      "id": "green_tea_extract",
+      "display": "Green tea extract",
+      "category": "herbal",
+      "class": null,
+      "aliases": [
+        "green tea pills"
+      ],
+      "under_reported": true
+    },
+    {
+      "id": "vitamin_k",
+      "display": "Vitamin K",
+      "category": "supplement",
+      "class": null,
+      "aliases": [
+        "k2",
+        "mk-7"
+      ],
+      "under_reported": true
+    },
+    {
+      "id": "vitamin_d",
+      "display": "Vitamin D",
+      "category": "supplement",
+      "class": null,
+      "aliases": [
+        "d3",
+        "the sunshine vitamin"
+      ],
+      "under_reported": true
+    },
+    {
+      "id": "calcium",
+      "display": "Calcium",
+      "category": "supplement",
+      "class": "polyvalent_cation",
+      "aliases": [
+        "calcium pills",
+        "caltrate"
+      ],
+      "under_reported": true
+    },
+    {
+      "id": "iron",
+      "display": "Iron",
+      "category": "supplement",
+      "class": "polyvalent_cation",
+      "aliases": [
+        "ferrous sulfate",
+        "iron pills",
+        "blood builder"
+      ],
+      "under_reported": true
+    },
+    {
+      "id": "magnesium",
+      "display": "Magnesium",
+      "category": "supplement",
+      "class": "polyvalent_cation",
+      "aliases": [
+        "mag",
+        "magnesium citrate"
+      ],
+      "under_reported": true
+    },
+    {
+      "id": "zinc",
+      "display": "Zinc",
+      "category": "supplement",
+      "class": "polyvalent_cation",
+      "aliases": [
+        "zinc lozenges"
+      ],
+      "under_reported": true
+    },
+    {
+      "id": "antacid",
+      "display": "Antacid",
+      "category": "otc",
+      "class": "polyvalent_cation",
+      "aliases": [
+        "tums",
+        "maalox",
+        "mylanta",
+        "rolaids"
+      ],
+      "under_reported": true
+    },
+    {
+      "id": "fish_oil",
+      "display": "Fish oil / omega-3",
+      "category": "supplement",
+      "class": null,
+      "aliases": [
+        "omega 3",
+        "krill oil",
+        "cod liver oil"
+      ],
+      "under_reported": true
+    },
+    {
+      "id": "multivitamin",
+      "display": "Multivitamin",
+      "category": "supplement",
+      "class": null,
+      "aliases": [
+        "one a day",
+        "centrum",
+        "my vitamin"
+      ],
+      "under_reported": true
+    },
+    {
+      "id": "biotin",
+      "display": "Biotin",
+      "category": "supplement",
+      "class": null,
+      "aliases": [
+        "hair skin and nails"
+      ],
+      "under_reported": true,
+      "note": "No major drug interactions, but interferes with several lab immunoassays including troponin and thyroid panels. Worth asking before bloodwork."
+    },
+    {
+      "id": "probiotics",
+      "display": "Probiotics",
+      "category": "supplement",
+      "class": null,
+      "aliases": [
+        "gut pills",
+        "acidophilus"
+      ],
+      "under_reported": true
+    },
+    {
+      "id": "alcohol",
+      "display": "Alcohol",
+      "category": "lifestyle",
+      "class": null,
+      "aliases": [
+        "drink",
+        "beer",
+        "wine",
+        "liquor",
+        "a nightcap",
+        "social drinking"
+      ],
+      "aliases_es": [
+        "alcohol",
+        "trago"
+      ],
+      "under_reported": true
+    },
+    {
+      "id": "tobacco",
+      "display": "Tobacco",
+      "category": "lifestyle",
+      "class": null,
+      "aliases": [
+        "cigarettes",
+        "smoking",
+        "vape",
+        "nicotine"
+      ],
+      "under_reported": true
+    },
+    {
+      "id": "cannabis",
+      "display": "Cannabis",
+      "category": "lifestyle",
+      "class": null,
+      "aliases": [
+        "marijuana",
+        "weed",
+        "edibles",
+        "thc"
+      ],
+      "under_reported": true
+    },
+    {
+      "id": "caffeine",
+      "display": "Caffeine",
+      "category": "lifestyle",
+      "class": null,
+      "aliases": [
+        "coffee",
+        "energy drink",
+        "red bull",
+        "pre-workout"
+      ],
+      "under_reported": true
+    },
+    {
+      "id": "grapefruit",
+      "display": "Grapefruit",
+      "category": "lifestyle",
+      "class": null,
+      "aliases": [
+        "grapefruit juice",
+        "pomelo"
+      ],
+      "aliases_es": [
+        "toronja",
+        "pomelo"
+      ],
+      "under_reported": true
+    },
+    {
+      "id": "tyramine_foods",
+      "display": "Aged / fermented foods",
+      "category": "lifestyle",
+      "class": null,
+      "aliases": [
+        "aged cheese",
+        "cured meat",
+        "soy sauce",
+        "fermented food"
+      ],
+      "under_reported": true
+    },
+    {
+      "id": "bitter_gourd",
+      "display": "Bitter gourd (karela) juice",
+      "category": "herbal",
+      "class": "hypoglycemic_herbal",
+      "aliases": [
+        "karela",
+        "karela juice",
+        "bitter melon",
+        "momordica"
+      ],
+      "aliases_es": [],
+      "aliases_ur": [
+        "کریلا",
+        "کریلے کا جوس"
+      ],
+      "under_reported": true
+    }
   ],
   "interactions": [
-    { "a": "warfarin", "b": "st_johns_wort", "severity": "major", "effect": "Induces CYP metabolism and can markedly reduce anticoagulant effect.", "ask": "Ask whether they take St. John's wort -- it can drop the INR and reduce warfarin's protection." },
-    { "a": "warfarin", "b": "vitamin_k", "severity": "major", "effect": "Directly antagonises warfarin.", "ask": "Ask about vitamin K supplements or a recent change in leafy greens -- it works against warfarin directly." },
-    { "a": "warfarin", "b": "class:nsaid", "severity": "major", "effect": "Additive bleeding risk plus GI mucosal injury.", "ask": "Ask whether they take ibuprofen or naproxen for pain -- combined with warfarin this raises bleeding risk." },
-    { "a": "warfarin", "b": "aspirin", "severity": "major", "effect": "Additive bleeding risk.", "ask": "Ask whether they take a daily aspirin on their own, including low-dose." },
-    { "a": "warfarin", "b": "ginkgo", "severity": "moderate", "effect": "Antiplatelet effect, additive bleeding risk.", "ask": "Ask about ginkgo -- it adds to bleeding risk on warfarin." },
-    { "a": "warfarin", "b": "fish_oil", "severity": "moderate", "effect": "Mild antiplatelet effect at higher doses.", "ask": "Ask about fish oil or omega-3 supplements and the dose." },
-    { "a": "warfarin", "b": "garlic_supplement", "severity": "moderate", "effect": "Antiplatelet effect at supplement doses.", "ask": "Ask about garlic supplements, which differ from garlic in food." },
-    { "a": "warfarin", "b": "turmeric", "severity": "moderate", "effect": "Antiplatelet effect at supplement doses.", "ask": "Ask about turmeric or curcumin supplements -- more potent than turmeric used in cooking." },
-    { "a": "warfarin", "b": "ginger", "severity": "moderate", "effect": "Antiplatelet effect at supplement doses.", "ask": "Ask whether they take ginger as a supplement or strong daily tea." },
-    { "a": "warfarin", "b": "metronidazole", "severity": "major", "effect": "Inhibits warfarin metabolism, INR can rise sharply.", "ask": "Ask whether they have recently taken metronidazole -- it can push the INR up quickly." },
-    { "a": "warfarin", "b": "fluconazole", "severity": "major", "effect": "Potent CYP2C9 inhibition, raises INR.", "ask": "Ask about fluconazole, including a single dose taken for a yeast infection." },
-    { "a": "warfarin", "b": "trimethoprim_sulfamethoxazole", "severity": "major", "effect": "Raises INR substantially.", "ask": "Ask about recent Bactrim -- a common cause of sudden INR elevation." },
-    { "a": "warfarin", "b": "class:fluoroquinolone", "severity": "moderate", "effect": "Can potentiate anticoagulant effect.", "ask": "Ask about recent ciprofloxacin or levofloxacin." },
-    { "a": "warfarin", "b": "amiodarone", "severity": "major", "effect": "Inhibits warfarin metabolism; warfarin dose usually needs reduction.", "ask": "Confirm whether amiodarone was started or stopped recently." },
-    { "a": "warfarin", "b": "alcohol", "severity": "major", "effect": "Acute intake raises INR; chronic use lowers it. Both destabilise control.", "ask": "Ask how much and how often they drink -- both binge and daily patterns destabilise INR." },
-    { "a": "warfarin", "b": "acetaminophen", "severity": "moderate", "effect": "Sustained higher-dose use can raise INR.", "ask": "Ask how much Tylenol they take in a typical week, not just today." },
-    { "a": "warfarin", "b": "green_tea_extract", "severity": "moderate", "effect": "Vitamin K content can antagonise warfarin.", "ask": "Ask about green tea supplements or very high daily tea intake." },
-    { "a": "warfarin", "b": "ginseng", "severity": "moderate", "effect": "Can reduce anticoagulant effect.", "ask": "Ask about ginseng." },
-    { "a": "warfarin", "b": "cbd", "severity": "moderate", "effect": "Inhibits CYP metabolism, can raise INR.", "ask": "Ask about CBD oil or gummies -- most people do not consider it a medication." },
-    { "a": "warfarin", "b": "cannabis", "severity": "moderate", "effect": "Case reports of raised INR.", "ask": "Ask about cannabis use alongside warfarin." },
-    { "a": "warfarin", "b": "melatonin", "severity": "minor", "effect": "Possible mild antiplatelet effect.", "ask": "Note melatonin use alongside warfarin." },
-    { "a": "class:ssri", "b": "st_johns_wort", "severity": "major", "effect": "Additive serotonergic effect, risk of serotonin syndrome.", "ask": "Ask about St. John's wort -- combined with an SSRI it risks serotonin syndrome." },
-    { "a": "class:ssri", "b": "tramadol", "severity": "major", "effect": "Serotonergic and seizure risk.", "ask": "Ask whether they take tramadol for pain." },
-    { "a": "class:ssri", "b": "class:triptan", "severity": "moderate", "effect": "Additive serotonergic effect.", "ask": "Ask about migraine medication taken alongside their antidepressant." },
-    { "a": "class:ssri", "b": "class:maoi", "severity": "major", "effect": "Contraindicated. Serotonin syndrome.", "ask": "Confirm no MAOI use, including a recent taper." },
-    { "a": "class:ssri", "b": "class:nsaid", "severity": "moderate", "effect": "Increased GI bleeding risk.", "ask": "Ask about regular ibuprofen or naproxen use alongside the antidepressant." },
-    { "a": "class:ssri", "b": "alcohol", "severity": "moderate", "effect": "Additive CNS depression, worsened mood control.", "ask": "Ask about alcohol use alongside the antidepressant." },
-    { "a": "class:snri", "b": "st_johns_wort", "severity": "major", "effect": "Additive serotonergic effect.", "ask": "Ask about St. John's wort." },
-    { "a": "class:snri", "b": "tramadol", "severity": "major", "effect": "Serotonergic and seizure risk.", "ask": "Ask whether they take tramadol." },
-    { "a": "class:maoi", "b": "tyramine_foods", "severity": "major", "effect": "Hypertensive crisis.", "ask": "Ask specifically about aged cheese, cured meat, soy sauce and fermented foods." },
-    { "a": "class:maoi", "b": "pseudoephedrine", "severity": "major", "effect": "Hypertensive crisis.", "ask": "Ask about cold and sinus medicines bought over the counter." },
-    { "a": "class:tca", "b": "class:maoi", "severity": "major", "effect": "Serotonin syndrome and hypertensive crisis.", "ask": "Confirm no MAOI use." },
-    { "a": "bupropion", "b": "alcohol", "severity": "moderate", "effect": "Lowers seizure threshold.", "ask": "Ask about alcohol use, particularly binge drinking or abrupt stopping." },
-    { "a": "lithium", "b": "class:nsaid", "severity": "major", "effect": "Reduces renal clearance, lithium levels rise.", "ask": "Ask about ibuprofen or naproxen -- they can push lithium into toxicity." },
-    { "a": "lithium", "b": "class:thiazide", "severity": "major", "effect": "Reduces lithium clearance.", "ask": "Confirm the diuretic and whether the lithium level has been checked since it started." },
-    { "a": "lithium", "b": "class:ace_inhibitor", "severity": "moderate", "effect": "Raises lithium levels.", "ask": "Ask about blood pressure medication started since the last lithium level." },
-    { "a": "class:benzodiazepine", "b": "class:opioid", "severity": "major", "effect": "Additive respiratory depression.", "ask": "Confirm whether both are being taken, including any borrowed from family." },
-    { "a": "class:benzodiazepine", "b": "alcohol", "severity": "major", "effect": "Additive CNS and respiratory depression.", "ask": "Ask about alcohol -- combined with this sedative it is a respiratory risk." },
-    { "a": "class:benzodiazepine", "b": "melatonin", "severity": "moderate", "effect": "Additive sedation.", "ask": "Ask whether they also take melatonin to sleep -- most people do not count it as medication." },
-    { "a": "class:benzodiazepine", "b": "kava", "severity": "major", "effect": "Additive sedation and hepatotoxicity.", "ask": "Ask about kava." },
-    { "a": "class:benzodiazepine", "b": "valerian", "severity": "moderate", "effect": "Additive sedation.", "ask": "Ask about valerian or sleep teas." },
-    { "a": "class:benzodiazepine", "b": "cannabis", "severity": "moderate", "effect": "Additive sedation.", "ask": "Ask about cannabis or edibles." },
-    { "a": "class:benzodiazepine", "b": "class:sedating_antihistamine", "severity": "moderate", "effect": "Additive sedation and fall risk in older adults.", "ask": "Ask about Benadryl or over-the-counter sleep aids." },
-    { "a": "class:benzodiazepine", "b": "cbd", "severity": "moderate", "effect": "Additive sedation and raised benzodiazepine levels.", "ask": "Ask about CBD in any form." },
-    { "a": "class:benzodiazepine", "b": "caffeine", "severity": "minor", "effect": "Opposing effects, may mask sedation.", "ask": "Ask about energy drinks or heavy coffee intake." },
-    { "a": "class:opioid", "b": "alcohol", "severity": "major", "effect": "Additive respiratory depression.", "ask": "Ask about alcohol alongside the pain medication." },
-    { "a": "class:opioid", "b": "class:sedating_antihistamine", "severity": "moderate", "effect": "Additive sedation.", "ask": "Ask about Benadryl or night-time cold medicine." },
-    { "a": "class:opioid", "b": "kratom", "severity": "major", "effect": "Opioid-receptor activity, additive respiratory depression.", "ask": "Ask about kratom, which is sold as a herbal supplement." },
-    { "a": "class:opioid", "b": "class:gabapentinoid", "severity": "moderate", "effect": "Additive respiratory depression.", "ask": "Ask about gabapentin or pregabalin." },
-    { "a": "class:statin", "b": "grapefruit", "severity": "moderate", "effect": "CYP3A4 inhibition raises statin levels, particularly simvastatin and atorvastatin.", "ask": "Ask about grapefruit or grapefruit juice." },
-    { "a": "class:statin", "b": "red_yeast_rice", "severity": "major", "effect": "Contains monacolin K, pharmacologically the same as lovastatin. Effectively a double dose.", "ask": "Ask about red yeast rice -- it is a statin sold as a supplement." },
-    { "a": "class:statin", "b": "class:macrolide", "severity": "major", "effect": "CYP3A4 inhibition, raises myopathy and rhabdomyolysis risk.", "ask": "Ask about recent clarithromycin or azithromycin." },
-    { "a": "class:statin", "b": "class:azole_antifungal", "severity": "major", "effect": "CYP3A4 inhibition, myopathy risk.", "ask": "Ask about fluconazole or ketoconazole, including short courses." },
-    { "a": "class:statin", "b": "amiodarone", "severity": "moderate", "effect": "Raises statin exposure and myopathy risk.", "ask": "Confirm the statin dose is appropriate alongside amiodarone." },
-    { "a": "class:statin", "b": "green_tea_extract", "severity": "moderate", "effect": "Case reports of raised statin exposure and hepatotoxicity.", "ask": "Ask about green tea extract supplements." },
-    { "a": "class:ace_inhibitor", "b": "potassium_chloride", "severity": "major", "effect": "Hyperkalaemia.", "ask": "Ask about potassium supplements or salt substitutes, which are usually potassium chloride." },
-    { "a": "class:ace_inhibitor", "b": "spironolactone", "severity": "major", "effect": "Hyperkalaemia.", "ask": "Confirm potassium has been checked since both were started." },
-    { "a": "class:ace_inhibitor", "b": "class:nsaid", "severity": "moderate", "effect": "Reduced antihypertensive effect and renal risk.", "ask": "Ask about regular ibuprofen or naproxen." },
-    { "a": "class:ace_inhibitor", "b": "licorice_root", "severity": "moderate", "effect": "Raises blood pressure, opposing treatment.", "ask": "Ask about licorice root, which raises blood pressure." },
-    { "a": "class:ace_inhibitor", "b": "yohimbe", "severity": "moderate", "effect": "Raises blood pressure.", "ask": "Ask about yohimbe or supplements sold for energy or libido." },
-    { "a": "class:ace_inhibitor", "b": "soursop", "severity": "moderate", "effect": "Reported hypotensive effect, may add to blood pressure medication.", "ask": "Ask about soursop, graviola or corossol tea alongside the blood pressure medicine." },
-    { "a": "class:arb", "b": "potassium_chloride", "severity": "major", "effect": "Hyperkalaemia.", "ask": "Ask about potassium supplements or salt substitutes." },
-    { "a": "class:arb", "b": "spironolactone", "severity": "major", "effect": "Hyperkalaemia.", "ask": "Confirm recent potassium level." },
-    { "a": "class:beta_blocker", "b": "bitter_orange", "severity": "moderate", "effect": "Stimulant effect opposes treatment and raises cardiac risk.", "ask": "Ask about diet or weight-loss supplements." },
-    { "a": "class:beta_blocker", "b": "pseudoephedrine", "severity": "moderate", "effect": "Raises blood pressure, opposing treatment.", "ask": "Ask about over-the-counter cold and sinus medicine." },
-    { "a": "class:beta_blocker", "b": "soursop", "severity": "moderate", "effect": "May add to blood-pressure-lowering effect.", "ask": "Ask about soursop or corossol tea and how often it is taken." },
-    { "a": "levothyroxine", "b": "class:polyvalent_cation", "severity": "moderate", "effect": "Binds levothyroxine in the gut and blocks absorption.", "ask": "Ask about calcium, iron or antacids and how close to the thyroid pill they are taken." },
-    { "a": "levothyroxine", "b": "class:ppi", "severity": "moderate", "effect": "Reduced absorption.", "ask": "Ask about omeprazole or other stomach pills." },
-    { "a": "levothyroxine", "b": "biotin", "severity": "moderate", "effect": "Biotin interferes with thyroid immunoassays and can make results look abnormal.", "ask": "Ask about biotin or hair-and-nail supplements before trusting the thyroid panel." },
-    { "a": "class:fluoroquinolone", "b": "class:polyvalent_cation", "severity": "major", "effect": "Chelation, antibiotic absorption can drop substantially.", "ask": "Ask about calcium, iron, magnesium, zinc or antacids taken near the antibiotic." },
-    { "a": "class:tetracycline", "b": "class:polyvalent_cation", "severity": "major", "effect": "Chelation blocks absorption.", "ask": "Ask about dairy, calcium, iron or antacids taken with doxycycline." },
-    { "a": "class:fluoroquinolone", "b": "theophylline", "severity": "major", "effect": "Raises theophylline levels toward toxicity.", "ask": "Confirm theophylline level if ciprofloxacin was started." },
-    { "a": "metronidazole", "b": "alcohol", "severity": "major", "effect": "Disulfiram-like reaction -- flushing, vomiting, tachycardia.", "ask": "Ask about any alcohol, including cough syrup and mouthwash, while on metronidazole." },
-    { "a": "metformin", "b": "alcohol", "severity": "major", "effect": "Raises lactic acidosis risk, especially with binge drinking.", "ask": "Ask how much they drink -- with metformin this carries a lactic acidosis risk." },
-    { "a": "methotrexate", "b": "class:nsaid", "severity": "major", "effect": "Reduced clearance, methotrexate toxicity.", "ask": "Ask about ibuprofen or naproxen -- with methotrexate this can cause toxicity." },
-    { "a": "methotrexate", "b": "trimethoprim_sulfamethoxazole", "severity": "major", "effect": "Additive antifolate effect, marrow suppression.", "ask": "Confirm no Bactrim has been prescribed elsewhere." },
-    { "a": "methotrexate", "b": "alcohol", "severity": "major", "effect": "Additive hepatotoxicity.", "ask": "Ask about alcohol use -- both stress the liver." },
-    { "a": "acetaminophen", "b": "alcohol", "severity": "major", "effect": "Additive hepatotoxicity, particularly with regular drinking.", "ask": "Ask about both the daily Tylenol dose and weekly alcohol intake together." },
-    { "a": "acetaminophen", "b": "kava", "severity": "major", "effect": "Additive hepatotoxicity.", "ask": "Ask about kava alongside regular Tylenol use." },
-    { "a": "digoxin", "b": "st_johns_wort", "severity": "major", "effect": "Induces P-glycoprotein, lowers digoxin levels.", "ask": "Ask about St. John's wort -- it can drop digoxin below effect." },
-    { "a": "digoxin", "b": "amiodarone", "severity": "major", "effect": "Raises digoxin levels.", "ask": "Confirm the digoxin dose was reduced when amiodarone started." },
-    { "a": "digoxin", "b": "class:loop_diuretic", "severity": "moderate", "effect": "Hypokalaemia potentiates digoxin toxicity.", "ask": "Confirm recent potassium level." },
-    { "a": "digoxin", "b": "licorice_root", "severity": "moderate", "effect": "Causes potassium loss, potentiating digoxin toxicity.", "ask": "Ask about licorice root or licorice tea." },
-    { "a": "sildenafil", "b": "nitroglycerin", "severity": "major", "effect": "Profound hypotension. Contraindicated.", "ask": "Ask about erectile dysfunction medication, including pills obtained from a friend or online." },
-    { "a": "class:corticosteroid", "b": "class:nsaid", "severity": "moderate", "effect": "Additive GI ulceration and bleeding risk.", "ask": "Ask about ibuprofen or naproxen while on prednisone." },
-    { "a": "allopurinol", "b": "azathioprine", "severity": "major", "effect": "Blocks azathioprine metabolism, severe marrow suppression.", "ask": "Confirm azathioprine dose was reduced if allopurinol started." },
-    { "a": "phenytoin", "b": "st_johns_wort", "severity": "major", "effect": "Induces metabolism, risk of breakthrough seizures.", "ask": "Ask about St. John's wort -- it can lower the seizure medicine below effect." },
-    { "a": "carbamazepine", "b": "st_johns_wort", "severity": "major", "effect": "Induces metabolism, reduced anticonvulsant effect.", "ask": "Ask about St. John's wort." },
-    { "a": "carbamazepine", "b": "grapefruit", "severity": "moderate", "effect": "Raises carbamazepine levels.", "ask": "Ask about grapefruit juice." },
-    { "a": "tacrolimus", "b": "grapefruit", "severity": "major", "effect": "Markedly raises levels, nephrotoxicity risk.", "ask": "Ask about grapefruit -- with tacrolimus this can cause toxicity." },
-    { "a": "tacrolimus", "b": "st_johns_wort", "severity": "major", "effect": "Lowers levels, transplant rejection risk.", "ask": "Ask about St. John's wort or any herbal supplement." },
-    { "a": "tacrolimus", "b": "echinacea", "severity": "moderate", "effect": "Immunostimulant, opposes immunosuppression.", "ask": "Ask about echinacea or cold-and-flu herbal remedies." },
-    { "a": "theophylline", "b": "caffeine", "severity": "moderate", "effect": "Additive stimulant effect.", "ask": "Ask about coffee and energy drinks." },
-    { "a": "theophylline", "b": "tobacco", "severity": "moderate", "effect": "Smoking induces metabolism and lowers levels. Stopping raises them.", "ask": "Ask about smoking, and specifically about any recent quit attempt." },
-    { "a": "class:thiazide", "b": "licorice_root", "severity": "moderate", "effect": "Additive potassium loss.", "ask": "Ask about licorice root or tea." },
-    { "a": "class:thiazide", "b": "calcium", "severity": "moderate", "effect": "Hypercalcaemia risk.", "ask": "Ask about calcium supplements and antacids alongside the water pill." },
-    { "a": "class:loop_diuretic", "b": "aloe_oral", "severity": "moderate", "effect": "Additive potassium loss via laxative effect.", "ask": "Ask about aloe juice or herbal laxatives." },
-    { "a": "melatonin", "b": "class:z_drug", "severity": "moderate", "effect": "Additive sedation.", "ask": "Ask whether melatonin is taken in addition to the prescribed sleep medication." },
-    { "a": "melatonin", "b": "alcohol", "severity": "moderate", "effect": "Additive sedation.", "ask": "Ask about a drink in the evening alongside melatonin." },
-    { "a": "kava", "b": "alcohol", "severity": "major", "effect": "Additive sedation and hepatotoxicity.", "ask": "Ask about kava and alcohol together." },
-    { "a": "iron", "b": "class:ppi", "severity": "moderate", "effect": "Reduced iron absorption in low acid.", "ask": "Ask whether iron and the stomach pill are taken together." },
-    { "a": "grapefruit", "b": "amlodipine", "severity": "moderate", "effect": "Raises drug levels and hypotension risk.", "ask": "Ask about grapefruit juice." },
-    { "a": "class:sedating_antihistamine", "b": "alcohol", "severity": "moderate", "effect": "Additive CNS depression.", "ask": "Ask about Benadryl or night-time cold medicine alongside alcohol." }
+    {
+      "a": "warfarin",
+      "b": "st_johns_wort",
+      "severity": "major",
+      "effect": "Induces CYP metabolism and can markedly reduce anticoagulant effect.",
+      "ask": "Ask whether they take St. John's wort -- it can drop the INR and reduce warfarin's protection."
+    },
+    {
+      "a": "warfarin",
+      "b": "vitamin_k",
+      "severity": "major",
+      "effect": "Directly antagonises warfarin.",
+      "ask": "Ask about vitamin K supplements or a recent change in leafy greens -- it works against warfarin directly."
+    },
+    {
+      "a": "warfarin",
+      "b": "class:nsaid",
+      "severity": "major",
+      "effect": "Additive bleeding risk plus GI mucosal injury.",
+      "ask": "Ask whether they take ibuprofen or naproxen for pain -- combined with warfarin this raises bleeding risk."
+    },
+    {
+      "a": "warfarin",
+      "b": "aspirin",
+      "severity": "major",
+      "effect": "Additive bleeding risk.",
+      "ask": "Ask whether they take a daily aspirin on their own, including low-dose."
+    },
+    {
+      "a": "warfarin",
+      "b": "ginkgo",
+      "severity": "moderate",
+      "effect": "Antiplatelet effect, additive bleeding risk.",
+      "ask": "Ask about ginkgo -- it adds to bleeding risk on warfarin."
+    },
+    {
+      "a": "warfarin",
+      "b": "fish_oil",
+      "severity": "moderate",
+      "effect": "Mild antiplatelet effect at higher doses.",
+      "ask": "Ask about fish oil or omega-3 supplements and the dose."
+    },
+    {
+      "a": "warfarin",
+      "b": "garlic_supplement",
+      "severity": "moderate",
+      "effect": "Antiplatelet effect at supplement doses.",
+      "ask": "Ask about garlic supplements, which differ from garlic in food."
+    },
+    {
+      "a": "warfarin",
+      "b": "turmeric",
+      "severity": "moderate",
+      "effect": "Antiplatelet effect at supplement doses.",
+      "ask": "Ask about turmeric or curcumin supplements -- more potent than turmeric used in cooking."
+    },
+    {
+      "a": "warfarin",
+      "b": "ginger",
+      "severity": "moderate",
+      "effect": "Antiplatelet effect at supplement doses.",
+      "ask": "Ask whether they take ginger as a supplement or strong daily tea."
+    },
+    {
+      "a": "warfarin",
+      "b": "metronidazole",
+      "severity": "major",
+      "effect": "Inhibits warfarin metabolism, INR can rise sharply.",
+      "ask": "Ask whether they have recently taken metronidazole -- it can push the INR up quickly."
+    },
+    {
+      "a": "warfarin",
+      "b": "fluconazole",
+      "severity": "major",
+      "effect": "Potent CYP2C9 inhibition, raises INR.",
+      "ask": "Ask about fluconazole, including a single dose taken for a yeast infection."
+    },
+    {
+      "a": "warfarin",
+      "b": "trimethoprim_sulfamethoxazole",
+      "severity": "major",
+      "effect": "Raises INR substantially.",
+      "ask": "Ask about recent Bactrim -- a common cause of sudden INR elevation."
+    },
+    {
+      "a": "warfarin",
+      "b": "class:fluoroquinolone",
+      "severity": "moderate",
+      "effect": "Can potentiate anticoagulant effect.",
+      "ask": "Ask about recent ciprofloxacin or levofloxacin."
+    },
+    {
+      "a": "warfarin",
+      "b": "amiodarone",
+      "severity": "major",
+      "effect": "Inhibits warfarin metabolism; warfarin dose usually needs reduction.",
+      "ask": "Confirm whether amiodarone was started or stopped recently."
+    },
+    {
+      "a": "warfarin",
+      "b": "alcohol",
+      "severity": "major",
+      "effect": "Acute intake raises INR; chronic use lowers it. Both destabilise control.",
+      "ask": "Ask how much and how often they drink -- both binge and daily patterns destabilise INR."
+    },
+    {
+      "a": "warfarin",
+      "b": "acetaminophen",
+      "severity": "moderate",
+      "effect": "Sustained higher-dose use can raise INR.",
+      "ask": "Ask how much Tylenol they take in a typical week, not just today."
+    },
+    {
+      "a": "warfarin",
+      "b": "green_tea_extract",
+      "severity": "moderate",
+      "effect": "Vitamin K content can antagonise warfarin.",
+      "ask": "Ask about green tea supplements or very high daily tea intake."
+    },
+    {
+      "a": "warfarin",
+      "b": "ginseng",
+      "severity": "moderate",
+      "effect": "Can reduce anticoagulant effect.",
+      "ask": "Ask about ginseng."
+    },
+    {
+      "a": "warfarin",
+      "b": "cbd",
+      "severity": "moderate",
+      "effect": "Inhibits CYP metabolism, can raise INR.",
+      "ask": "Ask about CBD oil or gummies -- most people do not consider it a medication."
+    },
+    {
+      "a": "warfarin",
+      "b": "cannabis",
+      "severity": "moderate",
+      "effect": "Case reports of raised INR.",
+      "ask": "Ask about cannabis use alongside warfarin."
+    },
+    {
+      "a": "warfarin",
+      "b": "melatonin",
+      "severity": "minor",
+      "effect": "Possible mild antiplatelet effect.",
+      "ask": "Note melatonin use alongside warfarin."
+    },
+    {
+      "a": "class:ssri",
+      "b": "st_johns_wort",
+      "severity": "major",
+      "effect": "Additive serotonergic effect, risk of serotonin syndrome.",
+      "ask": "Ask about St. John's wort -- combined with an SSRI it risks serotonin syndrome."
+    },
+    {
+      "a": "class:ssri",
+      "b": "tramadol",
+      "severity": "major",
+      "effect": "Serotonergic and seizure risk.",
+      "ask": "Ask whether they take tramadol for pain."
+    },
+    {
+      "a": "class:ssri",
+      "b": "class:triptan",
+      "severity": "moderate",
+      "effect": "Additive serotonergic effect.",
+      "ask": "Ask about migraine medication taken alongside their antidepressant."
+    },
+    {
+      "a": "class:ssri",
+      "b": "class:maoi",
+      "severity": "major",
+      "effect": "Contraindicated. Serotonin syndrome.",
+      "ask": "Confirm no MAOI use, including a recent taper."
+    },
+    {
+      "a": "class:ssri",
+      "b": "class:nsaid",
+      "severity": "moderate",
+      "effect": "Increased GI bleeding risk.",
+      "ask": "Ask about regular ibuprofen or naproxen use alongside the antidepressant."
+    },
+    {
+      "a": "class:ssri",
+      "b": "alcohol",
+      "severity": "moderate",
+      "effect": "Additive CNS depression, worsened mood control.",
+      "ask": "Ask about alcohol use alongside the antidepressant."
+    },
+    {
+      "a": "class:snri",
+      "b": "st_johns_wort",
+      "severity": "major",
+      "effect": "Additive serotonergic effect.",
+      "ask": "Ask about St. John's wort."
+    },
+    {
+      "a": "class:snri",
+      "b": "tramadol",
+      "severity": "major",
+      "effect": "Serotonergic and seizure risk.",
+      "ask": "Ask whether they take tramadol."
+    },
+    {
+      "a": "class:maoi",
+      "b": "tyramine_foods",
+      "severity": "major",
+      "effect": "Hypertensive crisis.",
+      "ask": "Ask specifically about aged cheese, cured meat, soy sauce and fermented foods."
+    },
+    {
+      "a": "class:maoi",
+      "b": "pseudoephedrine",
+      "severity": "major",
+      "effect": "Hypertensive crisis.",
+      "ask": "Ask about cold and sinus medicines bought over the counter."
+    },
+    {
+      "a": "class:tca",
+      "b": "class:maoi",
+      "severity": "major",
+      "effect": "Serotonin syndrome and hypertensive crisis.",
+      "ask": "Confirm no MAOI use."
+    },
+    {
+      "a": "bupropion",
+      "b": "alcohol",
+      "severity": "moderate",
+      "effect": "Lowers seizure threshold.",
+      "ask": "Ask about alcohol use, particularly binge drinking or abrupt stopping."
+    },
+    {
+      "a": "lithium",
+      "b": "class:nsaid",
+      "severity": "major",
+      "effect": "Reduces renal clearance, lithium levels rise.",
+      "ask": "Ask about ibuprofen or naproxen -- they can push lithium into toxicity."
+    },
+    {
+      "a": "lithium",
+      "b": "class:thiazide",
+      "severity": "major",
+      "effect": "Reduces lithium clearance.",
+      "ask": "Confirm the diuretic and whether the lithium level has been checked since it started."
+    },
+    {
+      "a": "lithium",
+      "b": "class:ace_inhibitor",
+      "severity": "moderate",
+      "effect": "Raises lithium levels.",
+      "ask": "Ask about blood pressure medication started since the last lithium level."
+    },
+    {
+      "a": "class:benzodiazepine",
+      "b": "class:opioid",
+      "severity": "major",
+      "effect": "Additive respiratory depression.",
+      "ask": "Confirm whether both are being taken, including any borrowed from family."
+    },
+    {
+      "a": "class:benzodiazepine",
+      "b": "alcohol",
+      "severity": "major",
+      "effect": "Additive CNS and respiratory depression.",
+      "ask": "Ask about alcohol -- combined with this sedative it is a respiratory risk."
+    },
+    {
+      "a": "class:benzodiazepine",
+      "b": "melatonin",
+      "severity": "moderate",
+      "effect": "Additive sedation.",
+      "ask": "Ask whether they also take melatonin to sleep -- most people do not count it as medication."
+    },
+    {
+      "a": "class:benzodiazepine",
+      "b": "kava",
+      "severity": "major",
+      "effect": "Additive sedation and hepatotoxicity.",
+      "ask": "Ask about kava."
+    },
+    {
+      "a": "class:benzodiazepine",
+      "b": "valerian",
+      "severity": "moderate",
+      "effect": "Additive sedation.",
+      "ask": "Ask about valerian or sleep teas."
+    },
+    {
+      "a": "class:benzodiazepine",
+      "b": "cannabis",
+      "severity": "moderate",
+      "effect": "Additive sedation.",
+      "ask": "Ask about cannabis or edibles."
+    },
+    {
+      "a": "class:benzodiazepine",
+      "b": "class:sedating_antihistamine",
+      "severity": "moderate",
+      "effect": "Additive sedation and fall risk in older adults.",
+      "ask": "Ask about Benadryl or over-the-counter sleep aids."
+    },
+    {
+      "a": "class:benzodiazepine",
+      "b": "cbd",
+      "severity": "moderate",
+      "effect": "Additive sedation and raised benzodiazepine levels.",
+      "ask": "Ask about CBD in any form."
+    },
+    {
+      "a": "class:benzodiazepine",
+      "b": "caffeine",
+      "severity": "minor",
+      "effect": "Opposing effects, may mask sedation.",
+      "ask": "Ask about energy drinks or heavy coffee intake."
+    },
+    {
+      "a": "class:opioid",
+      "b": "alcohol",
+      "severity": "major",
+      "effect": "Additive respiratory depression.",
+      "ask": "Ask about alcohol alongside the pain medication."
+    },
+    {
+      "a": "class:opioid",
+      "b": "class:sedating_antihistamine",
+      "severity": "moderate",
+      "effect": "Additive sedation.",
+      "ask": "Ask about Benadryl or night-time cold medicine."
+    },
+    {
+      "a": "class:opioid",
+      "b": "kratom",
+      "severity": "major",
+      "effect": "Opioid-receptor activity, additive respiratory depression.",
+      "ask": "Ask about kratom, which is sold as a herbal supplement."
+    },
+    {
+      "a": "class:opioid",
+      "b": "class:gabapentinoid",
+      "severity": "moderate",
+      "effect": "Additive respiratory depression.",
+      "ask": "Ask about gabapentin or pregabalin."
+    },
+    {
+      "a": "class:statin",
+      "b": "grapefruit",
+      "severity": "moderate",
+      "effect": "CYP3A4 inhibition raises statin levels, particularly simvastatin and atorvastatin.",
+      "ask": "Ask about grapefruit or grapefruit juice."
+    },
+    {
+      "a": "class:statin",
+      "b": "red_yeast_rice",
+      "severity": "major",
+      "effect": "Contains monacolin K, pharmacologically the same as lovastatin. Effectively a double dose.",
+      "ask": "Ask about red yeast rice -- it is a statin sold as a supplement."
+    },
+    {
+      "a": "class:statin",
+      "b": "class:macrolide",
+      "severity": "major",
+      "effect": "CYP3A4 inhibition, raises myopathy and rhabdomyolysis risk.",
+      "ask": "Ask about recent clarithromycin or azithromycin."
+    },
+    {
+      "a": "class:statin",
+      "b": "class:azole_antifungal",
+      "severity": "major",
+      "effect": "CYP3A4 inhibition, myopathy risk.",
+      "ask": "Ask about fluconazole or ketoconazole, including short courses."
+    },
+    {
+      "a": "class:statin",
+      "b": "amiodarone",
+      "severity": "moderate",
+      "effect": "Raises statin exposure and myopathy risk.",
+      "ask": "Confirm the statin dose is appropriate alongside amiodarone."
+    },
+    {
+      "a": "class:statin",
+      "b": "green_tea_extract",
+      "severity": "moderate",
+      "effect": "Case reports of raised statin exposure and hepatotoxicity.",
+      "ask": "Ask about green tea extract supplements."
+    },
+    {
+      "a": "class:ace_inhibitor",
+      "b": "potassium_chloride",
+      "severity": "major",
+      "effect": "Hyperkalaemia.",
+      "ask": "Ask about potassium supplements or salt substitutes, which are usually potassium chloride."
+    },
+    {
+      "a": "class:ace_inhibitor",
+      "b": "spironolactone",
+      "severity": "major",
+      "effect": "Hyperkalaemia.",
+      "ask": "Confirm potassium has been checked since both were started."
+    },
+    {
+      "a": "class:ace_inhibitor",
+      "b": "class:nsaid",
+      "severity": "moderate",
+      "effect": "Reduced antihypertensive effect and renal risk.",
+      "ask": "Ask about regular ibuprofen or naproxen."
+    },
+    {
+      "a": "class:ace_inhibitor",
+      "b": "licorice_root",
+      "severity": "moderate",
+      "effect": "Raises blood pressure, opposing treatment.",
+      "ask": "Ask about licorice root, which raises blood pressure."
+    },
+    {
+      "a": "class:ace_inhibitor",
+      "b": "yohimbe",
+      "severity": "moderate",
+      "effect": "Raises blood pressure.",
+      "ask": "Ask about yohimbe or supplements sold for energy or libido."
+    },
+    {
+      "a": "class:ace_inhibitor",
+      "b": "soursop",
+      "severity": "moderate",
+      "effect": "Reported hypotensive effect, may add to blood pressure medication.",
+      "ask": "Ask about soursop, graviola or corossol tea alongside the blood pressure medicine."
+    },
+    {
+      "a": "class:arb",
+      "b": "potassium_chloride",
+      "severity": "major",
+      "effect": "Hyperkalaemia.",
+      "ask": "Ask about potassium supplements or salt substitutes."
+    },
+    {
+      "a": "class:arb",
+      "b": "spironolactone",
+      "severity": "major",
+      "effect": "Hyperkalaemia.",
+      "ask": "Confirm recent potassium level."
+    },
+    {
+      "a": "class:beta_blocker",
+      "b": "bitter_orange",
+      "severity": "moderate",
+      "effect": "Stimulant effect opposes treatment and raises cardiac risk.",
+      "ask": "Ask about diet or weight-loss supplements."
+    },
+    {
+      "a": "class:beta_blocker",
+      "b": "pseudoephedrine",
+      "severity": "moderate",
+      "effect": "Raises blood pressure, opposing treatment.",
+      "ask": "Ask about over-the-counter cold and sinus medicine."
+    },
+    {
+      "a": "class:beta_blocker",
+      "b": "soursop",
+      "severity": "moderate",
+      "effect": "May add to blood-pressure-lowering effect.",
+      "ask": "Ask about soursop or corossol tea and how often it is taken."
+    },
+    {
+      "a": "levothyroxine",
+      "b": "class:polyvalent_cation",
+      "severity": "moderate",
+      "effect": "Binds levothyroxine in the gut and blocks absorption.",
+      "ask": "Ask about calcium, iron or antacids and how close to the thyroid pill they are taken."
+    },
+    {
+      "a": "levothyroxine",
+      "b": "class:ppi",
+      "severity": "moderate",
+      "effect": "Reduced absorption.",
+      "ask": "Ask about omeprazole or other stomach pills."
+    },
+    {
+      "a": "levothyroxine",
+      "b": "biotin",
+      "severity": "moderate",
+      "effect": "Biotin interferes with thyroid immunoassays and can make results look abnormal.",
+      "ask": "Ask about biotin or hair-and-nail supplements before trusting the thyroid panel."
+    },
+    {
+      "a": "class:fluoroquinolone",
+      "b": "class:polyvalent_cation",
+      "severity": "major",
+      "effect": "Chelation, antibiotic absorption can drop substantially.",
+      "ask": "Ask about calcium, iron, magnesium, zinc or antacids taken near the antibiotic."
+    },
+    {
+      "a": "class:tetracycline",
+      "b": "class:polyvalent_cation",
+      "severity": "major",
+      "effect": "Chelation blocks absorption.",
+      "ask": "Ask about dairy, calcium, iron or antacids taken with doxycycline."
+    },
+    {
+      "a": "class:fluoroquinolone",
+      "b": "theophylline",
+      "severity": "major",
+      "effect": "Raises theophylline levels toward toxicity.",
+      "ask": "Confirm theophylline level if ciprofloxacin was started."
+    },
+    {
+      "a": "metronidazole",
+      "b": "alcohol",
+      "severity": "major",
+      "effect": "Disulfiram-like reaction -- flushing, vomiting, tachycardia.",
+      "ask": "Ask about any alcohol, including cough syrup and mouthwash, while on metronidazole."
+    },
+    {
+      "a": "metformin",
+      "b": "alcohol",
+      "severity": "major",
+      "effect": "Raises lactic acidosis risk, especially with binge drinking.",
+      "ask": "Ask how much they drink -- with metformin this carries a lactic acidosis risk."
+    },
+    {
+      "a": "methotrexate",
+      "b": "class:nsaid",
+      "severity": "major",
+      "effect": "Reduced clearance, methotrexate toxicity.",
+      "ask": "Ask about ibuprofen or naproxen -- with methotrexate this can cause toxicity."
+    },
+    {
+      "a": "methotrexate",
+      "b": "trimethoprim_sulfamethoxazole",
+      "severity": "major",
+      "effect": "Additive antifolate effect, marrow suppression.",
+      "ask": "Confirm no Bactrim has been prescribed elsewhere."
+    },
+    {
+      "a": "methotrexate",
+      "b": "alcohol",
+      "severity": "major",
+      "effect": "Additive hepatotoxicity.",
+      "ask": "Ask about alcohol use -- both stress the liver."
+    },
+    {
+      "a": "acetaminophen",
+      "b": "alcohol",
+      "severity": "major",
+      "effect": "Additive hepatotoxicity, particularly with regular drinking.",
+      "ask": "Ask about both the daily Tylenol dose and weekly alcohol intake together."
+    },
+    {
+      "a": "acetaminophen",
+      "b": "kava",
+      "severity": "major",
+      "effect": "Additive hepatotoxicity.",
+      "ask": "Ask about kava alongside regular Tylenol use."
+    },
+    {
+      "a": "digoxin",
+      "b": "st_johns_wort",
+      "severity": "major",
+      "effect": "Induces P-glycoprotein, lowers digoxin levels.",
+      "ask": "Ask about St. John's wort -- it can drop digoxin below effect."
+    },
+    {
+      "a": "digoxin",
+      "b": "amiodarone",
+      "severity": "major",
+      "effect": "Raises digoxin levels.",
+      "ask": "Confirm the digoxin dose was reduced when amiodarone started."
+    },
+    {
+      "a": "digoxin",
+      "b": "class:loop_diuretic",
+      "severity": "moderate",
+      "effect": "Hypokalaemia potentiates digoxin toxicity.",
+      "ask": "Confirm recent potassium level."
+    },
+    {
+      "a": "digoxin",
+      "b": "licorice_root",
+      "severity": "moderate",
+      "effect": "Causes potassium loss, potentiating digoxin toxicity.",
+      "ask": "Ask about licorice root or licorice tea."
+    },
+    {
+      "a": "sildenafil",
+      "b": "nitroglycerin",
+      "severity": "major",
+      "effect": "Profound hypotension. Contraindicated.",
+      "ask": "Ask about erectile dysfunction medication, including pills obtained from a friend or online."
+    },
+    {
+      "a": "class:corticosteroid",
+      "b": "class:nsaid",
+      "severity": "moderate",
+      "effect": "Additive GI ulceration and bleeding risk.",
+      "ask": "Ask about ibuprofen or naproxen while on prednisone."
+    },
+    {
+      "a": "allopurinol",
+      "b": "azathioprine",
+      "severity": "major",
+      "effect": "Blocks azathioprine metabolism, severe marrow suppression.",
+      "ask": "Confirm azathioprine dose was reduced if allopurinol started."
+    },
+    {
+      "a": "phenytoin",
+      "b": "st_johns_wort",
+      "severity": "major",
+      "effect": "Induces metabolism, risk of breakthrough seizures.",
+      "ask": "Ask about St. John's wort -- it can lower the seizure medicine below effect."
+    },
+    {
+      "a": "carbamazepine",
+      "b": "st_johns_wort",
+      "severity": "major",
+      "effect": "Induces metabolism, reduced anticonvulsant effect.",
+      "ask": "Ask about St. John's wort."
+    },
+    {
+      "a": "carbamazepine",
+      "b": "grapefruit",
+      "severity": "moderate",
+      "effect": "Raises carbamazepine levels.",
+      "ask": "Ask about grapefruit juice."
+    },
+    {
+      "a": "tacrolimus",
+      "b": "grapefruit",
+      "severity": "major",
+      "effect": "Markedly raises levels, nephrotoxicity risk.",
+      "ask": "Ask about grapefruit -- with tacrolimus this can cause toxicity."
+    },
+    {
+      "a": "tacrolimus",
+      "b": "st_johns_wort",
+      "severity": "major",
+      "effect": "Lowers levels, transplant rejection risk.",
+      "ask": "Ask about St. John's wort or any herbal supplement."
+    },
+    {
+      "a": "tacrolimus",
+      "b": "echinacea",
+      "severity": "moderate",
+      "effect": "Immunostimulant, opposes immunosuppression.",
+      "ask": "Ask about echinacea or cold-and-flu herbal remedies."
+    },
+    {
+      "a": "theophylline",
+      "b": "caffeine",
+      "severity": "moderate",
+      "effect": "Additive stimulant effect.",
+      "ask": "Ask about coffee and energy drinks."
+    },
+    {
+      "a": "theophylline",
+      "b": "tobacco",
+      "severity": "moderate",
+      "effect": "Smoking induces metabolism and lowers levels. Stopping raises them.",
+      "ask": "Ask about smoking, and specifically about any recent quit attempt."
+    },
+    {
+      "a": "class:thiazide",
+      "b": "licorice_root",
+      "severity": "moderate",
+      "effect": "Additive potassium loss.",
+      "ask": "Ask about licorice root or tea."
+    },
+    {
+      "a": "class:thiazide",
+      "b": "calcium",
+      "severity": "moderate",
+      "effect": "Hypercalcaemia risk.",
+      "ask": "Ask about calcium supplements and antacids alongside the water pill."
+    },
+    {
+      "a": "class:loop_diuretic",
+      "b": "aloe_oral",
+      "severity": "moderate",
+      "effect": "Additive potassium loss via laxative effect.",
+      "ask": "Ask about aloe juice or herbal laxatives."
+    },
+    {
+      "a": "melatonin",
+      "b": "class:z_drug",
+      "severity": "moderate",
+      "effect": "Additive sedation.",
+      "ask": "Ask whether melatonin is taken in addition to the prescribed sleep medication."
+    },
+    {
+      "a": "melatonin",
+      "b": "alcohol",
+      "severity": "moderate",
+      "effect": "Additive sedation.",
+      "ask": "Ask about a drink in the evening alongside melatonin."
+    },
+    {
+      "a": "kava",
+      "b": "alcohol",
+      "severity": "major",
+      "effect": "Additive sedation and hepatotoxicity.",
+      "ask": "Ask about kava and alcohol together."
+    },
+    {
+      "a": "iron",
+      "b": "class:ppi",
+      "severity": "moderate",
+      "effect": "Reduced iron absorption in low acid.",
+      "ask": "Ask whether iron and the stomach pill are taken together."
+    },
+    {
+      "a": "grapefruit",
+      "b": "amlodipine",
+      "severity": "moderate",
+      "effect": "Raises drug levels and hypotension risk.",
+      "ask": "Ask about grapefruit juice."
+    },
+    {
+      "a": "class:sedating_antihistamine",
+      "b": "alcohol",
+      "severity": "moderate",
+      "effect": "Additive CNS depression.",
+      "ask": "Ask about Benadryl or night-time cold medicine alongside alcohol."
+    },
+    {
+      "a": "bitter_gourd",
+      "b": "metformin",
+      "severity": "major",
+      "effect": "Both lower blood sugar. A glass every morning alongside metformin can push it too low.",
+      "ask": "Ask whether she drinks karela juice — with metformin it can drop her sugar and explain dizziness before food.",
+      "source": "NHS · NIH Office of Dietary Supplements"
+    },
+    {
+      "a": "ciprofloxacin",
+      "b": "metformin",
+      "severity": "moderate",
+      "effect": "Fluoroquinolones can disturb blood glucose in patients on antidiabetic medicines.",
+      "ask": "Ask whether she is taking ciprofloxacin without a prescription — with metformin it can swing her sugar.",
+      "source": "Ciprofloxacin FDA label"
+    }
   ]
 }
