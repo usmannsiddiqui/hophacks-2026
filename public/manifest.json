@@ -1,0 +1,9 @@
+{
+  "name": "Mashwara",
+  "short_name": "Mashwara",
+  "start_url": "/file/new",
+  "display": "standalone",
+  "background_color": "#fefffc",
+  "theme_color": "#fefffc",
+  "icons": [{ "src": "/icon.svg", "sizes": "any", "type": "image/svg+xml" }]
+}
