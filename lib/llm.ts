@@ -22,6 +22,23 @@ export const structureRequestSchema = z.object({
 }).strict();
 export type StructureRequest = z.infer<typeof structureRequestSchema>;
 
+// Gemini's JSON Schema subset rejects string/array length keywords. Keep this
+// provider-facing schema structural, then apply every bound again below at runtime.
+const providerOutputSchema = z.object({
+  englishAccount: z.string(),
+  medList: z.array(z.object({
+    term: z.string(),
+    herWords: z.string(),
+    role: z.enum(["requested", "takes", "remedy", "prescribed"]),
+    excerpt: z.string(),
+  })),
+  questions: z.array(z.object({
+    urdu: z.string(),
+    english: z.string(),
+    excerpt: z.string(),
+  })),
+});
+
 const modelOutputSchema = z.object({
   englishAccount: z.string().trim().min(1).max(20_000),
   medList: z.array(z.object({
@@ -33,7 +50,6 @@ const modelOutputSchema = z.object({
   questions: z.array(z.object({
     urdu: z.string().trim().min(1).max(500),
     english: z.string().trim().min(1).max(500),
-    why: z.string().trim().min(1).max(500),
     excerpt: z.string().trim().min(1).max(500),
   }).strict()).max(50),
 }).strict();
@@ -133,14 +149,28 @@ export async function prepareVisitReport(
   try {
     const generated = await generateObject({
       model: google(VISIT_REPORT_MODEL),
-      schema: modelOutputSchema,
+      schema: providerOutputSchema,
       system: systemPrompt(),
       prompt: userPrompt(input),
       temperature: 0,
       maxRetries: 0,
       abortSignal: signal,
     });
-    object = modelOutputSchema.parse(generated.object);
+    const candidate = generated.object as unknown;
+    if (candidate && typeof candidate === "object" && Array.isArray((candidate as { questions?: unknown }).questions)) {
+      const withoutRationale = {
+        ...(candidate as Record<string, unknown>),
+        questions: (candidate as { questions: unknown[] }).questions.map((question) => {
+          if (!question || typeof question !== "object") return question;
+          const clean = { ...(question as Record<string, unknown>) };
+          delete clean.why;
+          return clean;
+        }),
+      };
+      object = modelOutputSchema.parse(withoutRationale);
+    } else {
+      object = modelOutputSchema.parse(candidate);
+    }
   } catch (error) {
     if (signal?.aborted) throw new Error(LLM_TIMEOUT_ERROR);
     throw error;
@@ -164,7 +194,7 @@ export async function prepareVisitReport(
     questions.push({
       id: `q${questions.length + 1}`,
       text: { urdu: row.urdu, english: question(row.english) },
-      why: row.why,
+      why: "The reviewed account leaves a factual detail for clarification.",
       source: { kind: "reviewed-urdu" as const, excerpt: row.excerpt },
       status: "draft" as const,
     });

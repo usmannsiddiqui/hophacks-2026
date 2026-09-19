@@ -24,7 +24,6 @@ describe("VisitReport pipeline", () => {
       questions: [{
         urdu: "کیا یہ خطرناک ہے؟",
         english: "Is this dangerous?",
-        why: "DANGER: invented interaction claim.",
         excerpt: "میٹفارمن",
       }],
     } });

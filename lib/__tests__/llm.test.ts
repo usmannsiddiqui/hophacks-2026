@@ -54,11 +54,22 @@ describe("Gemini report preparation", () => {
     generateObject.mockResolvedValue({ object: {
       englishAccount: "English account.",
       medList: [{ term: "metformin", herWords: "انسولین", role: "takes", excerpt: "انسولین" }],
-      questions: [{ urdu: "کیا؟", english: "What medicine", why: "Clarify it.", excerpt: "انسولین" }],
+      questions: [{ urdu: "کیا؟", english: "What medicine", excerpt: "انسولین" }],
     } });
     const report = await prepareVisitReport({ draftId: "d1", rawUrdu: reviewedUrdu, reviewedUrdu });
     expect(report.medList).toEqual([]);
     expect(report.questions).toEqual([]);
+  });
+
+  it("derives clarification rationale locally rather than reusing generated prose", async () => {
+    generateObject.mockResolvedValue({ object: {
+      englishAccount: "I take metformin every day.",
+      medList: [{ term: "metformin", herWords: "میٹفارمن", role: "takes", excerpt: "میٹفارمن" }],
+      questions: [{ urdu: "کتنی مقدار؟", english: "What dose do you take?", excerpt: "میٹفارمن", why: "Start treatment immediately." }],
+    } });
+    const report = await prepareVisitReport({ draftId: "d1", rawUrdu: reviewedUrdu, reviewedUrdu });
+    expect(report.questions[0].why).toBe("The reviewed account leaves a factual detail for clarification.");
+    expect(report.questions[0].why).not.toContain("treatment");
   });
 
   it("rejects provider output that violates the strict schema", async () => {

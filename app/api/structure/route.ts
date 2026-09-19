@@ -9,11 +9,32 @@ export const maxDuration = 30;
 const MAX_BODY_BYTES = 256 * 1024;
 const headers = { "Cache-Control": "no-store" };
 
+class BodyAbortError extends Error {}
+
 function error(message: string, status: number): Response {
   return Response.json({ error: message }, { status, headers });
 }
 
+async function readChunk(
+  reader: ReadableStreamDefaultReader<Uint8Array>,
+  signal: AbortSignal,
+): Promise<ReadableStreamReadResult<Uint8Array>> {
+  if (signal.aborted) throw new BodyAbortError();
+  let onAbort: (() => void) | undefined;
+  const aborted = new Promise<never>((_, reject) => {
+    onAbort = () => reject(new BodyAbortError());
+    signal.addEventListener("abort", onAbort, { once: true });
+  });
+  try {
+    return await Promise.race([reader.read(), aborted]);
+  } finally {
+    if (onAbort) signal.removeEventListener("abort", onAbort);
+  }
+}
+
 export async function POST(request: Request): Promise<Response> {
+  const timeout = AbortSignal.timeout(25_000);
+  const signal = AbortSignal.any([request.signal, timeout]);
   if (!request.headers.get("content-type")?.toLowerCase().startsWith("application/json")) {
     return error("Content-Type must be application/json.", 415);
   }
@@ -26,7 +47,7 @@ export async function POST(request: Request): Promise<Response> {
   let bytes = 0;
   try {
     while (true) {
-      const { value, done } = await reader.read();
+      const { value, done } = await readChunk(reader, signal);
       if (done) break;
       bytes += value.byteLength;
       if (bytes > MAX_BODY_BYTES) {
@@ -36,9 +57,15 @@ export async function POST(request: Request): Promise<Response> {
       chunks.push(value);
     }
   } catch {
+    if (signal.aborted) {
+      void reader.cancel(signal.reason).catch(() => undefined);
+      return timeout.aborted
+        ? error("English report preparation timed out. Please retry.", 504)
+        : error("Request was cancelled.", 499);
+    }
     return error("Request body could not be read.", 400);
   } finally {
-    reader.releaseLock();
+    try { reader.releaseLock(); } catch { /* cancellation settles the pending read */ }
   }
   const text = new TextDecoder().decode(Buffer.concat(chunks));
 
@@ -51,8 +78,6 @@ export async function POST(request: Request): Promise<Response> {
   const parsed = structureRequestSchema.safeParse(input);
   if (!parsed.success) return error("Saved visit data is invalid.", 400);
 
-  const timeout = AbortSignal.timeout(25_000);
-  const signal = AbortSignal.any([request.signal, timeout]);
   try {
     return Response.json(await prepareVisitReport(parsed.data, signal), { headers });
   } catch (cause) {

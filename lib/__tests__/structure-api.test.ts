@@ -69,4 +69,26 @@ describe("POST /api/structure", () => {
       expect(response.headers.get("cache-control")).toContain("no-store");
     }
   });
+
+  it("cancels a stalled body when the absolute request deadline expires", async () => {
+    const deadline = new AbortController();
+    const timeout = vi.spyOn(AbortSignal, "timeout").mockReturnValueOnce(deadline.signal);
+    const cancel = vi.fn();
+    const stalled = new ReadableStream<Uint8Array>({
+      pull: () => new Promise(() => undefined),
+      cancel,
+    });
+    const pending = POST(new Request("http://localhost/api/structure", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: stalled,
+      duplex: "half",
+    } as RequestInit & { duplex: "half" }));
+    deadline.abort(new DOMException("deadline", "TimeoutError"));
+    const response = await pending;
+    expect(response.status).toBe(504);
+    expect(cancel).toHaveBeenCalled();
+    expect(prepareVisitReport).not.toHaveBeenCalled();
+    timeout.mockRestore();
+  });
 });
