@@ -73,9 +73,24 @@ it sends the app back to ask a follow-up. Renders as a dashed card.
 meds, and common desi remedies. Gemini may only output a term from this list or
 `unidentified`. Owned by stream A. File: `data/substances.json` (`substances[]`).
 
-**Interaction table.** ~40 rows of `{ termA, termB, severity, reason, source }`. The only
-thing that can produce a flag (ADR 0001). Every row has a citable source. File:
-`data/substances.json` (`interactions[]`).
+**Interaction table.** 105 rows of `{ a, b, severity, effect, ask, source? }`. The only
+thing that can produce a flag (ADR 0001). File: `data/substances.json` (`interactions[]`).
+
+**Citable row.** A table row that is `major` or `moderate` **and** carries a `source`.
+Only a citable row can become a flag. As of 2026-09-19 there are 2 of them.
+
+**Ask-only row.** Any other row — `minor`, or missing a `source`. It is real enough to
+raise with her but not to put on screen as a cited claim, so it becomes a question
+instead. 103 of the 105 rows are currently ask-only. Curating sources is what moves a
+row from ask-only to citable.
+
+**Owed question.** A question the interaction table proves is owed, worked out without
+the model: one for every ask-only row whose two substances are both on the file, and one
+for every unidentified item. Computed by `lib/insights.ts`.
+
+**Uncovered.** An owed question that nothing in `questions[]` addresses. Reported by the
+structure step rather than filled in — writing the Urdu for a question nobody asked would
+be a fabrication.
 
 **Flag.** A row from the interaction table that matches two med items in the file.
 Carries severity (`high` | `moderate`), the reason and a **citation**. A flag without a
