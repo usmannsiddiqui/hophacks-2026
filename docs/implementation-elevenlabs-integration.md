@@ -29,9 +29,15 @@ Owner: one implementation worker, no overlapping edits. Code scope: app/api/tran
 
 ### Task 2: Integration review, browser verification and shared context
 Controller owns .gitignore, docs/** outside lib/voice, context-files.json, README/CONTEXT and Git state. Review worker output against these constraints; delegated reviewers do not edit simultaneously.
-- [ ] Resolve .gitignore by retaining both local-ignore groups; keep bounded route contract during add/add conflict. Record actual ancestry in the merge commit.
-- [ ] Browser check approved setup/capture/upload/errors and retry where tool supports it. Run live Urdu fixtures only when replacement key is confirmed; otherwise record skipped validation without a success claim.
-- [ ] Update build order, integration status, contracts and source-of-truth docs. Import teammate docs before vault edits; export/check through context sync.
-- [ ] Run production build and appropriate final checks; independent final review.
-- [ ] Fetch again for teammate pushes, integrate any additions deliberately, verify ancestry, push branch and update existing draft PR #5.
-- [ ] Leave PR #4 targeting main and PR #5 targeting judge-demo-journey. After approval: merge #4 first, retarget #5 to main, then merge #5 with a merge commit; no squash/rebase.
+- [x] Resolve .gitignore by retaining both local-ignore groups; keep bounded route contract during add/add conflict. Record actual ancestry in the merge commit.
+- [x] Browser check approved setup/capture/upload/errors and retry where tool supports it. Run live Urdu fixtures only when replacement key is confirmed; otherwise record skipped validation without a success claim.
+- [x] Update build order, integration status, contracts and source-of-truth docs. Import teammate docs before vault edits; export/check through context sync.
+- [x] Run production build and appropriate final checks; independent final review.
+- [x] Fetch again for teammate pushes, integrate any additions deliberately, verify ancestry, push branch and update existing draft PR #5.
+- [x] Leave PR #4 targeting main and PR #5 targeting judge-demo-journey. After approval: merge #4 first, retarget #5 to main, then merge #5 with a merge commit; no squash/rebase.
+
+## Completed integration
+
+Merge commit `db99b32` has parents `46f2876` and Rayyan's `6156436`; all 12 teammate commits are retained. The branch is pushed and draft PR #5 updated, with neither PR merged into main. Final independent review found no blocking defects.
+
+Validation: 62 tests passed and 3 live checks were skipped; lint, TypeScript and the webpack production build passed. Browser checks covered Urdu fixture upload, missing-key errors, deliberate retries and the 390px layout. No confirmed replacement key was available, so live transcription and the physical microphone remain unverified. PR #4's conflicts with main after concurrent PR #6 are documented for separate reconciliation.

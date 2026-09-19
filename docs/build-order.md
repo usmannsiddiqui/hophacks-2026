@@ -14,7 +14,7 @@ every screen after P2 renders against it with no env vars.
 
 Remote update observed during integration: PR #6 (Ahmad's Gemini structure step) is now on main at `bfae2f8`. It is not imported into this voice-only branch. Next outreach integration should reuse/reconcile that work, including its optional Grok path and competing file/findings UI, while preserving the approved frontend. PR #4 must be reconciled with current main before the eventual merge order below.
 
-- Integrate `origin/ElevenLabs` (`6156436`) into `voice-transcript-capture` using a merge commit; retain Rayyan's commits and approved outreach UI.
+- Integrated `origin/ElevenLabs` (`6156436`) into `voice-transcript-capture` via merge commit `db99b32`; Rayyan's 12 commits and approved outreach UI are retained. Draft PR #5 is updated for review.
 - One Scribe-only backend and `/api/transcribe` contract. No active Grok, Gemini transcription fallback or canned transcript substitution.
 - Reuse Scribe adapter, language handling and Urdu fixtures; preserve bounded uploads, explicit errors, raw/corrected Urdu, cleanup, deliberate retries and previous drafts.
 - Keep flags derived from `data/substances.json`; Gemini translation/structuring is the next slice.

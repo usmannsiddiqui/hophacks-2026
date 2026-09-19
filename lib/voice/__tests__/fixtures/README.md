@@ -14,5 +14,5 @@ config `ur_pk`. License: [CC BY 4.0](https://creativecommons.org/licenses/by/4.0
 [Conneau et al., "FLEURS: Few-shot Learning Evaluation of Universal Representations of
 Speech", 2022](https://arxiv.org/abs/2205.12446).
 
-These are clean read speech. They prove the pipeline produces correct Urdu; they do not
+These are clean read speech. They support evaluating whether the pipeline produces correct Urdu; they do not
 predict accuracy on a noisy counter (that is what the bake-off clips are for).
