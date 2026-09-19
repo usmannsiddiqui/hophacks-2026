@@ -1,3 +1,24 @@
-export default function Page() {
-  return <main className="p-6"><p className="text-ink-muted text-sm">W3 Web</p><h1 className="text-2xl font-medium">Bringing in an old file</h1><p className="mt-2 urdu text-xl">اپنی بات کریں۔</p></main>;
+import Link from "next/link";
+export default async function Page({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}) {
+  const { id } = await params;
+  return (
+    <main className="loading-page">
+      <Link href="/file/new" className="brand">
+        Mashwara
+      </Link>
+      <h1>Her documents belong with her story.</h1>
+      <p>
+        Document extraction is outside the current demo slice. The sample file
+        already includes an illustrative prescription entry. No document has
+        been uploaded or processed here.
+      </p>
+      <Link className="button secondary" href={`/file/${id}`}>
+        Back to her file
+      </Link>
+    </main>
+  );
 }

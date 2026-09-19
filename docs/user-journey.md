@@ -1,54 +1,38 @@
----
-title: "HopHacks F26 — User Journey (Nani)"
-tags: [hophacks, journey, spec]
-date: 2026-09-19
-status: draft
----
+# User journey: one account, a reviewed plan
 
-# User journey — Nani buys two fever meds
+Current journey, aligned with ADRs 0001–0007. The earlier Backboard, chart, reminders,
+and source-colored-map framing is superseded. Source: the sixteen wireframe boards.
 
-> [!ABSTRACT] Premise
-> In Pakistan (and similar markets) most counter "pharmacists" are unqualified. %% verify the 95% figure before it goes on a slide %%
-> The tool puts a **qualified, remote pharmacist** in the loop for free, using a **local English-speaking volunteer** as the bridge and **Urdu voice** as the patient's interface.
+| Step | Person and action | Screen / state |
+|---|---|---|
+| 1 | Counter operator opens a file with name, age and sex | New case; recording |
+| 2 | Patient speaks in Urdu, uninterrupted | Recording 1; single speaker by mic ownership |
+| 3 | Scribe transcribes Urdu; Gemini translates and structures | Preserve original and English; never infer a flag |
+| 4 | Operator reads request, history, medicines and source words | Patient file |
+| 5 | Optional brought-in document adds evidence without overwriting voice | Import; deferred until live must-list is green |
+| 6 | Sourced table raises interactions; model proposes questions | Findings; hold the sale for review |
+| 7 | Operator asks one open question in Urdu | Ask her this |
+| 8 | Original-language answer and translation attach to that question | Live translate; Urdu = patient, English = operator |
+| 9 | Pro bono pharmacist reviews the full file and all item decisions | Sent → signed; reviewed advice in English and Urdu |
+| 10 | Patient hears approved Urdu advice and takes a report to a doctor | Advice + report, including unresolved questions and limitations |
 
-## Actors
+## Current demo build
 
-| Actor | Where | Speaks | Sees |
-|---|---|---|---|
-| **Nani** | at the counter | Urdu, voice only | nothing on screen; hears Urdu |
-| **The app** | volunteer's phone/tablet | — | everything |
-| **Volunteer** | behind the counter | English | live English transcript + flags |
-| **Pharmacist** | remote, first-world | English | case packet: transcript, chart, flags, photos |
+Start at `/file/new`, choose Sample walkthrough, and use the prepared account. Review the
+file and findings, answer a question using the sample or bilingual typed fallback, then
+send to the pharmacist. Fill the sample review, review every item and confirm before
+signing. Open the Urdu advice and report. Sample state survives reload in this browser.
 
-## The journey (10 steps)
+This demonstrates the workflow with fictional data. Live transcription, model structuring,
+translation and Urdu audio still need provider integration. No screen should imply those
+calls succeeded when they have not. Neon is required for real cross-device persistence.
 
-| # | Actor | Does | App produces | Sponsor tech |
-|---|---|---|---|---|
-| 1 | Nani | Has a fever. Names 2 meds she wants to buy. | — | — |
-| 2 | Nani | Speaks in Urdu into the tablet. | Live Urdu → English transcript on the volunteer's screen. | ElevenLabs Scribe (STT) |
-| 3 | App | Asks the standard intake questions *in Urdu* — what else do you take, home remedies, anything from a hakeem. | Urdu voice prompts. | ElevenLabs Agent / TTS |
-| 4 | Volunteer | Reads English, asks follow-ups when Nani's answer is vague ("the green bottle"). Types nothing — just talks. | Follow-ups also transcribed. | Scribe |
-| 5 | Nani | Can't name a product → holds it up. | Photo → product identified ("Panadol CF", "karela extract"), added to transcript with her words beside it. | Gemini vision |
-| 6 | App | Transcript closes. Normalizes everything Nani said to a closed vocabulary (~200 meds, OTC, common desi remedies). | **Med list** with provenance: `{term, her_words, source: voice|photo}` | Gemini (structured output) |
-| 7 | App | Looks up interactions between: the 2 requested meds × everything she takes. | **Flags** (severity + source row from the verified table). Rendered as a bubble map. | Curated interaction table (deterministic, cited) |
-| 8 | Volunteer | Sees "2 flags" → immediate hold: *don't sell both yet*. | Case packet sent to pharmacist queue. | Backboard (case memory) |
-| 9 | Pharmacist | Opens packet: transcript, photos, flags. Checks the photo is the right strip. Writes advice in English. | Advice + stamp. | — |
-| 10 | App → Nani | Advice spoken back **in Urdu**. Clear plan: keep / stop / swap. Pharmacist sets a next-day follow-up. | Plan card (Urdu audio + text). Follow-up reminder. | ElevenLabs TTS, Backboard |
+## Three-minute judge sequence
 
-## The two screens that matter
+Open on the patient intake. Show Urdu and her original words, a cited interaction, and one
+follow-up answer. Switch to the pharmacist, sign, and return to the same file's advice and
+report. Explain both giving mechanisms: volunteer time at the counter and pharmacist
+expertise remotely. Say “free” and “advice, not emergencies.”
 
-**Volunteer screen (live):** English transcript scrolling · med list building on the right · flag count badge · "Send to pharmacist" button.
-
-**Pharmacist screen (async):** case packet · bubble map (color = source: requested / disclosed / remedy; size = severity; edges = interactions) · photo strip · advice box · approve.
-
-## The demo beat (3 min)
-
-1. Open on Nani, not a dashboard. Urdu voice.
-2. She says "karela" — app doesn't know it yet, asks for a photo, identifies it.
-3. Flag appears: *karela + [her diabetes med] → hypoglycemia risk*. Volunteer holds the sale.
-4. Cut to pharmacist screen: reviews, approves with advice.
-5. Nani hears the plan in Urdu.
-
-## Where it lands on prizes
-
-Bloomberg (free, unqualified-pharmacy access gap) · ElevenLabs ×2 (Urdu agent + TTS) · Gemini (vision + normalization) · Backboard (case memory, follow-up) · Auctor (conversation → action: the hold + plan) · DigitalOcean · GoDaddy.
+Once the providers are connected, replace the sample-account step with actual Urdu speech
+on the phone. Pharmacist review remains asynchronous; do not promise an immediate response.

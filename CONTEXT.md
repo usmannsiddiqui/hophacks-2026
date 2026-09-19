@@ -1,5 +1,8 @@
 # CONTEXT — Mashwara glossary
 
+Owner's editable copy: Obsidian `Hophacks/team-context/CONTEXT.md`. This tracked file is
+the team export. See `docs/context-workflow.md`; code and tests define actual behavior.
+
 Domain glossary for this codebase. Code, tests, ADRs and conversation use these words
 with these meanings. Add a term here in the same commit that introduces it.
 
@@ -69,7 +72,7 @@ it sends the app back to ask a follow-up. Renders as a dashed card.
 
 **Closed vocabulary.** ~150 terms: common Pakistani OTC brands and generics, chronic
 meds, and common desi remedies. Gemini may only output a term from this list or
-`unrecognised`. Owned by stream A. File: `data/substances.json` (`substances[]`).
+`unidentified`. Owned by stream A. File: `data/substances.json` (`substances[]`).
 
 **Interaction table.** ~40 rows of `{ termA, termB, severity, reason, source }`. The only
 thing that can produce a flag (ADR 0001). Every row has a citable source. File:
@@ -120,3 +123,15 @@ color or neutral; edges = interaction rows. Hover shows her words.
 
 **Nastaliq.** Noto Nastaliq Urdu, the typeface for every patient-facing string. RTL,
 line-height ~1.9. Urdu never falls back to a Latin face.
+
+## Rehearsal and shared context
+
+**Sample walkthrough.** An explicitly fictional visit with a `DEMO-` file identifier.
+Saved in this browser only; it is not a live consultation or cross-device store. The
+sample account, answers and review are loaded only by explicit user actions. Real
+files use Neon; writes fail clearly if storage is not configured.
+
+**Team context.** Shared product documents edited in the owner's Obsidian
+`Hophacks/team-context` folder and exported as normal tracked files here. See
+`docs/context-workflow.md`. Code and tests define actual behavior; update the build
+order and glossary in the same feature PR so the vault does not become stale.

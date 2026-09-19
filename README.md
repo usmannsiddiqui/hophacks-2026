@@ -10,12 +10,22 @@ pharmacist approves; the patient hears the plan in Urdu.
 
 Start with `AGENTS.md`, then `CONTEXT.md`, then `docs/adr/`.
 
+Run `pnpm install` and `pnpm dev`, then open `/file/new`. The **Sample walkthrough**
+works without keys: fictional intake → findings → follow-up → pharmacist review →
+signed Urdu text → printable report. It is saved only in this browser. Live speech,
+translation, Urdu audio, and cross-device Neon persistence still need integration.
+
+Shared context is authored in the owner's Obsidian `Hophacks/team-context` folder and
+exported here as regular versioned files. Teammates can read and edit these docs as usual.
+See [context workflow](docs/context-workflow.md) for conflict-checked sync commands and
+[pressure-test findings](docs/pressure-test.md) for what is fixed and what remains.
+
 | Doc | What |
 |---|---|
 | `AGENTS.md` | team + agent workflow, stack, streams |
 | `CONTEXT.md` | glossary — the words we use |
-| `docs/adr/` | six decisions we do not reopen |
-| `docs/specs/contracts.md` | `Case` and `MedItem` JSON, frozen |
+| `docs/adr/` | seven accepted architectural decisions |
+| `docs/specs/contracts.md` | `PatientFile` and related JSON, frozen |
 | `docs/build-order.md` | done / must / nice / cut |
 | `docs/user-journey.md` | 10 steps + the 3-minute demo |
 | `docs/prizes-and-rubrics.md` | every prize, every rubric |

@@ -3,11 +3,41 @@
 **Now: Saturday ~14:00. Hacking ends Sunday ~08:45.** ~18 hours. Reserve the last 3 for
 rehearsal, video and Devpost. That leaves ~15 build hours × 3 people.
 
-Owners: A = ___ · B = ___ · C = ___ (fill in, commit).
+Owners: A = unassigned · B = unassigned · C = Codex implementation pass (team owner still to confirm).
 
 Wireframes are the spec: `docs/specs/wireframes.html` (open in a browser). Contract:
 `docs/specs/contracts.md` ↔ `lib/types.ts`. Canned file: `data/files/mw-1042.json` —
 every screen after P2 renders against it with no env vars.
+
+
+## Current implementation snapshot (19 September, Codex pass)
+
+The original scaffold checklist below is historical. This is the current status:
+
+- Implemented: responsive GIC-inspired foundations; intake; patient file; cited findings;
+  keyboard-accessible derived map; one-question flow; bilingual typed answer fallback;
+  queue polling; pharmacist review with per-item decisions; signed advice; printable report.
+- Explicit sample walkthrough works without keys and survives refresh in the same browser.
+  Sample files use `DEMO-` IDs. It is not a two-device or live voice demo.
+- API fixes: runtime contract validation, recomputed create/update flags, immutable identity,
+  forward-only statuses, complete advice/reviewer required before signing, closed signed files,
+  duplicate-create rejection, and an explicit 503 instead of silently dropping writes.
+- Citation labels now link to inspectable MSK and FDA sources. Only 2 of 105 rows are sourced.
+  No-match states explicitly say coverage is limited. Clinical priority calibration still needs review.
+- Shared context now lives in the owner's Obsidian `team-context` folder with versioned repo
+  exports. Follow `docs/context-workflow.md`; teammates can keep editing repo docs normally.
+
+### Next integration priorities
+
+1. A/B: connect Scribe capture, Gemini structure/translation, and ElevenLabs Urdu TTS.
+   `RecordingView` and `SpeakButton` report unavailable services honestly; no fake live audio.
+2. A: Neon setup plus integration tests for shared persistence and concurrent writes.
+3. B: test actual Urdu speech and readback on a real phone over HTTPS.
+4. C: verify the fully live journey and record the fallback demo video.
+5. Only then: document extraction, photo ID, correction UI, extra polish.
+
+Do not use real patient data: authentication and verified pharmacist credentials are outside
+this hackathon prototype. See `docs/pressure-test.md` for the remaining concrete risks.
 
 ## 0. Done
 - [x] Repo, collaborators, docs, ADRs 0001–0007, glossary.

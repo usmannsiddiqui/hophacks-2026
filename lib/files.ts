@@ -3,6 +3,7 @@ import { getDb } from "@/lib/db";
 import { files } from "@/lib/db/schema";
 import canned from "@/data/files/mw-1042.json";
 import type { PatientFile } from "@/lib/types";
+import { FileError } from "./validation";
 
 const CANNED = canned as unknown as PatientFile;
 const hasDb = () => Boolean(process.env.DATABASE_URL);
@@ -21,7 +22,7 @@ export async function listFiles(): Promise<PatientFile[]> {
 }
 
 export async function saveFile(file: PatientFile): Promise<void> {
-  if (!hasDb()) return; // canned mode is read-only
+  if (!hasDb()) throw new FileError("Storage is not configured. Use the sample walkthrough or configure Neon before creating live files.", 503);
   await getDb().insert(files).values({ id: file.id, status: file.status, data: file, updatedAt: new Date() })
     .onConflictDoUpdate({ target: files.id, set: { status: file.status, data: file, updatedAt: new Date() } });
 }
