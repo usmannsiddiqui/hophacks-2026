@@ -1,38 +1,28 @@
-# User journey: one account, a reviewed plan
+# User journey: a community visit, a reviewed plan
 
-Current journey, aligned with ADRs 0001–0007. The earlier Backboard, chart, reminders,
-and source-colored-map framing is superseded. Source: the sixteen wireframe boards.
+Current product direction: ADR 0008, approved outreach wireframes. Gemini is the analytical provider; ElevenLabs handles speech.
 
-| Step | Person and action | Screen / state |
-|---|---|---|
-| 1 | Counter operator opens a file with name, age and sex | New case; recording |
-| 2 | Patient speaks in Urdu, uninterrupted | Recording 1; single speaker by mic ownership |
-| 3 | Scribe transcribes Urdu; Gemini translates and structures | Preserve original and English; never infer a flag |
-| 4 | Operator reads request, history, medicines and source words | Patient file |
-| 5 | Optional brought-in document adds evidence without overwriting voice | Import; deferred until live must-list is green |
-| 6 | Sourced table raises interactions; model proposes questions | Findings; hold the sale for review |
-| 7 | Operator asks one open question in Urdu | Ask her this |
-| 8 | Original-language answer and translation attach to that question | Live translate; Urdu = patient, English = operator |
-| 9 | Pro bono pharmacist reviews the full file and all item decisions | Sent → signed; reviewed advice in English and Urdu |
-| 10 | Patient hears approved Urdu advice and takes a report to a doctor | Advice + report, including unresolved questions and limitations |
+1. Volunteer starts a visit at home, in the community, or at a counter.
+2. Patient speaks Urdu without needing an account or keyboard. A local volunteer records patient turns; an English-speaking volunteer will use interpretation.
+3. Volunteer checks the transcript and preserves both original transcription and corrections.
+4. Gemini translates and structures the reviewed account. The sourced table supplies supported interaction flags.
+5. Volunteer confirms the summary and sends it for remote review.
+6. English-speaking pharmacist reviews evidence, requests clarification if needed, and approves English advice.
+7. Advice is translated into Urdu. The volunteer returns or contacts the patient, plays/relays advice and checks understanding.
+8. Advice delivered is recorded separately from review submitted. The patient never needs to wait at the original visit.
 
-## Current demo build
+## What works now
 
-Start at `/file/new`, choose Sample walkthrough, and use the prepared account. Review the
-file and findings, answer a question using the sample or bilingual typed fallback, then
-send to the pharmacist. Fill the sample review, review every item and confirm before
-signing. Open the Urdu advice and report. Sample state survives reload in this browser.
+- /visit/new: real browser audio capture with pause/resume, upload fallback, server-side Scribe integration, original/corrected Urdu transcript and tab-local saved drafts. Requires ELEVENLABS_API_KEY for live transcription.
+- Recordings stop after a three-minute session; upload duration is checked in the browser. Server enforces a 4 MiB audio / bounded multipart request limit, not an independently verified media-duration limit.
+- Transcription retries reuse the audio while this page stays open. Raw audio is not persisted across reloads.
+- Transcripts survive refresh in the same tab. They are not sent to a pharmacist or shared across devices.
+- Existing /file/new sample journey still demonstrates findings, questions, review, bilingual advice and report with fictional data. It retains older counter terminology and the old PatientFile lifecycle.
 
-This demonstrates the workflow with fictional data. Live transcription, model structuring,
-translation and Urdu audio still need provider integration. No screen should imply those
-calls succeeded when they have not. Neon is required for real cross-device persistence.
+## Next implementation slice
 
-## Three-minute judge sequence
+Gemini translation and validated structuring through lib/llm.ts. Keep original and corrected transcript provenance, do not let the model invent table flags. Then migrate volunteer/pharmacist views to the outreach lifecycle, connect Neon concurrency, clarification, Urdu TTS and delivery status.
 
-Open on the patient intake. Show Urdu and her original words, a cited interaction, and one
-follow-up answer. Switch to the pharmacist, sign, and return to the same file's advice and
-report. Explain both giving mechanisms: volunteer time at the counter and pharmacist
-expertise remotely. Say “free” and “advice, not emergencies.”
+## Judge sequence after integration
 
-Once the providers are connected, replace the sample-account step with actual Urdu speech
-on the phone. Pharmacist review remains asynchronous; do not promise an immediate response.
+Capture a real Urdu account during a home visit, show the English summary and a supported concern, switch to the pharmacist for review, and return to the volunteer for Urdu advice playback and delivery confirmation.

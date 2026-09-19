@@ -32,3 +32,15 @@ See [context workflow](docs/context-workflow.md) for conflict-checked sync comma
 | `docs/specs/wireframe-prompt.md` | the Claude Design brief |
 | `data/substances.json` | closed vocabulary + interaction table (source of truth for what exists and what interacts) |
 | `docs/handoffs/` | earlier team handoffs (partly superseded — ADRs win) |
+
+
+### First live integration: Urdu capture
+Open /visit/new (also linked from intake). Add ELEVENLABS_API_KEY to .env.local, restart
+the server, enter fictional patient details, record/upload Urdu audio, transcribe and
+review. Microphone access requires localhost or HTTPS. No Neon or Gemini key is needed
+for this slice. Use fictional audio; provider retention follows the ElevenLabs account.
+
+Drafts are stored in the current browser tab, with original and corrected Urdu separate.
+Start another visit retains previous transcripts under Saved transcripts. Raw audio is
+kept only in memory for playback/retry. English analysis and pharmacist submission are
+not wired yet. See docs/implementation-voice-capture.md.

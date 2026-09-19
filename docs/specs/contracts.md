@@ -127,3 +127,21 @@ item, edge = one flag, dashed = unidentified.
 Ciproxin), metformin (voice + photo), amlodipine (prescribed, not said), bitter gourd
 juice (remedy), unidentified powder (remedy). 2 flags, 4 questions (1 answered). Every
 screen after P2 can be built against it from hour 0.
+
+## Outreach capture boundary (ADR 0008)
+
+POST /api/transcribe accepts multipart field audio, a supported audio File. Audio must be
+nonempty and at most 4 MiB; total multipart bytes are bounded at 4 MiB + 64 KiB.
+Browser recording/upload limits are 3 minutes; the server does not independently parse
+media duration. Do not expose the paid route publicly without abuse controls and duration validation.
+
+Success: { text: string, language: "ur", words: [{ text: string, start: number, end: number }] }.
+Word timestamps come from Scribe; no voice diarization or inferred speaker identity.
+Errors: 400 malformed/missing audio; 413 size; 415 MIME; 422 no usable speech/audio;
+429 provider busy; 503 configuration; 504 timeout; 502 provider failure.
+Responses use no-store. No provider errors, keys, audio or transcripts are logged.
+
+VisitDraft is defined in lib/visit-draft.ts. It preserves raw transcription separately
+from reviewedUrdu and uses transcript-review/transcript-ready statuses. It is tab-local,
+not a PatientFile and not ready for clinical sign-off. Legacy bilingual contracts above
+remain in effect for existing /file routes until the next migration.

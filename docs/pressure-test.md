@@ -1,10 +1,26 @@
-# Pressure test: 19 September implementation pass
+# Pressure test: 19 September implementation passes
 
 Read the external handoff, all sixteen supplied wireframe boards, repo ADRs and contracts,
 and the GIC Claude design artifact. Handoff suggestions were treated as historical context,
 not permission to reopen decisions or act outside the user's request.
 
-## Fixed in this pass
+
+
+## Latest voice slice
+- Implemented Scribe route, bounded audio uploads, explicit errors, microphone cleanup,
+  pause/resume, three-minute browser session limit, upload fallback and transcript review.
+- Original Scribe text is preserved separately from corrections. Previous tab-local drafts
+  remain available when starting another visit.
+- Fixed a review finding where delayed MediaRecorder finalization inflated duration and
+  rejected a successful three-minute transcription.
+- Server audio-size limits are enforced; media duration is checked only in the browser.
+  Add server duration validation, access controls and rate limits before public exposure.
+- No local keys were configured during implementation. Live Scribe quality, physical phone
+  recording, Urdu accuracy, paid quota and latency remain unverified.
+- Gemini remains the chosen analysis provider; no xAI dependency or fallback is installed.
+- Existing sample /file routes remain the previous counter-oriented demo until migrated.
+
+## Fixed in the initial walkthrough pass
 
 | Finding | Consequence | Change |
 |---|---|---|
@@ -21,7 +37,7 @@ not permission to reopen decisions or act outside the user's request.
 
 ## Must finish for the live hackathon demo
 
-1. **Live voice/model work:** Scribe capture, Gemini normalization and translation, Urdu TTS.
+1. **Live voice/model work:** validate the implemented Scribe capture with a key, then implement Gemini normalization and translation and Urdu TTS.
    The current sample flow does not call those services. Typed fallback and playback error
    handling are implemented. An ElevenLabs prize submission must show the actual integration.
 2. **Neon + HTTPS:** create database, configure environment, push schema, then exercise the
@@ -52,12 +68,15 @@ not a downloadable file; no broken PDF link is exposed.
 
 ## Verification
 
-- API and invariant suite: 21 passing tests.
+- Application suite: 44 passing tests, including Scribe API, recording lifecycle and draft history.
 - Context-sync suite: 3 passing tests, including both-side edits and private-note exclusion.
 - TypeScript and ESLint passed.
 - Production build passed using `pnpm build --webpack`. Turbopack's worker-port bind failed
   in this execution environment; no compiler switch was imposed on teammates.
-- Browser walkthrough: intake → sample account → file → findings → q2 answer → pharmacist
+- Voice browser check: visit setup and capture controls inspected; direct multipart API request
+  returned the expected missing-key 503. Browser upload automation could not attach its
+  synthetic fixture; successful upload/review UI remains unverified without credentials.
+- Original sample browser walkthrough: intake → sample account → file → findings → q2 answer → pharmacist
   review → signed advice. Reload preserved the signed file and recovered unsigned pharmacist advice/verdicts.
   Phone view checked at 390×844, with no horizontal report overflow.
 - Not verified against paid providers, a configured Neon database, a real microphone,

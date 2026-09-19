@@ -10,15 +10,14 @@ with these meanings. Add a term here in the same commit that introduces it.
 
 ## People
 
-**Patient.** The person at the counter. Speaks Urdu (Hindi fallback, ADR 0003). Never
-touches the screen; hears the app in her language. Our demo patient is **Nani**.
+**Patient.** A person visited at home, in the community, or at a counter. Speaks Urdu
+in the MVP. Does not need an account, keyboard or smartphone.
 
-**Counter operator.** Whoever holds the tablet behind the counter — the shopkeeper or a
-**volunteer**. Speaks English. Reads the live transcript, asks follow-ups out loud, holds
-the sale when a flag appears, sends the case. Types nothing.
+**Volunteer.** The person conducting the visit and delivering the remote pharmacist's
+response. May speak Urdu locally or need English/Urdu interpretation. Gives time.
 
-**Volunteer.** A counter operator who is giving time rather than working the shop. Same
-screen, same role. One of the two giving mechanisms in the philanthropic claim.
+**Counter operator.** Legacy name for the volunteer in the original pharmacy-specific
+sample journey. Counter/store/sale details are not prerequisites for outreach visits.
 
 **Pharmacist.** A qualified, remote, pro bono pharmacist. Opens cases from a queue,
 reviews, writes advice, approves. Asynchronous — minutes to hours (ADR 0004). The other
@@ -135,3 +134,12 @@ files use Neon; writes fail clearly if storage is not configured.
 `Hophacks/team-context` folder and exported as normal tracked files here. See
 `docs/context-workflow.md`. Code and tests define actual behavior; update the build
 order and glossary in the same feature PR so the vault does not become stale.
+
+
+## Outreach capture
+**VisitDraft.** A tab-local patient account, preceding a shared PatientFile. Contains
+patient details, immutable raw Scribe transcript and word timestamps, corrected Urdu,
+recording seconds and transcript-review/transcript-ready status. It has no English
+translation or clinical flags until the Gemini slice supplies validated output.
+**Transcript ready.** Volunteer has reviewed and saved Urdu text; does not mean sent,
+clinically reviewed, or delivered. Saved transcripts remain available when starting another visit.

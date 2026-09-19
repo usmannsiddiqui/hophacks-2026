@@ -10,6 +10,19 @@ Wireframes are the spec: `docs/specs/wireframes.html` (open in a browser). Contr
 every screen after P2 renders against it with no env vars.
 
 
+## Latest slice: Urdu voice capture (19 September, ~17:00)
+
+Approved direction is community outreach with asynchronous volunteer follow-up (ADR 0008).
+Gemini + ElevenLabs only. The counter-specific checklist below is historical.
+
+- /visit/new now records patient-only Urdu, pauses/resumes, uploads audio to Scribe,
+  and preserves raw plus corrected transcripts in tab-local drafts.
+- /api/transcribe validates bounded uploads and maps provider/configuration failures.
+- Live provider and physical-microphone checks require ELEVENLABS_API_KEY and remain unverified.
+- Next: Gemini translation/structuring through lib/llm.ts, then outreach review/delivery
+  lifecycle and shared persistence. Existing sample walkthrough remains separate.
+- See docs/implementation-voice-capture.md for the slice's exact boundary and validation.
+
 ## Current implementation snapshot (19 September, Codex pass)
 
 The original scaffold checklist below is historical. This is the current status:
@@ -29,7 +42,7 @@ The original scaffold checklist below is historical. This is the current status:
 
 ### Next integration priorities
 
-1. A/B: connect Scribe capture, Gemini structure/translation, and ElevenLabs Urdu TTS.
+1. A/B: connect Gemini structure/translation to /visit/new, then ElevenLabs Urdu TTS.
    `RecordingView` and `SpeakButton` report unavailable services honestly; no fake live audio.
 2. A: Neon setup plus integration tests for shared persistence and concurrent writes.
 3. B: test actual Urdu speech and readback on a real phone over HTTPS.

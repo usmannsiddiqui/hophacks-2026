@@ -1205,3 +1205,20 @@ textarea {
     break-after: avoid;
   }
 }
+
+/* First outreach slice: one patient account and transcript review. */
+.voice-page { min-height:100dvh; background:var(--color-surface); }
+.voice-preview-note { padding:10px 24px; font-size:12px; color:var(--color-ink-muted); border-bottom:1px solid var(--color-line); }
+.voice-card { max-width:520px; margin:40px auto; padding:32px; border:1px solid var(--color-line); border-radius:24px; background:var(--color-surface-raised); }
+.voice-card h1 { font-size:32px; margin:8px 0 24px; letter-spacing:-1px; }
+.voice-card label { margin:16px 0; }
+.voice-card audio { display:block; width:100%; margin:16px 0; }
+.voice-primary { width:100%; min-height:56px; margin:20px 0 16px; }
+.voice-prompt { margin:28px 0 12px; font-size:28px; }
+.voice-recorder { text-align:center; margin:28px 0; }
+.voice-timer { font-size:42px; font-variant-numeric:tabular-nums; letter-spacing:-1px; }
+.voice-recorder .actions { justify-content:center; margin-top:20px; }
+.voice-upload { margin:20px 0; }
+.voice-upload summary { cursor:pointer; min-height:44px; }
+.voice-saved { padding:24px 0; line-height:2.2; }
+@media(max-width:600px){ .voice-card{border:0;border-radius:0;margin:0;padding:28px 20px;} .voice-preview-note{padding:10px 20px;} }
