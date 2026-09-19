@@ -4,6 +4,7 @@ import {
   reviewVisitDraft,
   readVisitDraft,
 } from "@/lib/visit-draft";
+import type { VisitReport } from "@/lib/visit-report";
 it("keeps raw Scribe output when the volunteer corrects the transcript", () => {
   const original = createVisitDraft(
     { name: "Nasreen", age: 64, sex: "F" },
@@ -71,4 +72,57 @@ it("retains previous patients when another visit is saved", async () => {
   expect(history).toHaveLength(2);
   expect(history.find((d) => d.id === a.id)?.reviewedUrdu).toBe("درست");
   expect(history.find((d) => d.id === b.id)?.patient.name).toBe("Ali");
+});
+
+it("keeps a valid saved transcript but discards a report from another snapshot", () => {
+  const draft = reviewVisitDraft(
+    createVisitDraft(
+      { name: "Nasreen", age: 64, sex: "F" },
+      { text: "اصل", language: "ur", words: [] },
+      12,
+    ),
+    "درست",
+  );
+  const foreignReport = {
+    schemaVersion: 1,
+    draftId: "another-draft",
+    rawUrdu: "اصل",
+    reviewedUrdu: "درست",
+    generatedAt: "2026-09-19T18:00:00.000Z",
+    model: { provider: "google", name: "gemini-3.6-flash" },
+    english: { account: "An account.", summary: "No medicines identified. No draft questions." },
+    medList: [],
+    questions: [],
+    flags: [],
+  } satisfies VisitReport;
+  const restored = readVisitDraft(JSON.stringify({ ...draft, report: foreignReport }));
+  expect(restored?.id).toBe(draft.id);
+  expect(restored?.reviewedUrdu).toBe("درست");
+  expect(restored?.report).toBeUndefined();
+});
+
+it("refuses to save a report that does not belong to the draft", async () => {
+  const { saveVisitDraft } = await import("@/lib/visit-draft");
+  const draft = reviewVisitDraft(
+    createVisitDraft(
+      { name: "Nasreen", age: 64, sex: "F" },
+      { text: "اصل", language: "ur", words: [] },
+      12,
+    ),
+    "درست",
+  );
+  const invalid = {
+    ...draft,
+    report: {
+      schemaVersion: 1,
+      draftId: "another-draft",
+      rawUrdu: "اصل",
+      reviewedUrdu: "درست",
+      generatedAt: "2026-09-19T18:00:00.000Z",
+      model: { provider: "google", name: "gemini-3.6-flash" },
+      english: { account: "An account.", summary: "No medicines identified. No draft questions." },
+      medList: [], questions: [], flags: [],
+    },
+  } as never;
+  expect(() => saveVisitDraft({ getItem: () => null, setItem: () => undefined }, invalid)).toThrow();
 });

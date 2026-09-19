@@ -1,5 +1,6 @@
 import { z } from "zod";
 import type { Transcript } from "./audio";
+import { visitReportSchema, type VisitReport } from "./visit-report";
 export const VISIT_DRAFT_KEY = "mashwara-visit-draft-v1";
 const patientSchema = z.object({
   name: z.string().trim().min(1).max(120),
@@ -30,10 +31,20 @@ const draftSchema = z
     }),
     reviewedUrdu: z.string().max(20000),
     status: z.enum(["transcript-review", "transcript-ready"]),
+    report: visitReportSchema.optional(),
   })
   .refine(
     (d) => d.status !== "transcript-ready" || Boolean(d.reviewedUrdu.trim()),
-  );
+  )
+  .superRefine((draft, ctx) => {
+    if (!draft.report) return;
+    if (
+      draft.status !== "transcript-ready" ||
+      draft.report.draftId !== draft.id ||
+      draft.report.rawUrdu !== draft.transcript.text ||
+      draft.report.reviewedUrdu !== draft.reviewedUrdu
+    ) ctx.addIssue({ code: "custom", path: ["report"], message: "Report does not match this saved visit" });
+  });
 export type VisitDraft = z.infer<typeof draftSchema>;
 export type VisitPatient = z.infer<typeof patientSchema>;
 export function createVisitDraft(
@@ -52,17 +63,29 @@ export function createVisitDraft(
   });
 }
 export function reviewVisitDraft(draft: VisitDraft, text: string): VisitDraft {
+  const reviewedUrdu = z.string().trim().min(1).max(20000).parse(text);
   return draftSchema.parse({
     ...draft,
-    reviewedUrdu: z.string().trim().min(1).max(20000).parse(text),
+    reviewedUrdu,
     status: "transcript-ready",
+    ...(reviewedUrdu === draft.reviewedUrdu ? {} : { report: undefined }),
   });
 }
+
+export type { VisitReport };
 export function readVisitDraft(value: string | null): VisitDraft | null {
   if (!value) return null;
   try {
-    const parsed = draftSchema.safeParse(JSON.parse(value));
-    return parsed.success ? parsed.data : null;
+    const candidate: unknown = JSON.parse(value);
+    const parsed = draftSchema.safeParse(candidate);
+    if (parsed.success) return parsed.data;
+    if (candidate && typeof candidate === "object" && "report" in candidate) {
+      const withoutReport = { ...(candidate as Record<string, unknown>) };
+      delete withoutReport.report;
+      const recovered = draftSchema.safeParse(withoutReport);
+      return recovered.success ? recovered.data : null;
+    }
+    return null;
   } catch {
     return null;
   }
