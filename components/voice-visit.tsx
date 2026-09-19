@@ -30,6 +30,8 @@ import {
   type VisitDraft,
   type VisitPatient,
 } from "@/lib/visit-draft";
+import { ReportRequestOwner, requestVisitReport } from "@/lib/report-request";
+import { VisitReportView } from "./visit-report";
 
 const subscribe = () => () => {};
 function storedDraft() {
@@ -94,16 +96,21 @@ function VisitCapture() {
   const [audioUrl, setAudioUrl] = useState("");
   const [seconds, setSeconds] = useState(0);
   const [busy, setBusy] = useState(false);
+  const [reportBusy, setReportBusy] = useState(false);
+  const [reportError, setReportError] = useState("");
   const capture = useRef<CaptureSession | null>(null);
   const microphone = useRef<AbortController | null>(null);
   const upload = useRef<AbortController | null>(null);
+  const reportRequest = useRef(new ReportRequestOwner());
   const mounted = useRef(true);
   useEffect(() => {
+    const owner = reportRequest.current;
     mounted.current = true;
     return () => {
       mounted.current = false;
       microphone.current?.abort();
       upload.current?.abort();
+      owner.cancel();
     };
   }, []);
   useEffect(() => {
@@ -137,6 +144,9 @@ function VisitCapture() {
     }
   }
   function newVisit() {
+    reportRequest.current.cancel();
+    setReportBusy(false);
+    setReportError("");
     try {
       sessionStorage.removeItem(VISIT_DRAFT_KEY);
     } catch {
@@ -154,6 +164,9 @@ function VisitCapture() {
     setStage("setup");
   }
   function restore(previous: VisitDraft) {
+    reportRequest.current.cancel();
+    setReportBusy(false);
+    setReportError("");
     if (!persist(previous)) return;
     setDraft(previous);
     setPatient(previous.patient);
@@ -329,6 +342,25 @@ function VisitCapture() {
     setError("");
     if (persist(next)) setStage("saved");
   }
+  async function prepareReport() {
+    if (!draft || draft.status !== "transcript-ready" || reportBusy) return;
+    const owned = reportRequest.current.begin(draft.id);
+    setReportBusy(true);
+    setReportError("");
+    try {
+      const next = await requestVisitReport(draft, owned.signal);
+      if (!mounted.current || !reportRequest.current.isCurrent(owned)) return;
+      setDraft(next);
+      persist(next);
+    } catch (cause) {
+      if (!mounted.current || !reportRequest.current.isCurrent(owned)) return;
+      if ((cause as Error).name !== "AbortError") {
+        setReportError((cause as Error).message || "English report preparation failed. Please retry.");
+      }
+    } finally {
+      if (mounted.current && reportRequest.current.isCurrent(owned)) setReportBusy(false);
+    }
+  }
   const timer = `${Math.floor(seconds / 60)}:${String(seconds % 60).padStart(2, "0")}`;
   return (
     <>
@@ -489,12 +521,19 @@ function VisitCapture() {
                   value={text}
                   onChange={(e) => {
                     setText(e.target.value);
-                    if (draft)
-                      persist({
+                    if (draft) {
+                      reportRequest.current.cancel();
+                      setReportBusy(false);
+                      setReportError("");
+                      const next = {
                         ...draft,
                         reviewedUrdu: e.target.value,
                         status: "transcript-review",
-                      });
+                        report: undefined,
+                      } satisfies VisitDraft;
+                      setDraft(next);
+                      persist(next);
+                    }
                   }}
                 />
               </label>
@@ -517,6 +556,9 @@ function VisitCapture() {
               <button
                 className="text-link"
                 onClick={() => {
+                  reportRequest.current.cancel();
+                  setReportBusy(false);
+                  setReportError("");
                   setStage("capture");
                   setError("");
                 }}
@@ -533,14 +575,50 @@ function VisitCapture() {
               </p>
               <button
                 className="button secondary voice-primary"
-                onClick={() => setStage("review")}
+                onClick={() => {
+                  reportRequest.current.cancel();
+                  setReportBusy(false);
+                  setReportError("");
+                  setStage("review");
+                }}
               >
                 Review transcript
               </button>
               <p className="small muted">
-                Saved in this browser tab. English analysis and sending to a
-                pharmacist are the next step.
+                Saved in this browser tab. The English report is an AI draft
+                for volunteer review and is not sent to a pharmacist.
               </p>
+              <button
+                className="button voice-primary"
+                disabled={reportBusy}
+                onClick={() => void prepareReport()}
+              >
+                {reportBusy
+                  ? "Preparing English report…"
+                  : draft?.report
+                    ? "Prepare report again"
+                    : "Prepare English report →"}
+              </button>
+              {reportBusy && (
+                <button
+                  className="text-link"
+                  onClick={() => {
+                    reportRequest.current.cancel();
+                    setReportBusy(false);
+                  }}
+                >
+                  Cancel report preparation
+                </button>
+              )}
+              {reportError && (
+                <div className="error-box" role="alert">
+                  <p>{reportError}</p>
+                  <button className="text-link" onClick={() => void prepareReport()}>
+                    Retry English report
+                  </button>
+                </div>
+              )}
+              {draft?.report && <VisitReportView draft={draft} />}
               <button className="text-link" onClick={newVisit}>
                 Start another visit
               </button>
