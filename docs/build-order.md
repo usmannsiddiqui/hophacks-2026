@@ -1,7 +1,8 @@
 # Build order
 
-**Now: Saturday ~14:00. Hacking ends Sunday ~08:45.** ~18 hours. Reserve the last 3 for
-rehearsal, video and Devpost. That leaves ~15 build hours × 3 people.
+**Original planning clock: Saturday ~14:00; hacking ends Sunday ~08:45.**
+The time estimates and scaffold checklist below are historical, not a current countdown.
+Reserve the final hours for rehearsal, video and Devpost.
 
 Owners: A = unassigned · B = unassigned · C = Codex implementation pass (team owner still to confirm).
 
@@ -10,7 +11,16 @@ Wireframes are the spec: `docs/specs/wireframes.html` (open in a browser). Contr
 every screen after P2 renders against it with no env vars.
 
 
-## Current slice: English report after reviewed Urdu
+## Next session: visualization
+
+The owner wants to design the next visualization using the `d3-viz` skill from
+https://github.com/chrisvoncsefalvay/claude-d3js-skill. Read
+`docs/handoffs/2026-09-19-voice-report-to-visualization.md` before starting.
+Inspect Ahmad's separate `origin/demo-scenario-scaffold` branch (observed at `4646645`)
+for existing D3 work before implementing another map. Fetch again; do not blindly merge
+its provider or route changes over the completed voice/report journey.
+
+## Completed slice: English report after reviewed Urdu
 
 The backend and frontend are implemented and reviewed on `voice-transcript-capture`.
 The full browser journey reached a live English report; final verification is recorded
@@ -22,17 +32,18 @@ and pharmacist draft. No visual/map redesign in this slice.
 - Reports preserve raw and reviewed Urdu, source-ground extracted quotes, and compute
   flags only from the existing interaction table. No Grok or provider fallback.
 - Reports remain in the current browser tab. Shared queue, pharmacist approval, Urdu
-  advice/TTS and delivery tracking are the next integration slice.
+  advice/TTS and delivery tracking remain pending integration work after the requested
+  visualization session.
 - See `docs/implementation-english-report.md` for validation evidence and limitations.
 
 ## Latest integration: Rayyan's ElevenLabs branch (19 September)
 
-PR #6 (Ahmad's Gemini structure step) landed on main at `bfae2f8`. Main is now merged into `voice-transcript-capture` through `1875b05`, preserving Ahmad's commits and resolving the three frontend conflicts in favor of the approved outreach screens. Urdu-to-English report integration is in progress; see `docs/implementation-english-report.md`. PR #4 still needs separate reconciliation against main before its eventual merge.
+PR #6 (Ahmad's Gemini structure step) landed on main at `bfae2f8`. Main is now merged into `voice-transcript-capture` through `1875b05`, preserving Ahmad's commits and resolving the three frontend conflicts in favor of the approved outreach screens. Urdu-to-English report integration is implemented and live-verified; see `docs/implementation-english-report.md`. PR #4 still needs separate reconciliation against main before its eventual merge.
 
 - Integrated `origin/ElevenLabs` (`6156436`) into `voice-transcript-capture` via merge commit `db99b32`; Rayyan's 12 commits and approved outreach UI are retained. Draft PR #5 is updated for review.
 - One Scribe-only backend and `/api/transcribe` contract. No active Grok, Gemini transcription fallback or canned transcript substitution.
 - Reuse Scribe adapter, language handling and Urdu fixtures; preserve bounded uploads, explicit errors, raw/corrected Urdu, cleanup, deliberate retries and previous drafts.
-- Keep flags derived from `data/substances.json`; Gemini translation/structuring is the next slice.
+- Keep flags derived from `data/substances.json`; Gemini translation/structuring is now implemented in the report slice above.
 - Live Scribe follow-up passed two real Urdu fixtures and browser transcription/correction/save/reload/history with the refreshed key. Physical-phone and TTS checks remain open; see `docs/pressure-test.md`.
 - Review order: PR #4 → main first; then retarget PR #5 → main and merge with a merge commit. Neither PR is authorized to merge yet. Never squash/rebase away Rayyan's ancestry.
 
@@ -45,13 +56,13 @@ Gemini + ElevenLabs only. The counter-specific checklist below is historical.
   and preserves raw plus corrected transcripts in tab-local drafts.
 - /api/transcribe validates bounded uploads and maps provider/configuration failures.
 - Live Scribe and browser upload/review/save were subsequently verified with the refreshed key; physical-microphone checks remain unverified.
-- Next: Gemini translation/structuring through lib/llm.ts, then outreach review/delivery
-  lifecycle and shared persistence. Existing sample walkthrough remains separate.
+- Gemini translation/structuring through lib/llm.ts is now implemented. Outreach
+  review/delivery and shared persistence remain pending. The sample walkthrough is separate.
 - See docs/implementation-voice-capture.md for the slice's exact boundary and validation.
 
-## Current implementation snapshot (19 September, Codex pass)
+## Earlier sample walkthrough snapshot (19 September, Codex pass)
 
-The original scaffold checklist below is historical. This is the current status:
+This describes the sample walkthrough; the live voice/report status is above:
 
 - Implemented: responsive GIC-inspired foundations; intake; patient file; cited findings;
   keyboard-accessible derived map; one-question flow; bilingual typed answer fallback;
@@ -66,9 +77,12 @@ The original scaffold checklist below is historical. This is the current status:
 - Shared context now lives in the owner's Obsidian `team-context` folder with versioned repo
   exports. Follow `docs/context-workflow.md`; teammates can keep editing repo docs normally.
 
-### Next integration priorities
+### Remaining integration roadmap
 
-1. A/B: connect Gemini structure/translation to /visit/new, then ElevenLabs Urdu TTS.
+The owner's immediate next priority is the visualization session above. After that:
+
+1. A/B: connect the live report to shared review/delivery and ElevenLabs Urdu TTS.
+   Gemini translation/structuring for /visit/new is complete.
    `RecordingView` and `SpeakButton` report unavailable services honestly; no fake live audio.
 2. A: Neon setup plus integration tests for shared persistence and concurrent writes.
 3. B: test actual Urdu speech and readback on a real phone over HTTPS.
