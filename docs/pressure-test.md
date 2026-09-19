@@ -7,7 +7,15 @@ not permission to reopen decisions or act outside the user's request.
 
 
 
-## ElevenLabs merge integration verification
+## Live Scribe follow-up (19 September, ~17:50)
+
+- User reported refreshing the ElevenLabs key with STT/TTS access. The configured key was copied privately into the ignored feature-worktree .env.local; no value was printed or committed.
+- Dedicated opt-in Scribe suite passed all 4 checks: configuration, two real FLEURS Urdu fixture transcriptions under the existing CER threshold, and the offline scoring helper.
+- Browser live flow observed: fictional visit → public Urdu WAV upload → successful Scribe transcript → Urdu correction with original separately visible → save → reload → start another visit → restore previous transcript.
+- This supersedes the missing-key/live-unverified limitation in the initial integration report below. It does not establish medical vocabulary accuracy, noisy-room/physical-phone performance, or tested TTS playback. Revocation of the old key was not independently verified.
+- TTS permission alone does not implement advice playback. Next feature integration remains reviewed Urdu → Gemini translation/structuring → sourced-table flags → remote pharmacist review, followed by approved Urdu advice/readback.
+
+## Initial ElevenLabs merge integration verification
 
 - Rayyan's source branch: origin/ElevenLabs at 6156436 (12 original commits). Integrated
   by merge commit into voice-transcript-capture; no cherry-pick/squash/rebase.

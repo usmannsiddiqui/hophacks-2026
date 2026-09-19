@@ -19,7 +19,7 @@ Rayyan's Scribe adapter, language normalization, relevant acceptance coverage, F
 - Voice provider and fixtures: Rayyan (Stream B); integration coordinated on PR #5.
 - Approved frontend, wireframes, table-based flags and outreach workflow remain intact.
 - Next: reuse/reconcile Ahmad's Gemini structure work (PR #6, now on main) with this outreach flow; then shared review/persistence, Urdu TTS and volunteer delivery status. It has not been pulled into this Scribe-only branch.
-- Paid provider validation requires a confirmed replacement ElevenLabs key. The exposed key must be revoked and is never used by this integration.
+- Refreshed-key live validation passed the two FLEURS fixtures plus browser transcription/correction/save/reload/history. Physical-phone/noisy-room quality and TTS playback remain unverified. Old-key revocation was not independently verified.
 
 ## Historical notes
 

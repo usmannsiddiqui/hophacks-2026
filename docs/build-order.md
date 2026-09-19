@@ -18,7 +18,7 @@ Remote update observed during integration: PR #6 (Ahmad's Gemini structure step)
 - One Scribe-only backend and `/api/transcribe` contract. No active Grok, Gemini transcription fallback or canned transcript substitution.
 - Reuse Scribe adapter, language handling and Urdu fixtures; preserve bounded uploads, explicit errors, raw/corrected Urdu, cleanup, deliberate retries and previous drafts.
 - Keep flags derived from `data/substances.json`; Gemini translation/structuring is the next slice.
-- Validation and key status are recorded in `docs/pressure-test.md`; do not infer live success from offline tests.
+- Live Scribe follow-up passed two real Urdu fixtures and browser transcription/correction/save/reload/history with the refreshed key. Physical-phone and TTS checks remain open; see `docs/pressure-test.md`.
 - Review order: PR #4 → main first; then retarget PR #5 → main and merge with a merge commit. Neither PR is authorized to merge yet. Never squash/rebase away Rayyan's ancestry.
 
 ## Latest slice: Urdu voice capture (19 September, ~17:00)
@@ -29,7 +29,7 @@ Gemini + ElevenLabs only. The counter-specific checklist below is historical.
 - /visit/new now records patient-only Urdu, pauses/resumes, uploads audio to Scribe,
   and preserves raw plus corrected transcripts in tab-local drafts.
 - /api/transcribe validates bounded uploads and maps provider/configuration failures.
-- Live provider and physical-microphone checks require ELEVENLABS_API_KEY and remain unverified.
+- Live Scribe and browser upload/review/save were subsequently verified with the refreshed key; physical-microphone checks remain unverified.
 - Next: Gemini translation/structuring through lib/llm.ts, then outreach review/delivery
   lifecycle and shared persistence. Existing sample walkthrough remains separate.
 - See docs/implementation-voice-capture.md for the slice's exact boundary and validation.
