@@ -37,7 +37,7 @@ records the move, including the meaning of old document paths in earlier ADRs.
 
 Next.js 16 (App Router) · React 19 · TypeScript · Tailwind 4 · Vercel AI SDK with
 `@ai-sdk/google` (Gemini) · ElevenLabs (initial Scribe STT) · xAI (follow-up speech,
-ADR 0009) · Neon Postgres + Drizzle (`files` table) · pnpm. See ADRs 0005 and 0009
+ADR 0009) · Neon Postgres + Drizzle (`files` and `visits` tables) · pnpm. See ADRs 0005 and 0009
 and `package.json` for the current dependencies.
 
 ## Workflow

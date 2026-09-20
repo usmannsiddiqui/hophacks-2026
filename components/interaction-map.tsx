@@ -1,9 +1,14 @@
 "use client";
 import { useState } from "react";
-import type { PatientFile } from "@/lib/types";
 import { medicineName } from "@/lib/display";
 
-export function InteractionMap({ file }: { file: PatientFile }) {
+// Structural, not PatientFile: a VisitReport carries the same id/term/herWords and
+// id/a/b/severity, so one map serves the counter file and the pharmacist's report.
+type MapMedicine = { id: string; term: string; herWords: string | null };
+type MapFlag = { id: string; a: string; b: string; severity: "high" | "moderate" };
+export type MapSource = { medList: MapMedicine[]; flags: MapFlag[] };
+
+export function InteractionMap({ file }: { file: MapSource }) {
   const [selected, setSelected] = useState<string | null>(null);
   const nodes = file.medList.map((m, i) => {
     const angle =

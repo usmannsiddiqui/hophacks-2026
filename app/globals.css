@@ -1277,3 +1277,135 @@ textarea {
   .print-only { display:block; }
   .screen-only { display:none !important; }
 }
+
+/* The pharmacist's answer on the counter's report, and on the console after signing.
+   Colour marks the status and nothing else (ADR 0006): authorised is `clear`,
+   not authorised is `flag`, still waiting is `ask`. */
+.pharmacist-decision {
+  margin: 20px 0 8px;
+}
+.decision-banner {
+  border: 1px solid var(--color-line);
+  background: var(--color-surface-raised);
+  border-radius: 16px;
+  padding: 20px 24px;
+  margin-bottom: 16px;
+  break-inside: avoid;
+}
+.decision-banner strong {
+  display: block;
+  margin-bottom: 6px;
+}
+.decision-banner p {
+  font-size: 14px;
+  color: var(--color-ink-muted);
+  margin: 6px 0;
+}
+.decision-banner.authorised {
+  background: var(--color-clear-wash);
+  border-color: var(--color-clear-line);
+}
+.decision-banner.authorised strong {
+  color: var(--color-clear);
+}
+.decision-banner.declined {
+  background: var(--color-flag-wash);
+  border-color: var(--color-flag-line);
+}
+.decision-banner.declined strong {
+  color: var(--color-flag);
+}
+.decision-banner.waiting {
+  background: var(--color-ask-wash);
+  border-color: var(--color-ask-line);
+}
+.decision-banner.waiting strong {
+  color: var(--color-ask);
+}
+.decision-items {
+  margin: 10px 0 0;
+  padding-left: 20px;
+  font-size: 14px;
+}
+.decision-items li {
+  margin-bottom: 6px;
+}
+
+/* Force-directed map of her medicines and the cited interactions between them.
+   Ported from the flagged-items-visualization branch; layout in lib/report-map.ts
+   (d3-force), zoom and pan in components/report-bubble-map.tsx (d3-zoom). Colour
+   still only ever marks a status (ADR 0006). */
+.report-map { position:relative; overflow:hidden; border:1px solid var(--color-line); border-radius:24px; background:var(--color-surface-raised); }
+.map-heading { display:flex; justify-content:space-between; align-items:center; gap:20px; padding:28px 32px 0; }
+.map-heading h2 { margin:6px 0 0; font-size:26px; font-weight:500; letter-spacing:-.8px; }
+.map-count { border:1px solid var(--color-flag-line); background:var(--color-flag-wash); color:var(--color-flag); border-radius:99px; padding:6px 12px; font-size:12px; white-space:nowrap; }
+.report-map-canvas { display:block; width:100%; height:580px; cursor:grab; touch-action:none; }
+.report-map-canvas:active { cursor:grabbing; }
+.report-bubble,.report-connection { cursor:pointer; outline:none; transition:opacity 180ms ease; }
+.report-bubble.dimmed,.report-connection.dimmed { opacity:.3; }
+.report-bubble-circle { fill:var(--color-surface); stroke:var(--color-line); stroke-width:1.5; }
+.report-bubble.flagged .report-bubble-circle { fill:var(--color-flag-wash); stroke:var(--color-flag); }
+.report-bubble.unknown .report-bubble-circle { fill:var(--color-ask-wash); stroke:var(--color-ask); stroke-dasharray:5 5; }
+.report-bubble-focus { fill:none; stroke:transparent; stroke-width:2; }
+.report-bubble:focus-visible .report-bubble-focus,.report-bubble.selected .report-bubble-focus { stroke:var(--color-ink); }
+.report-bubble-symbol { font:500 28px Inter,sans-serif; fill:var(--color-ink-muted); pointer-events:none; }
+.report-bubble.flagged .report-bubble-symbol { fill:var(--color-flag); }
+.report-bubble.unknown .report-bubble-symbol { fill:var(--color-ask); }
+.report-bubble-label { overflow:hidden; pointer-events:none; }
+.report-bubble-label div { text-align:center; font-size:13px; color:var(--color-ink); }
+.report-bubble-label strong { display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; font-weight:600; line-height:1.25; }
+.report-connection-target { stroke:transparent; stroke-width:30; }
+.report-connection-line { stroke:var(--color-flag); stroke-width:1.5; opacity:.55; pointer-events:none; }
+.report-connection.selected .report-connection-line,.report-connection:focus-visible .report-connection-line { opacity:1; stroke-width:3; }
+.report-connection-badge { fill:var(--color-surface); stroke:var(--color-flag-line); stroke-width:1; }
+.report-connection:focus-visible .report-connection-badge { stroke:var(--color-ink); stroke-width:3; }
+.report-connection-mark { font:600 14px Inter,sans-serif; fill:var(--color-flag); pointer-events:none; }
+.map-controls { position:absolute; right:24px; bottom:98px; display:flex; background:var(--color-surface); border:1px solid var(--color-line); border-radius:12px; overflow:hidden; }
+.map-controls button { background:none; border:0; min-width:44px; height:44px; font-size:13px; cursor:pointer; }
+.map-controls button:first-child,.map-controls button:last-child { font-size:20px; }
+.map-controls button:hover { background:var(--color-surface-sunken); }
+.map-footer { padding:18px 32px; border-top:1px solid var(--color-line); }
+.map-legend { display:flex; flex-wrap:wrap; gap:20px; font-size:12px; color:var(--color-ink-muted); }
+.map-legend span { display:flex; align-items:center; gap:7px; }
+.map-legend i { width:10px; height:10px; border:1px solid var(--color-ink-muted); border-radius:50%; }
+.map-legend .legend-flag { border-color:var(--color-flag); background:var(--color-flag-wash); }
+.map-legend .legend-unknown { border:1px dashed var(--color-ask); background:var(--color-ask-wash); }
+.map-footer p { font-size:11px; color:var(--color-ink-muted); margin:10px 0 0; }
+.map-evidence { position:absolute; top:92px; right:24px; width:min(340px, calc(100% - 32px)); max-height:calc(100% - 210px); overflow:auto; padding:24px; border:1px solid var(--color-line); border-radius:16px; background:#fefffced; backdrop-filter:blur(12px); box-shadow:0 8px 40px #2c2c2c12; overflow-wrap:anywhere; }
+.map-evidence h3 { margin:10px 26px 12px 0; font-size:18px; }
+.map-evidence p { font-size:13px; line-height:1.7; }
+.map-evidence p.urdu { font-size:16px; line-height:2; }
+.map-evidence summary { font-size:12px; min-height:32px; cursor:pointer; }
+.map-evidence-close { position:absolute; top:10px; right:8px; width:44px; height:44px; border:0; background:transparent; font-size:24px; cursor:pointer; }
+.map-evidence-flag { border-top:1px solid var(--color-line); margin-top:16px; padding-top:16px; font-size:13px; }
+.map-evidence-flag strong { color:var(--color-flag); font-weight:600; }
+.map-evidence-flag a { display:inline-flex; align-items:center; min-height:44px; text-decoration:underline; text-underline-offset:3px; }
+.map-empty { min-height:420px; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:24px; text-align:center; }
+.map-empty > span { font-size:72px; color:var(--color-line); }
+.map-empty p { font-size:14px; color:var(--color-ink-muted); }
+
+@media(max-width:600px) {
+  .map-heading { padding:22px 20px 0; gap:12px; }
+  .map-heading h2 { font-size:21px; }
+  .map-heading .eyebrow { font-size:9px; }
+  .map-count { font-size:10px; padding:5px 9px; }
+  .report-map-canvas { height:560px; }
+  .map-footer { padding:16px 20px; }
+  .map-legend { gap:12px; font-size:10px; }
+  .map-controls { right:16px; bottom:110px; }
+  .map-evidence { position:fixed; z-index:40; top:auto; bottom:16px; right:16px; width:calc(100% - 32px); max-height:min(340px, 65dvh); }
+}
+
+@media(prefers-reduced-motion:reduce) {
+  .report-bubble,.report-connection { transition:none; }
+}
+
+/* The scene leans toward the cursor. Short transition so it trails the pointer
+   slightly rather than tracking it exactly, which is what makes it read as depth. */
+.report-map-drift { transition: transform 260ms cubic-bezier(.22,1,.36,1); }
+@media(prefers-reduced-motion:reduce) {
+  .report-map-drift { transition: none; }
+}
+
+/* The English description of an unidentified item, shown when someone asks for detail. */
+.map-evidence-detail { font-size:14px; margin-bottom:10px; }
