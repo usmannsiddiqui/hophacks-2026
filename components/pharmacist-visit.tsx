@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useState, type FormEvent } from "react";
 import { fetchJson } from "./file-provider";
-import { InteractionMap } from "./interaction-map";
+import { ReportBubbleMap } from "./report-bubble-map";
 import { Button, Section } from "./primitives";
 import {
   blankDecisions,
@@ -13,6 +13,7 @@ import {
   type VisitRecord,
 } from "@/lib/review";
 import type { VisitSummary } from "@/lib/visits";
+import { sampleSubmission } from "@/lib/sample-visit";
 
 const roleLabel = {
   requested: "Requested at the counter",
@@ -49,6 +50,22 @@ export function VisitQueue() {
     };
   }, []);
 
+  const [seeding, setSeeding] = useState(false);
+
+  // Rehearsal affordance: puts Ghulam Fatima into the queue so the console can be shown
+  // without running a live intake first.
+  async function loadSample() {
+    setSeeding(true);
+    setError("");
+    try {
+      await fetchJson("/api/visits", { method: "POST", body: JSON.stringify(sampleSubmission()) });
+    } catch (e) {
+      setError((e as Error).message);
+    } finally {
+      setSeeding(false);
+    }
+  }
+
   const waiting = rows.filter((r) => r.status === "waiting");
   const reviewed = rows.filter((r) => r.status === "reviewed");
 
@@ -84,6 +101,9 @@ export function VisitQueue() {
               <div className="empty-state">
                 <h3>Nothing waiting.</h3>
                 <p>Send a report from the counter to see it here.</p>
+                <Button type="button" secondary disabled={seeding} onClick={loadSample}>
+                  {seeding ? "Loading…" : "Load the sample case"}
+                </Button>
               </div>
             ) : (
               waiting.map((v) => <VisitRow key={v.id} visit={v} />)
@@ -276,8 +296,8 @@ function VisitReviewForm({
           </div>
         )}
 
-        <Section title="What needs attention" detail="Nodes are her medicines; lines are cited interactions">
-          <InteractionMap file={report} />
+        <Section title="What needs attention" detail="Select a bubble or a connection to see the evidence">
+          <ReportBubbleMap report={report} />
           {report.flags.length ? (
             report.flags.map((flag) => {
               const a = report.medList.find((m) => m.id === flag.a);

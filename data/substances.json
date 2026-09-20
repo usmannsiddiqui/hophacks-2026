@@ -258,8 +258,6 @@
         "tylenol",
         "paracetamol",
         "panadol",
-        "panadol",
-        "paracetamol",
         "calpol"
       ],
       "aliases_es": [
@@ -1758,21 +1756,24 @@
       "b": "vitamin_k",
       "severity": "major",
       "effect": "Directly antagonises warfarin.",
-      "ask": "Ask about vitamin K supplements or a recent change in leafy greens -- it works against warfarin directly."
+      "ask": "Ask about vitamin K supplements or a recent change in leafy greens -- it works against warfarin directly.",
+      "source": "NHS — Warfarin: food and drink (vitamin K and leafy greens)  https://www.nhs.uk/medicines/warfarin/"
     },
     {
       "a": "warfarin",
       "b": "class:nsaid",
       "severity": "major",
       "effect": "Additive bleeding risk plus GI mucosal injury.",
-      "ask": "Ask whether they take ibuprofen or naproxen for pain -- combined with warfarin this raises bleeding risk."
+      "ask": "Ask whether they take ibuprofen or naproxen for pain -- combined with warfarin this raises bleeding risk.",
+      "source": "NHS — Warfarin: taking it with other medicines (bleeding risk)  https://www.nhs.uk/medicines/warfarin/"
     },
     {
       "a": "warfarin",
       "b": "aspirin",
       "severity": "major",
       "effect": "Additive bleeding risk.",
-      "ask": "Ask whether they take a daily aspirin on their own, including low-dose."
+      "ask": "Ask whether they take a daily aspirin on their own, including low-dose.",
+      "source": "NHS — Warfarin: taking it with other medicines (bleeding risk)  https://www.nhs.uk/medicines/warfarin/"
     },
     {
       "a": "warfarin",
@@ -1800,7 +1801,8 @@
       "b": "turmeric",
       "severity": "moderate",
       "effect": "Antiplatelet effect at supplement doses.",
-      "ask": "Ask about turmeric or curcumin supplements -- more potent than turmeric used in cooking."
+      "ask": "Ask about turmeric or curcumin supplements -- more potent than turmeric used in cooking.",
+      "source": "Memorial Sloan Kettering — Turmeric, About Herbs  https://www.mskcc.org/cancer-care/integrative-medicine/herbs/turmeric"
     },
     {
       "a": "warfarin",
@@ -2482,6 +2484,22 @@
       "effect": "Fluoroquinolones can disturb blood glucose in patients on antidiabetic medicines.",
       "ask": "Ask whether she is taking ciprofloxacin without a prescription — with metformin it can swing her sugar.",
       "source": "https://www.fda.gov/media/114192/download"
+    },
+    {
+      "a": "acetaminophen",
+      "b": "acetaminophen",
+      "severity": "major",
+      "effect": "Two products that both contain paracetamol add up. Over about 4 g in a day injures the liver, and it is easy to pass without noticing because neither product is wrong on its own.",
+      "ask": "Ask whether any other tablet, sachet or syrup she is taking also contains paracetamol — check the box, not the brand name.",
+      "source": "NHS — Paracetamol for adults: do not take with other medicines containing paracetamol  https://www.nhs.uk/medicines/paracetamol-for-adults/"
+    },
+    {
+      "a": "class:nsaid",
+      "b": "class:nsaid",
+      "severity": "major",
+      "effect": "Two anti-inflammatories together add their stomach and bleeding risk without adding pain relief.",
+      "ask": "Ask whether she is already taking another painkiller for the same pain, including a gel or a powder from a hakeem.",
+      "source": "NHS — Ibuprofen for adults: taking it with other painkillers  https://www.nhs.uk/medicines/ibuprofen-for-adults/"
     }
   ]
 }

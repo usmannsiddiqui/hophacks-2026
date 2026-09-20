@@ -115,6 +115,23 @@ clinical read, on the report only.
 
 **Readback.** The advice spoken to the patient in her language via TTS. Step 10.
 
+**Class row.** A table row written against a drug class rather than a named medicine —
+`warfarin + class:nsaid`. A medicine is matched by its own id *and* by `class:<its class>`,
+so these rows can fire. Two thirds of the table is written this way; before this matching
+existed they were silently dead. Where a specific row and a class row both match, the
+specific one wins: "warfarin + aspirin" says more than "warfarin + an NSAID".
+
+**Duplicate-ingredient flag.** A table row whose two sides are the same token
+(`acetaminophen + acetaminophen`, `class:nsaid + class:nsaid`). It says "this one is
+dangerous twice over": two products with the same active ingredient, neither wrong alone.
+That is the ordinary way a paracetamol overdose happens — Panadol for the fever and a flu
+sachet for the cold. Brand names all normalise to one term, so without these rows nothing
+added them up.
+
+**Sample case.** `data/visits/mv-2051.json` — Ghulam Fatima, 67, on warfarin. Nasreen
+Bibi's risk is her blood sugar going too low; Fatima's is bleeding, so the two exercise
+different halves of the table. Loadable into the queue from the console's empty state.
+
 ## Pharmacist decision
 
 **Sent visit.** The moment the counter sends a report for review, a copy of it leaves the
