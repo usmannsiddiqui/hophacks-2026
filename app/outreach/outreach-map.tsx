@@ -4,8 +4,12 @@ import Link from "next/link";
 import Image from "next/image";
 import Script from "next/script";
 import { Glass } from "@samasante/liquid-glass";
-import { accessColor, categories, regions, pilotBounds, planningLocations, type AccessResult, type Category } from "@/lib/outreach/regions";
+import { accessColor, categories, regions, pilotBounds, planningLocations, unmappedUnits, district, ratePer10k, peoplePerListing, listingsToBenchmark, formatRate, WHO_FACILITY_BENCHMARK_PER_10K, type AccessResult, type Category, type Region } from "@/lib/outreach/regions";
 import styles from "./outreach.module.css";
+// Listings per 10,000 residents inside the same boundary; undefined until Google has answered.
+const rateOf = (region: Region, result?: AccessResult) => result && "count" in result ? ratePer10k(result.count, region.census.population2023) : undefined;
+const percent = (part: number, whole: number) => `${((part / whole) * 100).toFixed(1)}%`;
+const number = (value: number) => value.toLocaleString("en-US");
 function GlassMaterial() { return <Glass aria-hidden="true" className={styles.glassMaterial} style={{position:"absolute",inset:0,width:"100%",height:"100%",pointerEvents:"none",borderRadius:"inherit",background:"rgba(243,232,188,.24)"}} optics={{frost:8,strength:.012,dispersion:.08,brightness:.02}} />; }
 const PLAN_KEY = "mashwara-outreach-plans-v1";
 const subscribe = (fn: () => void) => {window.addEventListener("storage",fn);window.addEventListener("outreach-plan",fn);return()=>{window.removeEventListener("storage",fn);window.removeEventListener("outreach-plan",fn)}};
@@ -29,10 +33,10 @@ export default function OutreachMap() {
   const current = results[category] || {};
   const evidence = current[selected];
   const count = evidence && "count" in evidence ? evidence.count : undefined;
-  const sorted = [...regions].sort((a,b)=>{
-    const first=current[a.id], second=current[b.id];
-    return (first && "count" in first ? first.count : Infinity)-(second && "count" in second ? second.count : Infinity);
-  });
+  const rate = rateOf(area, evidence);
+  const people = area.census.population2023;
+  // Thinnest coverage per resident first; unchecked areas sink to the bottom.
+  const sorted = [...regions].sort((a,b)=>(rateOf(a,current[a.id]) ?? Infinity)-(rateOf(b,current[b.id]) ?? Infinity));
   const choose = useCallback((id: string)=>{setSelected(id);setPlanMessage("");const region=regions.find(r=>r.id===id);if(region)map.current?.fitBounds(region.bounds,40);},[]);
   useEffect(()=>{
     const scope=window as typeof window & {gm_authFailure?:()=>void};
@@ -52,8 +56,7 @@ export default function OutreachMap() {
     if (!ready || !map.current) return;
     const overlays: google.maps.Polygon[]=[];
     for(const settlement of regions){
-      const result=results[category]?.[settlement.id];
-      const value=result && "count" in result ? result.count : undefined;
+      const value=rateOf(settlement, results[category]?.[settlement.id]);
       const polygon = new google.maps.Polygon({map:map.current,paths:settlement.boundary,geodesic:true,fillColor:accessColor(value),fillOpacity:value===undefined?.14:.52,strokeColor:settlement.id===selected?"#035352":accessColor(value),strokeOpacity:.9,strokeWeight:settlement.id===selected?3:1,zIndex:settlement.id===selected?2:1});
       polygon.addListener("click",()=>choose(settlement.id)); overlays.push(polygon);
     }
@@ -62,16 +65,19 @@ export default function OutreachMap() {
   async function loadCounts(){
     if(busy.current) return;
     busy.current=true;setLoading(true);
-    const requested=category;
-    setResults(old=>({...old,[requested]:{}}));
-    for(const settlement of regions){
-      let result: AccessResult;
-      try {
-        const response=await fetch("/api/outreach/access",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({regionId:settlement.id,category:requested})});
-        const data=await response.json();
-        result=response.ok && Number.isSafeInteger(data.count) && data.count>=0 ? {count:data.count,fetchedAt:data.fetchedAt} : {error:data.error || "Data unavailable. Please try again."};
-      }catch{result={error:"Connection interrupted. Availability is unknown."}}
-      setResults(old=>({...old,[requested]:{...old[requested],[settlement.id]:result}}));
+    // One click fills both tabs, visible category first, so switching tabs never lands on an empty pane.
+    const order=[category,...(Object.keys(categories) as Category[]).filter(key=>key!==category)];
+    setResults({});
+    for(const requested of order){
+      for(const settlement of regions){
+        let result: AccessResult;
+        try {
+          const response=await fetch("/api/outreach/access",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({regionId:settlement.id,category:requested})});
+          const data=await response.json();
+          result=response.ok && Number.isSafeInteger(data.count) && data.count>=0 ? {count:data.count,fetchedAt:data.fetchedAt} : {error:data.error || "Data unavailable. Please try again."};
+        }catch{result={error:"Connection interrupted. Availability is unknown."}}
+        setResults(old=>({...old,[requested]:{...old[requested],[settlement.id]:result}}));
+      }
     }
     busy.current=false;setLoading(false);
   }
@@ -99,12 +105,13 @@ export default function OutreachMap() {
       <div className={styles.toolbar}><div><h2>Potential access gaps</h2><p>Pasni & the Makran coast, Balochistan</p></div><div className={styles.tabs} aria-label="Listing category"><GlassMaterial/>{(Object.keys(categories) as Category[]).map(key=><button key={key} aria-pressed={category===key} disabled={loading} onClick={()=>setCategory(key)}>{categories[key]}</button>)}</div></div>
       <div className={styles.explorer}>
         <aside className={styles.sidebar}>
-          <div className={styles.listHeader}><span>4 REGIONS</span><span>TEHSILS</span></div>
+          <div className={styles.listHeader}><span>{regions.length} REGIONS</span><span>TEHSILS</span></div>
           <button className={styles.loadButton} disabled={loading} onClick={loadCounts}>{loading?"Checking Google listings…":hasData?"Refresh areas ↻":"Show access gaps ↗"}</button>
           <div className={styles.areaList}>{sorted.map((s,index)=>{
-            const result=current[s.id]; const value=result && "count" in result?result.count:undefined;
-            return <button key={s.id} className={styles.areaButton} aria-pressed={selected===s.id} onClick={()=>choose(s.id)}><span className={styles.number}>{String(index+1).padStart(2,"0")}</span><span><strong>{s.name}</strong><small>{plans.includes(s.id)?"In your visit plan":result && "error" in result?"Data unavailable":value===undefined?"Not checked yet":value===0?"No places listed":`${value} ${value===1?"place":"places"} listed`}</small></span><span className={styles.dot} style={{background:accessColor(value)}}/></button>;
+            const result=current[s.id]; const value=result && "count" in result?result.count:undefined; const perTenK=rateOf(s,result);
+            return <button key={s.id} className={styles.areaButton} aria-pressed={selected===s.id} onClick={()=>choose(s.id)}><span className={styles.number}>{String(index+1).padStart(2,"0")}</span><span><strong>{s.name}</strong><small>{plans.includes(s.id)?"In your visit plan":result && "error" in result?"Data unavailable":value===undefined||perTenK===undefined?"Not checked yet":value===0?"None listed":`${value} listed · ${formatRate(perTenK)} per 10,000 people`}</small></span><span className={styles.dot} style={{background:accessColor(perTenK)}}/></button>;
           })}</div>
+          {unmappedUnits.map(unit=><p key={unit.id} className={styles.listHint}>Not shown: {unit.name} sub-tehsil, {number(unit.census.population2023)} people. It has no boundary in the 2017 dataset, so it is not shaded.</p>)}
           <p className={styles.googleAttribution} translate="no">Listing counts: Google Maps</p>
         </aside>
         <div className={styles.mapColumn}>
@@ -113,12 +120,19 @@ export default function OutreachMap() {
             {(!browserKey || mapError || !ready) && <div className={styles.mapNotice} role="status"><strong>{mapError?"Map unavailable":!browserKey?"Map setup needed":"Opening the map…"}</strong><p>{mapError || (!browserKey?"Add the Google Maps browser key to enable the map. The community list still works.":"Finding our communities along the Makran coast.")}</p></div>}
             <div className={styles.mapLabel}><GlassMaterial/>MAKRAN COAST <span>BALOCHISTAN, PAKISTAN</span></div>
           </div>
-          <div className={styles.legend} aria-label="Listing count legend">{[["#c34236","0 listed"],["#de8a25","1–2 listed"],["#035352","3+ listed"],["#777d77","Not known"]].map(([color,label])=><span key={label}><i style={{background:color}}/>{label}</span>)}<small>Tehsil boundaries: <a href="https://www.geoboundaries.org/api/current/gbOpen/PAK/ADM3/">geoBoundaries</a> 2017 · <a href="https://opendatacommons.org/licenses/odbl/1-0/">ODbL 1.0</a> · <a href="/data/makran-tehsils.json" download>Download</a></small></div>
+          <div className={styles.legend} aria-label="Listing rate legend">{[["#c34236","None listed"],["#de8a25",`Under ${WHO_FACILITY_BENCHMARK_PER_10K} per 10,000 people`],["#035352",`${WHO_FACILITY_BENCHMARK_PER_10K} or more per 10,000 people`],["#777d77","Not known"]].map(([color,label])=><span key={label}><i style={{background:color}}/>{label}</span>)}<small>Tehsil boundaries: <a href="https://www.geoboundaries.org/api/current/gbOpen/PAK/ADM3/">geoBoundaries</a> 2017 · <a href="https://opendatacommons.org/licenses/odbl/1-0/">ODbL 1.0</a> · <a href="/data/makran-tehsils.json" download>Download</a></small></div>
+          <p className={styles.legendNote}>Rates divide Google listings by each tehsil&rsquo;s 2023 census population. {WHO_FACILITY_BENCHMARK_PER_10K} per 10,000 is the WHO service-availability benchmark for health facilities; pharmacies have no WHO target, so for them the line is a reference only.</p>
         </div>
       </div>
       <div className={styles.detail}><GlassMaterial/>
-        <div className={styles.placeHeading}><h2>{area.name}</h2></div>
-        <details className={styles.areaEvidence}><summary>Area details</summary><p>{count === undefined ? "Listing count not available yet." : `${count} ${category === "medical" ? "medical-care listings" : "pharmacies listed"} in this shaded area.`}</p><p>{evidence && "fetchedAt" in evidence ? `Checked ${new Date(evidence.fetchedAt).toLocaleString()} · Google Maps` : evidence && "error" in evidence ? evidence.error : "Choose Show access gaps to check this area."}</p><p>{area.name} tehsil, using the published 2017 boundary. Regions differ in size; counts are not adjusted for area or population.</p></details>
+        <div className={styles.placeHeading}><h2>{area.name}</h2><p>{number(people)} people · {number(area.census.areaKm2)} km² · {Math.round(people/area.census.areaKm2)} per km² · 2023 census</p></div>
+        <details className={styles.areaEvidence}><summary>Area details</summary>
+          <p>{count === undefined || rate === undefined ? "Listing count not available yet." : count === 0 ? `Google lists no ${category === "medical" ? "hospital or doctor" : "pharmacy"} inside this boundary.` : `${count} ${category === "medical" ? "medical-care" : "pharmacy"} ${count === 1 ? "listing" : "listings"} inside this boundary: ${formatRate(rate)} per 10,000 people, about one for every ${number(peoplePerListing(count, people)!)} residents.`}</p>
+          <p>{category === "medical" ? `The WHO service-availability benchmark is ${WHO_FACILITY_BENCHMARK_PER_10K} health facilities per 10,000 people, which would mean ${listingsToBenchmark(people)} here. Listings are not verified facilities.` : `WHO sets no pharmacy target; ${WHO_FACILITY_BENCHMARK_PER_10K} per 10,000 people (${listingsToBenchmark(people)} here) is shown as a reference only. Listings are not licensed pharmacies.`}</p>
+          <p>{evidence && "fetchedAt" in evidence ? `Checked ${new Date(evidence.fetchedAt).toLocaleString()} · Google Maps` : evidence && "error" in evidence ? evidence.error : "Choose Show access gaps to check this area."}</p>
+          <p>In the 2023 census, {number(area.census.disability2023)} people here ({percent(area.census.disability2023, area.census.disabilityBase2023)}) reported a lot of difficulty seeing, hearing, walking, remembering, with self-care or communicating, and {number(area.census.functionalLimitation2023)} ({percent(area.census.functionalLimitation2023, area.census.disabilityBase2023)}) reported some difficulty. District-wide: {percent(district.disability2023, district.disabilityBase2023)} and {percent(district.functionalLimitation2023, district.disabilityBase2023)}.{area.census.disabilityBase2023 !== people ? ` These shares use the census base of ${number(area.census.disabilityBase2023)} people for this unit.` : ""}</p>
+          <p>{area.census.unit}, Pakistan Bureau of Statistics Census 2023 (Tables 1 and 16), drawn with the published 2017 boundary. Population, area and difficulty counts are census figures, not sickness counts; listings are Google Maps listings.</p>
+        </details>
         <div className={styles.planAction}><button onClick={togglePlan}>{plans.includes(selected)?"Remove from visit plan":"Plan a visit here"}<span>↗</span></button><p role="status">{planMessage}</p></div>
       </div>
     </section>
