@@ -11,7 +11,8 @@ import {
   QuestionCard,
   Section,
 } from "./primitives";
-import { InteractionMap } from "./interaction-map";
+import { ReportBubbleMap } from "./report-bubble-map";
+import { fileToBubbleSource } from "@/lib/map-source";
 import { cleanCopy } from "@/lib/display";
 
 export function FileOverview() {
@@ -186,7 +187,7 @@ export function Findings() {
         title="How her medicines connect"
         detail={`${file.medList.length} items / ${file.flags.length} cited flags`}
       >
-        <InteractionMap file={file} />
+        <ReportBubbleMap report={fileToBubbleSource(file)} />
       </Section>
       <Section title="Interactions to review">
         {file.flags.map((f) => (

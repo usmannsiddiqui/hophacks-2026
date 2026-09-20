@@ -14,7 +14,8 @@ import {
   MedicineRow,
   Section,
 } from "./primitives";
-import { InteractionMap } from "./interaction-map";
+import { ReportBubbleMap } from "./report-bubble-map";
+import { fileToBubbleSource } from "@/lib/map-source";
 
 type Summary = Pick<
   PatientFile,
@@ -464,7 +465,7 @@ export function PharmacistReview() {
         </details>
       </Section>
       <Section title="What needs attention">
-        <InteractionMap file={file} />
+        <ReportBubbleMap report={fileToBubbleSource(file)} />
         {file.flags.map((f) => (
           <FlagCard flag={f} file={file} key={f.id} />
         ))}

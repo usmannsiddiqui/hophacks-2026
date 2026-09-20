@@ -469,65 +469,6 @@ h3 {
 .hold-banner span {
   font-size: 13px;
 }
-.map-panel {
-  background: var(--color-surface-raised);
-  border: 1px solid var(--color-line);
-  border-radius: 24px;
-  margin-bottom: 20px;
-}
-.interaction-map {
-  width: 100%;
-  max-height: 330px;
-  padding: 8px 12px;
-}
-.map-edge {
-  stroke: var(--color-flag);
-  stroke-width: 2;
-  opacity: 0.55;
-}
-.map-edge.moderate {
-  stroke: var(--color-ask);
-}
-.map-node {
-  cursor: pointer;
-}
-.map-node circle {
-  fill: var(--color-surface-sunken);
-  stroke: #a2aaa2;
-  stroke-width: 1.5;
-}
-.map-node.high circle {
-  fill: var(--color-flag-wash);
-  stroke: var(--color-flag);
-}
-.map-node.moderate circle {
-  fill: var(--color-ask-wash);
-  stroke: var(--color-ask);
-}
-.map-node.unknown circle {
-  stroke-dasharray: 3 3;
-}
-.map-node text {
-  fill: var(--color-ink);
-  font-size: 11px;
-}
-.map-node:focus {
-  outline: none;
-}
-.map-node:focus circle {
-  stroke: var(--color-ink);
-  stroke-width: 4;
-}
-.map-caption {
-  border-top: 1px solid var(--color-line);
-  padding: 14px 20px;
-  font-size: 11px;
-  color: var(--color-ink-muted);
-  min-height: 72px;
-}
-.map-caption p {
-  margin: 4px 0 0;
-}
 .source-entry {
   padding: 18px 0;
   border-bottom: 1px solid var(--color-line);
