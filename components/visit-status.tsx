@@ -1,4 +1,6 @@
 "use client";
+import { LiquidButton } from "@/components/ui/liquid-glass-button";
+
 import { outreachAreaNames } from "@/lib/outreach/location";
 import Link from "next/link";
 import { useEffect, useState } from "react";
@@ -28,10 +30,10 @@ export function VisitStatus({ id }: { id: string }) {
   },[id,retry]);
   return <div className="app"><ProductHeader title="Visit follow-up"/><main className="queue-page">
     <Link className="text-link" href="/visits">← Your visits</Link>
-    {error && <div className="error-box" role="alert"><p>Could not load the latest visit: {error}</p><button className="button secondary" onClick={()=>setRetry(x=>x+1)}>Try again</button></div>}
+    {error && <div className="error-box" role="alert"><p>Could not load the latest visit: {error}</p><LiquidButton className="button secondary" onClick={()=>setRetry(x=>x+1)}>Try again</LiquidButton></div>}
     {!visit && !error && <p role="status">Opening the sent report…</p>}
     {visit && <>
-      <div className="page-heading"><span className="eyebrow">{visit.id}{visit.outreachAreaId ? ` · ${outreachAreaNames[visit.outreachAreaId]} tehsil` : ""}</span><h1>{visit.patient.name}</h1><p>{visit.review ? "The pharmacist’s response is ready." : "Your report has reached the pharmacist queue."}</p></div>
+      <div className="page-heading"><span className="eyebrow">{visit.id}{visit.outreachAreaId ? ` · ${outreachAreaNames[visit.outreachAreaId]}` : ""}</span><h1>{visit.patient.name}</h1><p>{visit.review ? "The pharmacist’s response is ready." : "Your report has reached the pharmacist queue."}</p></div>
       {!visit.review ? <Section title="Waiting for review"><p>The person you visited does not need to wait here. Return to this page to check for a response.</p><p className="small muted">Sent {new Date(visit.createdAt).toLocaleString()}</p></Section> : <Section title="Pharmacist response" detail={decisionSummary(visit.review)}>
         <p>{visit.review.note || (visit.review.outcome==="authorised" ? "The pharmacist authorised the medicines shown below." : "Review the decisions and reasons below.")}</p>
         {visit.review.items.map(item=>{

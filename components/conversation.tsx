@@ -1,4 +1,6 @@
 "use client";
+import { LiquidButton } from "@/components/ui/liquid-glass-button";
+
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
@@ -57,13 +59,13 @@ export function RecordingView() {
               This walkthrough uses Nasreen’s prepared account. It does not turn
               on your microphone.
             </p>
-            <button
+            <LiquidButton
               className="text-link"
               onClick={() => setPreview(!preview)}
               aria-expanded={preview}
             >
               {preview ? "Hide" : "Read"} the sample account
-            </button>
+            </LiquidButton>
             {preview && (
               <p className="urdu" lang="ur" dir="rtl">
                 {sampleFile().recordings[0].urdu}
@@ -74,11 +76,11 @@ export function RecordingView() {
               className="phone-button"
               onClick={useSample}
             >
-              {busy ? "Building the sample file…" : "Use sample account →"}
+              {busy ? "Building the sample file…" : "Use sample account"}
             </Button>
             {file.status !== "recording" && (
               <Link className="text-link" href={`/file/${file.id}`}>
-                Continue to the saved file →
+                Continue to the saved file
               </Link>
             )}
           </div>
@@ -215,12 +217,12 @@ export function QuestionView({ questionId }: { questionId?: string }) {
               onClick={answer}
               className="phone-button"
             >
-              Read it to her & capture the answer →
+              Read it to her & capture the answer
             </Button>
             <div className="row-between">
-              <button className="text-link" onClick={() => setIndex(index + 1)}>
+              <LiquidButton className="text-link" onClick={() => setIndex(index + 1)}>
                 Skip for now
-              </button>
+              </LiquidButton>
               <Link className="text-link" href={`/file/${file.id}/findings`}>
                 Back to findings
               </Link>
@@ -235,7 +237,7 @@ export function QuestionView({ questionId }: { questionId?: string }) {
             </h1>
             <p>Every answer remains with its question in the patient file.</p>
             <Link className="button" href={`/file/${file.id}/findings`}>
-              Return to findings →
+              Return to findings
             </Link>
           </>
         )}
@@ -401,7 +403,7 @@ export function TranslateView({ questionId }: { questionId?: string }) {
             disabled={busy || !urdu.trim() || !english.trim()}
             onClick={save}
           >
-            {busy ? "Saving answer…" : "Save answer & continue →"}
+            {busy ? "Saving answer…" : "Save answer & continue"}
           </Button>
         </section>
       )}

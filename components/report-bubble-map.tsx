@@ -1,4 +1,6 @@
 "use client";
+import { LiquidButton } from "@/components/ui/liquid-glass-button";
+
 
 import { useCallback, useEffect, useId, useMemo, useRef, useState } from "react";
 import { select, zoom, zoomIdentity, zoomTransform } from "d3";
@@ -244,9 +246,9 @@ export function ReportBubbleMap({ report }: { report: BubbleMapSource }) {
             </g>
           </svg>
           <div className="map-controls" aria-label="Map controls">
-            <button type="button" aria-label="Zoom out" onClick={() => changeZoom(0.8)}>−</button>
-            <button type="button" onClick={reset}>Reset</button>
-            <button type="button" aria-label="Zoom in" onClick={() => changeZoom(1.25)}>+</button>
+            <LiquidButton type="button" aria-label="Zoom out" onClick={() => changeZoom(0.8)}>−</LiquidButton>
+            <LiquidButton type="button" onClick={reset}>Reset</LiquidButton>
+            <LiquidButton type="button" aria-label="Zoom in" onClick={() => changeZoom(1.25)}>+</LiquidButton>
           </div>
         </>
       ) : <div className="map-empty"><span aria-hidden="true">○</span><h3>No medicines to map yet.</h3><p>The account did not identify any medicines or remedies.</p></div>}
@@ -256,7 +258,7 @@ export function ReportBubbleMap({ report }: { report: BubbleMapSource }) {
       </div>
       {selection && (medicine || flag) && (
         <aside className="map-evidence" aria-label="Selected evidence" aria-live="polite">
-          <button type="button" className="map-evidence-close" onClick={dismissEvidence} aria-label="Close evidence">×</button>
+          <LiquidButton type="button" className="map-evidence-close" onClick={dismissEvidence} aria-label="Close evidence">×</LiquidButton>
           <span className="eyebrow">{flag ? "Sourced interaction" : medicine?.herWords ? "Patient’s words" : "From a document"}</span>
           <h3>{medicine ? itemLabel(medicine) : `${itemLabel(byId.get(flag!.a)!)} + ${itemLabel(byId.get(flag!.b)!)}`}</h3>
           {medicine && itemDetail(medicine) && <p className="map-evidence-detail">{itemDetail(medicine)}</p>}
