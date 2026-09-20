@@ -32,7 +32,7 @@ export function AppShell({
         Skip to content
       </a>
       <header className="topbar">
-        <Link href="/file/new" className="brand">
+        <Link href="/" className="brand">
           Mashwara
           <span className="brand-urdu urdu" lang="ur">
             مشورہ
@@ -41,7 +41,7 @@ export function AppShell({
         <span className="topbar-context">{title}</span>
         <div className="topbar-actions">
           <FlagPill file={file} />
-          <Link href="/pharmacist" className="text-link">
+          <Link href="/pharmacist/files" className="text-link">
             Pharmacist queue ↗
           </Link>
         </div>

@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { GlassMaterial } from "./glass-material";
 import type { ButtonHTMLAttributes, ReactNode } from "react";
 import type { Flag, MedItem, PatientFile, Question } from "@/lib/types";
 import {
@@ -33,7 +34,8 @@ export function Section({
   className?: string;
 }) {
   return (
-    <section className={`section ${className}`}>
+    <section className={`section glass-panel ${className}`}>
+      <GlassMaterial />
       <div className="section-heading">
         <h2>{title}</h2>
         {detail && <span className="muted small">{detail}</span>}

@@ -7,6 +7,8 @@
 // pharmacist is remote and asynchronous). The id of the sent copy is remembered here so
 // a reload, or closing the laptop while she waits, does not lose the answer.
 
+import Link from "next/link";
+import { sentReportKey, sameReport } from "@/lib/sent-visits";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { fetchJson } from "./file-provider";
 import { Button } from "./primitives";
@@ -15,9 +17,9 @@ import type { VisitDraft } from "@/lib/visit-draft";
 
 const sentKey = (draftId: string) => `mashwara-sent-visit-${draftId}`;
 
-function readSentId(draftId: string): string | null {
+function readSentId(draft: VisitDraft): string | null {
   try {
-    return localStorage.getItem(sentKey(draftId));
+    return (draft.report && localStorage.getItem(sentReportKey(draft.report))) || localStorage.getItem(sentKey(draft.id));
   } catch {
     return null;
   }
@@ -27,7 +29,7 @@ export function PharmacistDecision({ draft }: { draft: VisitDraft }) {
   // Read once, during the initial render. The call site keys this component by draft.id,
   // so a different visit remounts it rather than being reset through an effect.
   // readSentId swallows the ReferenceError on the server, where there is no localStorage.
-  const [visitId, setVisitId] = useState<string | null>(() => readSentId(draft.id));
+  const [visitId, setVisitId] = useState<string | null>(() => readSentId(draft));
   const [visit, setVisit] = useState<VisitRecord | null>(null);
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
@@ -70,9 +72,10 @@ export function PharmacistDecision({ draft }: { draft: VisitDraft }) {
     try {
       const created = await fetchJson<VisitRecord>("/api/visits", {
         method: "POST",
-        body: JSON.stringify({ patient: draft.patient, report: draft.report }),
+        body: JSON.stringify({ patient: draft.patient, report: draft.report, outreachAreaId:draft.outreachAreaId }),
       });
       try {
+        localStorage.setItem(sentReportKey(draft.report), created.id);
         localStorage.setItem(sentKey(draft.id), created.id);
       } catch {
         /* The id is still in state; only a reload would lose it. */
@@ -89,9 +92,10 @@ export function PharmacistDecision({ draft }: { draft: VisitDraft }) {
   if (!draft.report) return null;
 
   // Not sent yet.
-  if (!visitId) {
+  if (!visitId || (visit && !sameReport(visit.report, draft.report))) {
     return (
       <section className="pharmacist-decision screen-only" aria-label="Pharmacist review">
+        {visitId && <p className="small">You changed this report after sending it. <Link className="text-link" href={`/visit/${encodeURIComponent(visitId)}`}>Open the earlier sent report</Link></p>}
         <p className="small muted">
           This is an AI draft. A pharmacist has not seen it. Send it for review and the
           answer appears here.
@@ -112,6 +116,7 @@ export function PharmacistDecision({ draft }: { draft: VisitDraft }) {
 
   return (
     <section className="pharmacist-decision screen-only" aria-label="Pharmacist review">
+      <Link className="text-link" href={`/visit/${encodeURIComponent(visitId)}`}>Open visit status and next steps →</Link>
       {error && (
         <p role="alert" className="error-box">
           Could not reach the pharmacist queue: {error}
@@ -122,8 +127,7 @@ export function PharmacistDecision({ draft }: { draft: VisitDraft }) {
         <div className="decision-banner waiting" role="status" aria-live="polite">
           <strong>Waiting for a pharmacist.</strong>
           <p>
-            Sent as {visitId}. She can wait or come back — the answer appears here when it
-            arrives.
+            Sent as {visitId}. You can leave this page and find the response in Your visits.
           </p>
         </div>
       ) : (
@@ -141,7 +145,7 @@ export function PharmacistDecision({ draft }: { draft: VisitDraft }) {
               {review.items
                 .filter((i) => i.decision === "declined")
                 .map((item) => {
-                  const med = draft.report?.medList.find((m) => m.id === item.medId);
+                  const med = visit?.report.medList.find((m) => m.id === item.medId);
                   return (
                     <li key={item.medId}>
                       <strong>{med?.name ?? item.medId}</strong> — {item.reason}

@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { outreachAreaSchema, type OutreachAreaId } from "./outreach/location";
 import type { Transcript } from "./audio";
 import { visitReportSchema, type VisitReport } from "./visit-report";
 export const VISIT_DRAFT_KEY = "mashwara-visit-draft-v1";
@@ -25,6 +26,7 @@ const draftSchema = z
     id: z.string().min(1),
     createdAt: z.iso.datetime(),
     patient: patientSchema,
+    outreachAreaId: outreachAreaSchema.optional(),
     seconds: z.number().finite().min(0).max(180),
     transcript: z.object({
       text: z
@@ -66,11 +68,13 @@ export function createVisitDraft(
   patient: VisitPatient,
   transcript: Transcript,
   seconds: number,
+  outreachAreaId?: OutreachAreaId,
 ): VisitDraft {
   return draftSchema.parse({
     id: crypto.randomUUID(),
     createdAt: new Date().toISOString(),
     patient,
+    outreachAreaId,
     transcript,
     seconds,
     reviewedUrdu: transcript.text,

@@ -179,3 +179,10 @@ describe("the round trip from counter to pharmacist and back", () => {
     expect(decided.report.medList).toEqual(report.medList);
   });
 });
+
+it("carries the selected region with the sent report and pharmacist response", async () => {
+  const visit = await submitVisit({patient,report,outreachAreaId:"pasni"});
+  expect(visit.outreachAreaId).toBe("pasni");
+  const reviewed = await reviewVisit(visit.id,review());
+  expect(reviewed.outreachAreaId).toBe("pasni");
+});

@@ -9,6 +9,7 @@
 // answer cannot be "authorised" while any single item is declined.
 
 import { z } from "zod";
+import { outreachAreaSchema } from "./outreach/location";
 import { visitReportSchema } from "./visit-report";
 
 export const REVIEW_SCHEMA_VERSION = 1 as const;
@@ -92,6 +93,7 @@ export const visitSubmissionSchema = z
       })
       .strict(),
     report: visitReportSchema,
+    outreachAreaId: outreachAreaSchema.optional(),
   })
   .strict();
 
@@ -103,6 +105,7 @@ export const visitRecordSchema = z
     createdAt: z.iso.datetime(),
     patient: visitSubmissionSchema.shape.patient,
     report: visitReportSchema,
+    outreachAreaId: outreachAreaSchema.optional(),
     status: z.enum(["waiting", "reviewed"]),
     review: reviewSchema.optional(),
   })

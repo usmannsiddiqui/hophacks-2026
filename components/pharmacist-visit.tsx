@@ -1,6 +1,8 @@
 "use client";
+import { outreachAreaNames } from "@/lib/outreach/location";
 
 import Link from "next/link";
+import { ProductHeader } from "./product-header";
 import { useCallback, useEffect, useMemo, useState, type FormEvent } from "react";
 import { fetchJson } from "./file-provider";
 import { ReportBubbleMap } from "./report-bubble-map";
@@ -17,7 +19,7 @@ import { sampleSubmission } from "@/lib/sample-visit";
 import { itemLabel, itemDetail } from "@/lib/display";
 
 const roleLabel = {
-  requested: "Requested at the counter",
+  requested: "Requested",
   takes: "Currently takes",
   remedy: "Home or herbal remedy",
 } as const;
@@ -72,20 +74,12 @@ export function VisitQueue() {
 
   return (
     <div className="app">
-      <header className="topbar">
-        <Link href="/visit/new" className="brand">
-          Mashwara
-        </Link>
-        <span className="topbar-context">Pharmacist console</span>
-        <Link className="text-link" href="/visit/new">
-          Back to the counter →
-        </Link>
-      </header>
+      <ProductHeader title="Pharmacist console" />
       <main className="queue-page">
         <div className="page-heading">
           <span className="eyebrow">Your expertise, where it is needed</span>
           <h1>A second pair of eyes.</h1>
-          <p>Read her account. Decide what she may take. The counter is waiting.</p>
+          <p>Read the account, review the evidence, and send your decision to the volunteer.</p>
         </div>
 
         {error && (
@@ -101,7 +95,7 @@ export function VisitQueue() {
             ) : !waiting.length ? (
               <div className="empty-state">
                 <h3>Nothing waiting.</h3>
-                <p>Send a report from the counter to see it here.</p>
+                <p>Visits sent for your review will appear here.</p>
                 <Button type="button" secondary disabled={seeding} onClick={loadSample}>
                   {seeding ? "Loading…" : "Load the sample case"}
                 </Button>
@@ -236,7 +230,7 @@ function VisitReviewForm({
     const missing = declined.find((i) => !i.reason.trim());
     if (missing) {
       const med = report.medList.find((m) => m.id === missing.medId);
-      setError(`Say why ${med?.name ?? missing.medId} is not authorised — the counter has to explain it to her.`);
+      setError(`Say why ${med?.name ?? missing.medId} is not authorised — the volunteer needs to explain the decision.`);
       return;
     }
 
@@ -264,22 +258,12 @@ function VisitReviewForm({
 
   return (
     <div className="app">
-      <header className="topbar">
-        <Link href="/pharmacist/visit" className="brand">
-          Mashwara
-        </Link>
-        <span className="topbar-context">
-          {visit.id} · {visit.patient.name}
-        </span>
-        <Link className="text-link" href="/pharmacist/visit">
-          ← Queue
-        </Link>
-      </header>
-
+      <ProductHeader title={`${visit.id} · ${visit.patient.name}`} />
       <main className="queue-page">
         <div className="page-heading">
           <span className="eyebrow">Pharmacist review / {visit.patient.name}</span>
           <h1>Read the whole story.</h1>
+          {visit.outreachAreaId && <p>{outreachAreaNames[visit.outreachAreaId]} tehsil</p>}
           <p>
             {visit.patient.age} / {visit.patient.sex} · {report.medList.length} medicines ·{" "}
             {report.flags.length} sourced flags
@@ -293,7 +277,7 @@ function VisitReviewForm({
                 ? "You authorised this visit."
                 : "You did not authorise this visit."}
             </strong>
-            <p>Sent back to the counter. A signed decision cannot be edited.</p>
+            <p>Sent back to the volunteer. A signed decision cannot be edited.</p>
           </div>
         )}
 
@@ -350,7 +334,7 @@ function VisitReviewForm({
           >
             <p className="small muted">
               Decline anything she should not take today. Declining one medicine means the
-              visit comes back to the counter as <strong>not authorised</strong>.
+              visit comes back to the volunteer as <strong>not authorised</strong>.
             </p>
 
             {report.medList.map((med) => {

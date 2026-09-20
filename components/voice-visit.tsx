@@ -1,5 +1,8 @@
 "use client";
-import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { outreachAreaNames, type OutreachAreaId } from "@/lib/outreach/location";
+import { ProductHeader } from "./product-header";
+import { GlassMaterial } from "./glass-material";
 import {
   useEffect,
   useRef,
@@ -44,7 +47,7 @@ function storedDraft() {
     return null;
   }
 }
-export function VoiceVisit() {
+export function VoiceVisit({initialAreaId,initialFresh=false}:{initialAreaId?:OutreachAreaId;initialFresh?:boolean}) {
   const client = useSyncExternalStore(
     subscribe,
     () => true,
@@ -52,29 +55,22 @@ export function VoiceVisit() {
   );
   return (
     <div className="voice-page">
-      <header className="topbar">
-        <Link className="brand" href="/">
-          Mashwara
-        </Link>
-        <Link className="text-link" href="/file/new">
-          Sample walkthrough
-        </Link>
-      </header>
-      <div className="voice-preview-note">
-        Voice capture preview · fictional visits only
-      </div>
-      <main className="voice-card">
-        {client ? <VisitCapture /> : <p role="status">Opening visit…</p>}
+      <ProductHeader title="Community visit" />
+      <div className="voice-preview-note">Practice visit · use fictional details</div>
+      <main className="voice-card glass-panel">
+        <GlassMaterial />
+        {client ? <VisitCapture key={initialFresh ? "fresh" : "continue"} initialAreaId={initialAreaId} initialFresh={initialFresh} /> : <p role="status">Opening visit…</p>}
       </main>
     </div>
   );
 }
-function VisitCapture() {
-  const [draft, setDraft] = useState<VisitDraft | null>(storedDraft);
-  const [stage, setStage] = useState<"setup" | "capture" | "review" | "saved">(
+function VisitCapture({initialAreaId,initialFresh}:{initialAreaId?:OutreachAreaId;initialFresh:boolean}) {
+  const [draft, setDraft] = useState<VisitDraft | null>(()=>initialFresh ? null : storedDraft());
+  const [outreachAreaId,setOutreachAreaId]=useState<OutreachAreaId|undefined>(()=>draft?.outreachAreaId??initialAreaId);
+  const [stage, setStage] = useState<"setup" | "capture" | "review" | "saved" | "report">(
     () =>
       draft
-        ? draft.status === "transcript-ready"
+        ? draft.report ? "report" : draft.status === "transcript-ready"
           ? "saved"
           : "review"
         : "setup",
@@ -101,6 +97,18 @@ function VisitCapture() {
   const [busy, setBusy] = useState(false);
   const [reportBusy, setReportBusy] = useState(false);
   const [reportError, setReportError] = useState("");
+  const router=useRouter();
+  useEffect(()=>{
+    if(!initialFresh)return;
+    let active=true;
+    void Promise.resolve().then(()=>{
+      if(!active)return;
+      try { sessionStorage.removeItem(VISIT_DRAFT_KEY); }
+      catch { setStorageError("This browser could not clear the active draft. Your saved transcript history remains available."); return; }
+      router.replace(initialAreaId ? `/visit/new?area=${initialAreaId}` : "/visit/new");
+    });
+    return()=>{active=false};
+  },[initialFresh,initialAreaId,router]);
   const capture = useRef<CaptureSession | null>(null);
   const microphone = useRef<AbortController | null>(null);
   const upload = useRef<AbortController | null>(null);
@@ -159,6 +167,8 @@ function VisitCapture() {
       return;
     }
     setDraft(null);
+    setOutreachAreaId(initialAreaId);
+    setPatient({name:"",age:0,sex:"F"});
     setText("");
     setAudio(null);
     setAudioUrl("");
@@ -173,10 +183,11 @@ function VisitCapture() {
     if (!persist(previous)) return;
     setDraft(previous);
     setPatient(previous.patient);
+    setOutreachAreaId(previous.outreachAreaId);
     setText(previous.reviewedUrdu);
     setAudio(null);
     setAudioUrl("");
-    setStage(previous.status === "transcript-ready" ? "saved" : "review");
+    setStage(previous.report ? "report" : previous.status === "transcript-ready" ? "saved" : "review");
   }
   function setup(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -316,6 +327,7 @@ function VisitCapture() {
         patient,
         result as Transcript,
         audio.seconds,
+        outreachAreaId,
       );
       if (!mounted.current) return;
       setDraft(next);
@@ -355,6 +367,7 @@ function VisitCapture() {
       if (!mounted.current || !reportRequest.current.isCurrent(owned)) return;
       setDraft(next);
       persist(next);
+      setStage("report");
     } catch (cause) {
       if (!mounted.current || !reportRequest.current.isCurrent(owned)) return;
       if ((cause as Error).name !== "AbortError") {
@@ -385,11 +398,28 @@ function VisitCapture() {
     await prepareReport(merged);
   }
   const timer = `${Math.floor(seconds / 60)}:${String(seconds % 60).padStart(2, "0")}`;
+  if(initialFresh) return storageError
+    ? <div className="error-box" role="alert"><p>{storageError}</p><button className="button secondary" onClick={()=>router.replace("/visit/new")}>Return to the saved visit</button></div>
+    : <p role="status">Starting a new visit…</p>;
   return (
     <>
+      <ol className="journey-progress" aria-label="Visit progress">
+        {["Details", "Conversation", "Transcript", "Report"].map((label,index) => {
+          const active = stage === "setup" ? 0 : stage === "capture" ? 1 : stage === "report" ? 3 : 2;
+          return <li key={label} aria-current={active===index ? "step" : undefined}><span>{index+1}</span>{label}</li>;
+        })}
+      </ol>
       {stage === "setup" ? (
         <form onSubmit={setup}>
-          <h1>New visit</h1>
+          <h1>Make time to listen.</h1>
+          <p className="muted">A few details, then the conversation.</p>
+          <label>
+            Visit area <span className="small muted">(optional)</span>
+            <select value={outreachAreaId??""} onChange={event=>setOutreachAreaId((event.target.value||undefined) as OutreachAreaId|undefined)}>
+              <option value="">Choose an area</option>
+              {Object.entries(outreachAreaNames).map(([id,name])=><option key={id} value={id}>{name} tehsil</option>)}
+            </select>
+          </label>
           <label>
             Name
             <input name="name" maxLength={120} required autoComplete="off" />
@@ -408,7 +438,7 @@ function VisitCapture() {
               </select>
             </label>
           </div>
-          <p className="small muted">Patient language: Urdu</p>
+          <p className="small muted">Explain how the recording will be used and ask permission before you begin. Patient language: Urdu.</p>
           <button className="button voice-primary" type="submit">
             Start conversation →
           </button>
@@ -433,15 +463,15 @@ function VisitCapture() {
         </form>
       ) : (
         <>
-          <span className="eyebrow">{patient.name} · Urdu</span>
+          <span className="eyebrow">{patient.name} · Urdu{outreachAreaId ? ` · ${outreachAreaNames[outreachAreaId]} tehsil` : ""}</span>
           {stage === "capture" ? (
             <>
-              <h1>Conversation</h1>
+              <h1>Tell us in your own words.</h1>
               <p className="urdu voice-prompt" lang="ur" dir="rtl">
                 اپنی بات آرام سے بتائیں۔
               </p>
               <p className="small muted">
-                Patient recording · pause when the volunteer speaks
+                Let the person speak freely. Pause before you speak.
               </p>
               <div className="voice-recorder">
                 <p className="voice-timer" aria-label="Recording duration">
@@ -451,7 +481,7 @@ function VisitCapture() {
                   {recording === "permission"
                     ? "Waiting for microphone permission…"
                     : recording === "recording"
-                      ? "Listening to patient"
+                      ? "Listening…"
                       : recording === "paused"
                         ? "Paused"
                         : audio
@@ -591,6 +621,7 @@ function VisitCapture() {
             </>
           ) : (
             <>
+              {stage !== "report" && <>
               <span className="status-badge">Transcript ready</span>
               <h1>Transcript saved.</h1>
               <p className="urdu voice-saved" lang="ur" dir="rtl">
@@ -611,8 +642,9 @@ function VisitCapture() {
                 Saved in this browser tab. The English report is an AI draft
                 for volunteer review and is not sent to a pharmacist.
               </p>
+              </>}
               <button
-                className="button voice-primary"
+                className={stage === "report" ? "text-link" : "button voice-primary"}
                 disabled={reportBusy}
                 onClick={() => void prepareReport()}
               >
@@ -644,7 +676,7 @@ function VisitCapture() {
               {draft?.report ? (
                 <VisitReportView
                   draft={draft}
-                  decisionPanel={<PharmacistDecision key={draft.id} draft={draft} />}
+                  decisionPanel={<PharmacistDecision key={`${draft.id}-${draft.report.generatedAt}`} draft={draft} />}
                   questionPanel={
                     <FollowUpQuestions
                       draft={draft}
@@ -662,6 +694,7 @@ function VisitCapture() {
                   onUpdateReport={() => void updateReportWithAnswers()}
                 />
               ) : null}
+              {stage === "report" && <button className="text-link" onClick={() => { reportRequest.current.cancel(); setReportBusy(false); setReportError(""); setStage("review"); }}>Edit the source transcript</button>}
               <button className="text-link" onClick={newVisit}>
                 Start another visit
               </button>
