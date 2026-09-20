@@ -83,13 +83,6 @@ export default function OutreachMap() {
       setPlanMessage(exists?"Removed from your visit plan.":`${area.name} added to your visit plan on this device.`);
     }catch{setPlanMessage("This browser could not save your plan. Please allow local storage.")}
   }
-  function removePlan(id: string){
-    try {
-      localStorage.setItem(PLAN_KEY,JSON.stringify(plans.filter(plan=>plan!==id)));
-      window.dispatchEvent(new Event("outreach-plan"));
-      setPlanMessage("Removed from your visit plan.");
-    } catch { setPlanMessage("This browser could not update your plan. Please allow local storage."); }
-  }
   const hasData=Object.keys(current).length>0;
   return <main className={styles.page}>
     <header className={styles.header}>
@@ -120,7 +113,7 @@ export default function OutreachMap() {
             {(!browserKey || mapError || !ready) && <div className={styles.mapNotice} role="status"><strong>{mapError?"Map unavailable":!browserKey?"Map setup needed":"Opening the map…"}</strong><p>{mapError || (!browserKey?"Add the Google Maps browser key to enable the map. The community list still works.":"Finding our communities along the Makran coast.")}</p></div>}
             <div className={styles.mapLabel}><GlassMaterial/>MAKRAN COAST <span>BALOCHISTAN, PAKISTAN</span></div>
           </div>
-          <div className={styles.legend} aria-label="Listing count legend">{[["#c34236","0 listed"],["#de8a25","1–2 listed"],["#035352","3+ listed"],["#777d77","Not known"]].map(([color,label])=><span key={label}><i style={{background:color}}/>{label}</span>)}<small>Tehsil boundaries · 2017 dataset</small></div>
+          <div className={styles.legend} aria-label="Listing count legend">{[["#c34236","0 listed"],["#de8a25","1–2 listed"],["#035352","3+ listed"],["#777d77","Not known"]].map(([color,label])=><span key={label}><i style={{background:color}}/>{label}</span>)}<small>Tehsil boundaries: <a href="https://www.geoboundaries.org/api/current/gbOpen/PAK/ADM3/">geoBoundaries</a> 2017 · <a href="https://opendatacommons.org/licenses/odbl/1-0/">ODbL 1.0</a> · <a href="/data/makran-tehsils.json" download>Download</a></small></div>
         </div>
       </div>
       <div className={styles.detail}><GlassMaterial/>
@@ -128,11 +121,6 @@ export default function OutreachMap() {
         <details className={styles.areaEvidence}><summary>Area details</summary><p>{count === undefined ? "Listing count not available yet." : `${count} ${category === "medical" ? "medical-care listings" : "pharmacies listed"} in this shaded area.`}</p><p>{evidence && "fetchedAt" in evidence ? `Checked ${new Date(evidence.fetchedAt).toLocaleString()} · Google Maps` : evidence && "error" in evidence ? evidence.error : "Choose Show access gaps to check this area."}</p><p>{area.name} tehsil, using the published 2017 boundary. Regions differ in size; counts are not adjusted for area or population.</p></details>
         <div className={styles.planAction}><button onClick={togglePlan}>{plans.includes(selected)?"Remove from visit plan":"Plan a visit here"}<span>↗</span></button><p role="status">{planMessage}</p></div>
       </div>
-    </section>
-    <section className={styles.bottom}>
-      <div><h2>Find a place to begin.<br/>Make time to listen.</h2></div>
-      <div className={styles.notes}><details><summary>How to read this map</summary><p>Google Places Aggregate counts operational listings tagged {category==="medical"?"hospital or doctor":"pharmacy"}. Medical-care counts are not a complete clinic census. Operational does not mean open right now. A zero means no matching Google listings, not proof that healthcare is absent.</p><p>Staff qualifications, medicine availability, population need and road travel time are unknown. Each colored region follows a published tehsil boundary. Counts apply inside that exact shape, not to surrounding blank areas. Regions differ in size, so these counts do not measure access per person or per square kilometre. Red means 0 listings, orange 1–2, teal 3+. These are potential access gaps to verify locally, not proven volunteer need. Population, travel barriers and field verification are not included.</p><p>Tehsil boundaries: <a href="https://www.geoboundaries.org/api/current/gbOpen/PAK/ADM3/">geoBoundaries / Pathways Data</a>, representing 2017, under <a href="https://opendatacommons.org/licenses/odbl/1-0/">ODbL 1.0</a>. Simplified shapes may differ from current boundaries. <a href="/data/makran-tehsils.json" download>Download the boundary data</a>. Earlier settlement plans retain their <a href="https://download.geonames.org/export/dump/">GeoNames</a> locations (CC BY 4.0). Your visit plan is saved only on this device, not shared as an assignment.</p></details>
-      <div className={styles.savedPlans}><GlassMaterial/><h3>Your visit plan <span>{plans.length}</span></h3>{plans.length?<><div>{plans.map(id=><span className={styles.savedPlanItem} key={id}><button onClick={()=>choose(planningLocations.find(s=>s.id===id)!.regionId)}>{planningLocations.find(s=>s.id===id)?.name} ↗</button><button aria-label={`Remove ${planningLocations.find(s=>s.id===id)?.name} from visit plan`} onClick={()=>removePlan(id)}>×</button></span>)}</div><Link href={`/visit/new?new=1&area=${encodeURIComponent(selected)}`}>Start a visit conversation →</Link></>:<p>Select a region and save a place to visit.</p>}</div></div>
     </section>
     <footer className={styles.footer}><span>MASHWARA · مشورہ</span><span>Better care begins with listening.</span></footer>
     {browserKey && <Script id="outreach-google-maps" src={`https://maps.googleapis.com/maps/api/js?key=${encodeURIComponent(browserKey)}&v=weekly`} onReady={()=>setReady(true)} onError={()=>setMapError("Could not load Google Maps. Check your connection and browser key.")}/>}
