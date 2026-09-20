@@ -1,6 +1,7 @@
 import { getFile, listFiles, saveFile } from "@/lib/files";
 import { validateFile } from "@/lib/validation";
 import { apiError } from "@/lib/api-response";
+import { findAssistantId, linkCase, phoneHash } from "@/lib/patients";
 
 export async function GET() {
   try {
@@ -23,7 +24,8 @@ export async function GET() {
 }
 export async function POST(req: Request) {
   try {
-    const file = validateFile(await req.json());
+    const body = await req.json();
+    const file = validateFile(body);
     if (file.status !== "new" && file.status !== "recording")
       return Response.json(
         { error: "A new file must start with intake" },
@@ -32,6 +34,18 @@ export async function POST(req: Request) {
     if (await getFile(file.id))
       return Response.json({ error: "File already exists" }, { status: 409 });
     await saveFile(file);
+    // An optional phone number identifies a returning patient. It is hashed here and the
+    // raw number is never stored. `phone` is not part of PatientFile and the validator
+    // drops it, so the frozen contract is untouched.
+    const phone = typeof body?.phone === "string" ? body.phone : null;
+    if (phone) {
+      const hash = phoneHash(phone);
+      if (hash) {
+        // Reuse the assistant an earlier visit created. A new one is NOT minted here —
+        // that happens lazily on the first signature, so abandoned intakes leave nothing.
+        await linkCase(file.id, hash, await findAssistantId(hash));
+      }
+    }
     return Response.json(file, { status: 201 });
   } catch (error) {
     return apiError(error);
