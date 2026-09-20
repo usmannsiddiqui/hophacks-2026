@@ -1,4 +1,4 @@
-## Mashwara - ہروشم ##
+## Mashwara - مشورہ ##
 
 A qualified pharmacist behind every counter.
 
