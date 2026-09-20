@@ -132,6 +132,12 @@ added them up.
 Bibi's risk is her blood sugar going too low; Fatima's is bleeding, so the two exercise
 different halves of the table. Loadable into the queue from the console's empty state.
 
+**English gloss.** `MedItem.english` — a short English rendering of what she described.
+The map is read by a volunteer clinician who does not read Urdu, so bubbles carry English
+only. An `unidentified` item has no vocabulary name, so without this it would read as
+"Unidentified" and nothing more. Her Urdu stays on the evidence panel and the source
+excerpt, where it is the proof rather than the label.
+
 ## Pharmacist decision
 
 **Sent visit.** The moment the counter sends a report for review, a copy of it leaves the

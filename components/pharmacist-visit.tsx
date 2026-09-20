@@ -14,6 +14,7 @@ import {
 } from "@/lib/review";
 import type { VisitSummary } from "@/lib/visits";
 import { sampleSubmission } from "@/lib/sample-visit";
+import { itemLabel, itemDetail } from "@/lib/display";
 
 const roleLabel = {
   requested: "Requested at the counter",
@@ -305,8 +306,8 @@ function VisitReviewForm({
               return (
                 <div className={`flag-card ${flag.severity === "moderate" ? "moderate" : ""}`} key={flag.id}>
                   <strong>
-                    {flag.severity === "high" ? "High" : "Moderate"}: {a?.name ?? "Unidentified"} +{" "}
-                    {b?.name ?? "Unidentified"}
+                    {flag.severity === "high" ? "High" : "Moderate"}: {a ? itemLabel(a) : "Unidentified"} +{" "}
+                    {b ? itemLabel(b) : "Unidentified"}
                   </strong>
                   <p>{flag.reason}</p>
                   <p className="small">Source: {flag.citation}</p>
@@ -357,7 +358,8 @@ function VisitReviewForm({
               if (!decision) return null;
               return (
                 <fieldset className="verdict-field" key={med.id}>
-                  <legend>{med.term === "unidentified" ? "Unidentified" : med.name}</legend>
+                  <legend>{itemLabel(med)}</legend>
+                  {itemDetail(med) && <p className="small">{itemDetail(med)}</p>}
                   <p className="small muted">{roleLabel[med.role]}</p>
                   <p className="urdu small" lang="ur" dir="rtl">
                     {med.herWords}

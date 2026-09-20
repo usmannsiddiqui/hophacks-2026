@@ -1354,7 +1354,6 @@ textarea {
 .report-bubble-label { overflow:hidden; pointer-events:none; }
 .report-bubble-label div { text-align:center; font-size:13px; color:var(--color-ink); }
 .report-bubble-label strong { display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; font-weight:600; line-height:1.25; }
-.report-bubble-label .urdu { display:block; text-align:center; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; font-size:12px; margin-top:4px; }
 .report-connection-target { stroke:transparent; stroke-width:30; }
 .report-connection-line { stroke:var(--color-flag); stroke-width:1.5; opacity:.55; pointer-events:none; }
 .report-connection.selected .report-connection-line,.report-connection:focus-visible .report-connection-line { opacity:1; stroke-width:3; }
@@ -1400,3 +1399,13 @@ textarea {
 @media(prefers-reduced-motion:reduce) {
   .report-bubble,.report-connection { transition:none; }
 }
+
+/* The scene leans toward the cursor. Short transition so it trails the pointer
+   slightly rather than tracking it exactly, which is what makes it read as depth. */
+.report-map-drift { transition: transform 260ms cubic-bezier(.22,1,.36,1); }
+@media(prefers-reduced-motion:reduce) {
+  .report-map-drift { transition: none; }
+}
+
+/* The English description of an unidentified item, shown when someone asks for detail. */
+.map-evidence-detail { font-size:14px; margin-bottom:10px; }

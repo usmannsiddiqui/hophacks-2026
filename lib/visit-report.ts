@@ -17,6 +17,11 @@ const reportMedSchema = z.object({
   term: boundedText(100).refine(isKnownTerm, "Unknown medicine term"),
   name: boundedText(160),
   herWords: boundedText(500),
+  // A short English rendering of what she described. A named medicine has its
+  // vocabulary name to show; an `unidentified` one has only her Urdu, and a reader
+  // who cannot read Urdu is then told nothing at all. Optional so an older report
+  // still parses; the UI falls back to a neutral English label.
+  english: z.string().trim().min(1).max(300).optional(),
   role: z.enum(["requested", "takes", "remedy"]),
   source: sourceExcerptSchema,
 }).strict();

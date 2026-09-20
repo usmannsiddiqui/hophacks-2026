@@ -38,3 +38,18 @@ export function citationName(url: string) {
     return "FDA: fluoroquinolone blood sugar warning";
   return url;
 }
+
+/** The short English label for a report item — what fits under a bubble. */
+export function itemLabel(item: { term: string; name: string }): string {
+  return item.term === "unidentified" ? "Unidentified" : item.name;
+}
+
+/**
+ * The longer English description, shown once someone asks for detail. Only an
+ * unidentified item has one: a named medicine is already described by its name, but
+ * `Unidentified` plus a line of Urdu tells an English reader nothing about the thing.
+ */
+export function itemDetail(item: { term: string; english?: string }): string | null {
+  if (item.term !== "unidentified") return null;
+  return item.english?.trim() || null;
+}
