@@ -3,6 +3,7 @@ import file from "@/data/files/mw-1042.json";
 import { validateFile } from "@/lib/validation";
 import { REVIEW_SCHEMA_VERSION, reviewSchema, blankDecisions } from "@/lib/review";
 import type { PatientFile } from "@/lib/types";
+import { adviceCopy, changedItems } from "@/lib/advice-text";
 
 const base = validateFile(structuredClone(file));
 
@@ -99,5 +100,41 @@ describe("the visit console asks for no prose to authorise", () => {
       }),
     );
     expect(parsed.success).toBe(false);
+  });
+});
+
+describe("what she is shown when the pharmacist wrote nothing", () => {
+  it("gives her a real sentence to read and to play, not an empty box", () => {
+    const f = signed({ verdicts: allKeep });
+    const copy = adviceCopy(validateFile(f));
+    expect(copy).toBeTruthy();
+    expect(copy!.written).toBe(false);
+    expect(copy!.urdu.trim()).not.toBe("");
+    expect(copy!.english.trim()).not.toBe("");
+    // The fallback restates the decisions; it never invents a change.
+    expect(copy!.english).toMatch(/nothing to change/i);
+    expect(changedItems(validateFile(f))).toEqual([]);
+  });
+
+  it("uses the pharmacist's own words whenever there are any", () => {
+    const verdicts = { ...allKeep, [base.medList[1].id]: "stop" as const };
+    const f = validateFile(
+      signed({ verdicts, english: "Do not start the antibiotic without a prescription." }),
+    );
+    const copy = adviceCopy(f)!;
+    expect(copy.written).toBe(true);
+    expect(copy.english).toBe("Do not start the antibiotic without a prescription.");
+    expect(changedItems(f).map((m) => m.id)).toEqual([base.medList[1].id]);
+  });
+
+  it("English-only advice leaves Urdu genuinely empty rather than faking it", () => {
+    const verdicts = { ...allKeep, [base.medList[1].id]: "stop" as const };
+    const copy = adviceCopy(validateFile(signed({ verdicts, english: "Stop it for now." })))!;
+    expect(copy.written).toBe(true);
+    expect(copy.urdu).toBe("");
+  });
+
+  it("an unsigned file has no advice copy at all", () => {
+    expect(adviceCopy(base)).toBeNull();
   });
 });

@@ -4,6 +4,7 @@ import { useEffect, useRef, useState, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
 import { demoFiles } from "@/lib/demo";
 import { answerText, cleanCopy, medicineName } from "@/lib/display";
+import { adviceCopy } from "@/lib/advice-text";
 import type { Advice, PatientFile } from "@/lib/types";
 import { AppShell } from "./app-shell";
 import { fetchJson, useFile } from "./file-provider";
@@ -282,10 +283,12 @@ export function PharmacistReview() {
         </div>
         <FileHeader file={file} />
         <Section title="Advice">
-          <p>{file.advice?.english}</p>
-          <p className="urdu phone-urdu" lang="ur" dir="rtl">
-            {file.advice?.urdu}
-          </p>
+          <p>{adviceCopy(file)?.english}</p>
+          {adviceCopy(file)?.urdu ? (
+            <p className="urdu phone-urdu" lang="ur" dir="rtl">
+              {adviceCopy(file)!.urdu}
+            </p>
+          ) : null}
         </Section>
         <div className="actions">
           <Link className="button" href={`/file/${file.id}/advice`}>
@@ -319,17 +322,7 @@ export function PharmacistReview() {
         <form onSubmit={sign} className="review-form">
           <Section title="Your advice" detail="English + Urdu">
             <p className="small muted">
-              Both are optional. If the file is fine as it stands, decide on each
-              medicine and sign — you do not have to write anything. Urdu is what the
-              patient will hear, so leave it blank rather than writing English there.
-            </p>
-            <p className="small muted">
-              Anything you stop or swap does need a line of English: the counter has to
-              repeat it to her, and a swap has to name the replacement.
-            </p>
-            <p className="small muted">
-              Unsigned edits are saved in this browser tab. Review and confirm
-              again before signing.
+              Optional. Anything you stop or swap needs a line of English.
             </p>
             {draftError && (
               <p role="alert" className="error-box">
@@ -342,7 +335,7 @@ export function PharmacistReview() {
               </Button>
             )}
             <label>
-              Clinical impression
+              Clinical impression <span className="muted">· optional</span>
               <textarea
                 value={impression}
                 onChange={(e) => setImpression(e.target.value)}
@@ -350,7 +343,7 @@ export function PharmacistReview() {
               />
             </label>
             <label>
-              Advice in English
+              Advice in English <span className="muted">· optional</span>
               <textarea
                 value={english}
                 onChange={(e) => setEnglish(e.target.value)}
@@ -358,7 +351,7 @@ export function PharmacistReview() {
               />
             </label>
             <label>
-              Reviewed Urdu advice
+              Reviewed Urdu advice <span className="muted">· what she hears</span>
               <textarea
                 lang="ur"
                 dir="rtl"
