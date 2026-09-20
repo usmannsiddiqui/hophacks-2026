@@ -1,5 +1,7 @@
 import {
+  LLM_BUSY_ERROR,
   LLM_CONFIGURATION_ERROR,
+  LLM_QUOTA_ERROR,
   LLM_TIMEOUT_ERROR,
   prepareVisitReport,
   structureRequestSchema,
@@ -83,6 +85,13 @@ export async function POST(request: Request): Promise<Response> {
   } catch (cause) {
     const message = cause instanceof Error ? cause.message : "";
     if (message.includes(LLM_CONFIGURATION_ERROR)) return error("English report preparation is not configured.", 503);
+    if (message.includes(LLM_BUSY_ERROR))
+      return error("Gemini is busy on every configured model right now. Retry in a moment.", 503);
+    if (message.includes(LLM_QUOTA_ERROR))
+      return error(
+        "The Gemini daily free-tier quota is used up on every configured model. Retry after it resets, or enable billing on the Google AI key.",
+        429,
+      );
     if (message.includes(LLM_TIMEOUT_ERROR) || signal.aborted) return error("English report preparation timed out. Please retry.", 504);
     return error("English report preparation failed. Please retry.", 502);
   }

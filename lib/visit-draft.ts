@@ -7,6 +7,19 @@ const patientSchema = z.object({
   age: z.number().int().min(0).max(120),
   sex: z.enum(["F", "M", "Other"]),
 });
+// A follow-up answer: the patient's reply to one draft question, recorded after the
+// report, held here until the volunteer adds it to the reviewed account.
+const followUpSchema = z.object({
+  id: z.string().min(1),
+  questionId: z.string().min(1).max(20),
+  question: z.object({
+    urdu: z.string().trim().min(1).max(500),
+    english: z.string().trim().min(1).max(500),
+  }),
+  answerUrdu: z.string().max(5000),
+  seconds: z.number().finite().min(0).max(180),
+  recordedAt: z.iso.datetime(),
+});
 const draftSchema = z
   .object({
     id: z.string().min(1),
@@ -32,6 +45,7 @@ const draftSchema = z
     reviewedUrdu: z.string().max(20000),
     status: z.enum(["transcript-review", "transcript-ready"]),
     report: visitReportSchema.optional(),
+    followUps: z.array(followUpSchema).max(50).default([]),
   })
   .refine(
     (d) => d.status !== "transcript-ready" || Boolean(d.reviewedUrdu.trim()),
@@ -47,6 +61,7 @@ const draftSchema = z
   });
 export type VisitDraft = z.infer<typeof draftSchema>;
 export type VisitPatient = z.infer<typeof patientSchema>;
+export type FollowUp = z.infer<typeof followUpSchema>;
 export function createVisitDraft(
   patient: VisitPatient,
   transcript: Transcript,
@@ -60,6 +75,7 @@ export function createVisitDraft(
     seconds,
     reviewedUrdu: transcript.text,
     status: "transcript-review",
+    followUps: [],
   });
 }
 export function reviewVisitDraft(draft: VisitDraft, text: string): VisitDraft {
@@ -69,6 +85,74 @@ export function reviewVisitDraft(draft: VisitDraft, text: string): VisitDraft {
     reviewedUrdu,
     status: "transcript-ready",
     ...(reviewedUrdu === draft.reviewedUrdu ? {} : { report: undefined }),
+  });
+}
+
+// Dialogue markers. The reviewed account may end with follow-up turns written as
+// "سوال: <volunteer question>" and "جواب: <patient answer>" so Gemini can tell whose
+// words they are. Only جواب lines count as the patient's account.
+export const DIALOGUE_QUESTION_MARK = "سوال:";
+export const DIALOGUE_ANSWER_MARK = "جواب:";
+
+export function answeredFollowUps(draft: VisitDraft): FollowUp[] {
+  return draft.followUps.filter((item) => Boolean(item.answerUrdu.trim()));
+}
+
+export function renderDialogue(followUps: FollowUp[]): string {
+  return followUps
+    .filter((item) => item.answerUrdu.trim())
+    .map(
+      (item) =>
+        `${DIALOGUE_QUESTION_MARK} ${item.question.urdu.trim()}\n${DIALOGUE_ANSWER_MARK} ${item.answerUrdu.trim()}`,
+    )
+    .join("\n\n");
+}
+
+export function addFollowUp(
+  draft: VisitDraft,
+  input: Pick<FollowUp, "questionId" | "question" | "answerUrdu" | "seconds">,
+): VisitDraft {
+  const followUp = followUpSchema.parse({
+    ...input,
+    id: crypto.randomUUID(),
+    recordedAt: new Date().toISOString(),
+  });
+  return draftSchema.parse({
+    ...draft,
+    followUps: [
+      ...draft.followUps.filter((item) => item.questionId !== input.questionId),
+      followUp,
+    ],
+  });
+}
+
+export function editFollowUp(draft: VisitDraft, id: string, answerUrdu: string): VisitDraft {
+  return draftSchema.parse({
+    ...draft,
+    followUps: draft.followUps.map((item) =>
+      item.id === id ? { ...item, answerUrdu } : item,
+    ),
+  });
+}
+
+export function removeFollowUp(draft: VisitDraft, id: string): VisitDraft {
+  return draftSchema.parse({
+    ...draft,
+    followUps: draft.followUps.filter((item) => item.id !== id),
+  });
+}
+
+// Appends every answered follow-up to the reviewed account as marked dialogue. The raw
+// Scribe transcript is untouched; the report is cleared because its source changed.
+export function mergeFollowUps(draft: VisitDraft): VisitDraft {
+  const dialogue = renderDialogue(draft.followUps);
+  if (!dialogue) throw new Error("No recorded answers to add.");
+  return draftSchema.parse({
+    ...draft,
+    reviewedUrdu: `${draft.reviewedUrdu.trimEnd()}\n\n${dialogue}`,
+    status: "transcript-ready",
+    followUps: [],
+    report: undefined,
   });
 }
 

@@ -156,6 +156,26 @@ order and glossary in the same feature PR so the vault does not become stale.
 Rayyan's adapted ElevenLabs provider. One Urdu Transcript contract; provider failures are
 errors rather than fabricated accounts. Gemini supplies analysis in the next slice.
 
+**Follow-up question.** A draft question from the English report, asked to the patient
+one at a time (ADR 0007). "Ask in Urdu" plays the Urdu text with xAI speech so a
+volunteer who does not speak Urdu can still ask it.
+
+**Follow-up answer.** The patient's recorded reply to one follow-up question, transcribed
+by Grok STT and rewritten into Arabic-script Urdu (Grok STT often emits Hindi
+Devanagari for Urdu speech). Held on the VisitDraft as `followUps`, editable, and not
+part of the report until the volunteer adds it. One answer per question; re-recording
+replaces it. Scribe is not used for answers; xAI is not used for the first recording.
+
+**Dialogue markers.** When answers are added, the reviewed account grows by
+`سوال: <question>` / `جواب: <answer>` lines. Only `جواب:` lines are the patient's words;
+Gemini is told so and must not re-ask what a `جواب:` line already answers. Adding
+answers clears the old report and re-runs it on the longer account.
+
+**Gemini model fallback.** `gemini-3.5-flash-lite` first; when it reports free-tier
+quota exhaustion or "high demand", the same request goes to `gemini-3.8-flash`, then
+`gemini-3.7-flash`, then `gemini-3.6-flash`. Still one provider (ADR 0005); the
+report records which model ran. All-out states surface as 429 (quota) or 503 (busy).
+
 **VisitDraft.** A tab-local patient account, preceding a shared PatientFile. Contains
 patient details, immutable raw Scribe transcript and word timestamps, corrected Urdu,
 recording seconds and transcript-review/transcript-ready status. It has no English

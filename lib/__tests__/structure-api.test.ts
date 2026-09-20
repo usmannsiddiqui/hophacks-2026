@@ -58,6 +58,8 @@ describe("POST /api/structure", () => {
     for (const [error, status] of [
       [new Error("LLM_CONFIGURATION_ERROR: secret-key"), 503],
       [new Error("LLM_TIMEOUT_ERROR: upstream detail"), 504],
+      [new Error("LLM_QUOTA_ERROR"), 429],
+      [new Error("LLM_BUSY_ERROR"), 503],
       [new Error("provider leaked GOOGLE_GENERATIVE_AI_API_KEY"), 502],
     ] as const) {
       prepareVisitReport.mockRejectedValueOnce(error);

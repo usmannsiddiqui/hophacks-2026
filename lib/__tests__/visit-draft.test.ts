@@ -1,10 +1,15 @@
 import { expect, it } from "vitest";
 import {
+  addFollowUp,
+  answeredFollowUps,
   createVisitDraft,
+  editFollowUp,
+  mergeFollowUps,
+  removeFollowUp,
   reviewVisitDraft,
   readVisitDraft,
 } from "@/lib/visit-draft";
-import type { VisitReport } from "@/lib/visit-report";
+import { attachReport, type VisitReport } from "@/lib/visit-report";
 it("keeps raw Scribe output when the volunteer corrects the transcript", () => {
   const original = createVisitDraft(
     { name: "Nasreen", age: 64, sex: "F" },
@@ -99,6 +104,78 @@ it("keeps a valid saved transcript but discards a report from another snapshot",
   expect(restored?.id).toBe(draft.id);
   expect(restored?.reviewedUrdu).toBe("درست");
   expect(restored?.report).toBeUndefined();
+});
+
+const answerInput = {
+  questionId: "q1",
+  question: { urdu: "آپ کتنی مقدار لیتی ہیں؟", english: "What dose do you take?" },
+  answerUrdu: "صبح ایک گولی",
+  seconds: 6,
+};
+
+function savedWithReport() {
+  const draft = reviewVisitDraft(
+    createVisitDraft(
+      { name: "Nasreen", age: 64, sex: "F" },
+      { text: "میں میٹفارمن لیتی ہوں", language: "ur", words: [] },
+      12,
+    ),
+    "میں میٹفارمن لیتی ہوں",
+  );
+  return attachReport(draft, {
+    schemaVersion: 1,
+    draftId: draft.id,
+    rawUrdu: draft.transcript.text,
+    reviewedUrdu: draft.reviewedUrdu,
+    generatedAt: "2026-09-19T18:00:00.000Z",
+    model: { provider: "google", name: "gemini-3.6-flash" },
+    english: { account: "I take metformin.", summary: "Metformin (takes). 1 question." },
+    medList: [{
+      id: "m1", term: "metformin", name: "Metformin", herWords: "میٹفارمن", role: "takes",
+      source: { kind: "reviewed-urdu", excerpt: "میٹفارمن" },
+    }],
+    questions: [{
+      id: "q1",
+      text: answerInput.question,
+      why: "The dose was not stated.",
+      source: { kind: "reviewed-urdu", excerpt: "میٹفارمن" },
+      status: "draft",
+    }],
+    flags: [],
+  });
+}
+
+it("holds a recorded answer against its question without touching the report", () => {
+  const draft = savedWithReport();
+  const withAnswer = addFollowUp(draft, answerInput);
+  expect(withAnswer.followUps).toHaveLength(1);
+  expect(withAnswer.followUps[0]).toMatchObject({ questionId: "q1", answerUrdu: "صبح ایک گولی" });
+  expect(withAnswer.report).toEqual(draft.report);
+  expect(withAnswer.reviewedUrdu).toBe(draft.reviewedUrdu);
+  const rerecorded = addFollowUp(withAnswer, { ...answerInput, answerUrdu: "رات کو دو گولیاں" });
+  expect(rerecorded.followUps).toHaveLength(1);
+  expect(rerecorded.followUps[0].answerUrdu).toBe("رات کو دو گولیاں");
+  const edited = editFollowUp(rerecorded, rerecorded.followUps[0].id, "  ");
+  expect(answeredFollowUps(edited)).toEqual([]);
+  expect(removeFollowUp(edited, edited.followUps[0].id).followUps).toEqual([]);
+});
+
+it("merges answers into the reviewed account as marked dialogue and clears the stale report", () => {
+  const merged = mergeFollowUps(addFollowUp(savedWithReport(), answerInput));
+  expect(merged.reviewedUrdu).toBe(
+    "میں میٹفارمن لیتی ہوں\n\nسوال: آپ کتنی مقدار لیتی ہیں؟\nجواب: صبح ایک گولی",
+  );
+  expect(merged.transcript.text).toBe("میں میٹفارمن لیتی ہوں");
+  expect(merged.followUps).toEqual([]);
+  expect(merged.report).toBeUndefined();
+  expect(merged.status).toBe("transcript-ready");
+  expect(() => mergeFollowUps(merged)).toThrow("No recorded answers");
+});
+
+it("reads drafts saved before follow-ups existed", () => {
+  const legacy: Record<string, unknown> = { ...savedWithReport() };
+  delete legacy.followUps;
+  expect(readVisitDraft(JSON.stringify(legacy))?.followUps).toEqual([]);
 });
 
 it("refuses to save a report that does not belong to the draft", async () => {

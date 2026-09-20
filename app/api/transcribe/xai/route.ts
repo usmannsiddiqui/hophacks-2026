@@ -1,5 +1,6 @@
 import { readAudioFile } from "@/lib/voice/audio-request";
-import { transcribeAudio, TranscriptionError } from "@/lib/voice/stt";
+import { parseXaiLang, transcribeWithXai } from "@/lib/voice/xai";
+import { TranscriptionError } from "@/lib/voice/stt";
 
 export const runtime = "nodejs";
 export const maxDuration = 60;
@@ -7,8 +8,11 @@ const headers = { "Cache-Control": "no-store" };
 
 export async function POST(request: Request) {
   try {
+    const language = parseXaiLang(new URL(request.url).searchParams.get("lang"));
+    if (!language)
+      throw new TranscriptionError("Choose Urdu or English for the xAI transcript.", 400);
     return Response.json(
-      await transcribeAudio(await readAudioFile(request), request.signal),
+      await transcribeWithXai(await readAudioFile(request), language, request.signal),
       { headers },
     );
   } catch (error) {

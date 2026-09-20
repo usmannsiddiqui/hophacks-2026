@@ -10,10 +10,43 @@ import {
 import { canFlag, displayOf, interactionBetween, isKnownTerm, UNIDENTIFIED, vocabularyPrompt } from "./vocab";
 
 // Live generateObject verification on 2026-09-19: 2.5 returned model-unavailable for
-// this account; the current stable 3.6 model completed the same fictional Urdu request.
-export const VISIT_REPORT_MODEL = "gemini-3.6-flash";
+// this account; 3.6 completed the same fictional Urdu request but its free-tier daily
+// quota (20 requests) ran out during testing, so 3.5 Flash-Lite is primary from 20 Sep.
+export const VISIT_REPORT_MODEL = "gemini-3.5-flash-lite";
+// Same provider, separate free-tier daily quotas. Tried in order only when the model
+// before it reports quota exhaustion, high demand, or is unavailable for this account.
+// Not a provider fallback: every model here is Gemini, and the report records which one ran.
+export const VISIT_REPORT_FALLBACK_MODELS = [
+  "gemini-3.8-flash",
+  "gemini-3.7-flash",
+  "gemini-3.6-flash",
+] as const;
 export const LLM_CONFIGURATION_ERROR = "LLM_CONFIGURATION_ERROR";
 export const LLM_TIMEOUT_ERROR = "LLM_TIMEOUT_ERROR";
+export const LLM_QUOTA_ERROR = "LLM_QUOTA_ERROR";
+export const LLM_BUSY_ERROR = "LLM_BUSY_ERROR";
+
+function statusOf(error: unknown): number | undefined {
+  const candidate = error as { statusCode?: unknown; status?: unknown } | null;
+  const value = candidate?.statusCode ?? candidate?.status;
+  return typeof value === "number" ? value : undefined;
+}
+
+function isQuotaExhausted(error: unknown): boolean {
+  const message = error instanceof Error ? error.message : "";
+  return statusOf(error) === 429 || /RESOURCE_EXHAUSTED|exceeded your current quota/i.test(message);
+}
+
+function isModelUnavailable(error: unknown): boolean {
+  const message = error instanceof Error ? error.message : "";
+  return statusOf(error) === 404 || /is not found|NOT_FOUND|model.unavailable/i.test(message);
+}
+
+// Transient "high demand" on one Gemini model. Another model usually answers at once.
+function isOverloaded(error: unknown): boolean {
+  const message = error instanceof Error ? error.message : "";
+  return statusOf(error) === 503 || /high demand|overloaded|UNAVAILABLE/i.test(message);
+}
 
 export const structureRequestSchema = z.object({
   draftId: z.string().trim().min(1).max(200),
@@ -122,6 +155,8 @@ function systemPrompt(): string {
     "Use only a term from the closed vocabulary or exactly 'unidentified'. Do not guess a medicine.",
     "Voice mentions cannot be prescribed; use requested, takes, or remedy.",
     "Questions are drafts for a pharmacist to review. Ask only for missing factual details from the patient.",
+    "The account may end with follow-up dialogue. Lines starting with 'سوال:' are the volunteer's questions and are not the patient's words. Lines starting with 'جواب:' are the patient's answers and are part of the account.",
+    "Do not ask again for a detail that a 'جواب:' line already answers.",
     "Do not provide diagnoses, treatment, advice, interaction claims, danger claims, or a clinical assessment.",
     "Do not output flags; the application computes them from a sourced table.",
   ].join("\n");
@@ -138,6 +173,50 @@ function userPrompt(input: StructureRequest): string {
   ].join("\n");
 }
 
+async function generateWithQuotaFallback(
+  input: StructureRequest,
+  signal?: AbortSignal,
+): Promise<{ candidate: unknown; modelName: string }> {
+  let quotaExhausted = false;
+  let busy = false;
+  let lastError: unknown;
+  for (const modelName of [VISIT_REPORT_MODEL, ...VISIT_REPORT_FALLBACK_MODELS]) {
+    if (signal?.aborted) throw new Error(LLM_TIMEOUT_ERROR);
+    try {
+      const generated = await generateObject({
+        model: google(modelName),
+        schema: providerOutputSchema,
+        system: systemPrompt(),
+        prompt: userPrompt(input),
+        temperature: 0,
+        maxRetries: 0,
+        abortSignal: signal,
+      });
+      return { candidate: generated.object as unknown, modelName };
+    } catch (error) {
+      if (signal?.aborted) throw new Error(LLM_TIMEOUT_ERROR);
+      if (isQuotaExhausted(error)) {
+        quotaExhausted = true;
+        lastError = error;
+        continue;
+      }
+      if (isOverloaded(error)) {
+        busy = true;
+        lastError = error;
+        continue;
+      }
+      if (isModelUnavailable(error)) {
+        lastError = error;
+        continue;
+      }
+      throw error;
+    }
+  }
+  if (busy) throw new Error(LLM_BUSY_ERROR);
+  if (quotaExhausted) throw new Error(LLM_QUOTA_ERROR);
+  throw lastError instanceof Error ? lastError : new Error("LLM_UNAVAILABLE");
+}
+
 export async function prepareVisitReport(
   rawInput: StructureRequest,
   signal?: AbortSignal,
@@ -145,35 +224,21 @@ export async function prepareVisitReport(
   const input = structureRequestSchema.parse(rawInput);
   if (!process.env.GOOGLE_GENERATIVE_AI_API_KEY) throw new Error(LLM_CONFIGURATION_ERROR);
 
+  const { candidate, modelName } = await generateWithQuotaFallback(input, signal);
   let object: z.infer<typeof modelOutputSchema>;
-  try {
-    const generated = await generateObject({
-      model: google(VISIT_REPORT_MODEL),
-      schema: providerOutputSchema,
-      system: systemPrompt(),
-      prompt: userPrompt(input),
-      temperature: 0,
-      maxRetries: 0,
-      abortSignal: signal,
-    });
-    const candidate = generated.object as unknown;
-    if (candidate && typeof candidate === "object" && Array.isArray((candidate as { questions?: unknown }).questions)) {
-      const withoutRationale = {
-        ...(candidate as Record<string, unknown>),
-        questions: (candidate as { questions: unknown[] }).questions.map((question) => {
-          if (!question || typeof question !== "object") return question;
-          const clean = { ...(question as Record<string, unknown>) };
-          delete clean.why;
-          return clean;
-        }),
-      };
-      object = modelOutputSchema.parse(withoutRationale);
-    } else {
-      object = modelOutputSchema.parse(candidate);
-    }
-  } catch (error) {
-    if (signal?.aborted) throw new Error(LLM_TIMEOUT_ERROR);
-    throw error;
+  if (candidate && typeof candidate === "object" && Array.isArray((candidate as { questions?: unknown }).questions)) {
+    const withoutRationale = {
+      ...(candidate as Record<string, unknown>),
+      questions: (candidate as { questions: unknown[] }).questions.map((question) => {
+        if (!question || typeof question !== "object") return question;
+        const clean = { ...(question as Record<string, unknown>) };
+        delete clean.why;
+        return clean;
+      }),
+    };
+    object = modelOutputSchema.parse(withoutRationale);
+  } else {
+    object = modelOutputSchema.parse(candidate);
   }
 
   const medList = object.medList.flatMap((row, index) => {
@@ -206,7 +271,7 @@ export async function prepareVisitReport(
     rawUrdu: input.rawUrdu,
     reviewedUrdu: input.reviewedUrdu,
     generatedAt: new Date().toISOString(),
-    model: { provider: "google", name: VISIT_REPORT_MODEL },
+    model: { provider: "google", name: modelName },
     english: { account: object.englishAccount, summary: localSummary(medList, questions.length) },
     medList,
     questions,

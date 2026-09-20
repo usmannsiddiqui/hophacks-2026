@@ -1223,6 +1223,21 @@ textarea {
 .voice-saved { padding:24px 0; line-height:2.2; }
 @media(max-width:600px){ .voice-card{border:0;border-radius:0;margin:0;padding:28px 20px;} .voice-preview-note{padding:10px 20px;} }
 
+/* Follow-up questions: xAI speaks the Urdu question, records the patient's answer. */
+.follow-up-questions > .small { margin:0 0 4px; }
+.follow-up-questions .question-result h3 { margin-bottom:6px; }
+.follow-up-questions .question-result .urdu { font-size:18px; line-height:2; margin:8px 0; }
+.follow-up-actions { display:flex; flex-wrap:wrap; gap:10px; align-items:center; margin-top:12px; }
+.follow-up-actions .button { margin:0; min-height:44px; }
+.follow-up-timer { font-variant-numeric:tabular-nums; font-weight:600; }
+.follow-up-answer { display:block; margin:14px 0 0; }
+.follow-up-answer textarea { margin:6px 0 4px; }
+.follow-up-answer .small { display:block; margin-bottom:4px; }
+.follow-up-footer { margin-top:16px; padding:16px; border:1px dashed var(--color-line); border-radius:12px; }
+.follow-up-footer .voice-primary { margin:12px 0 0; }
+.follow-up-questions audio { margin:16px 0 0; }
+.print-only { display:none; }
+
 /* English draft produced from one reviewed outreach transcript. */
 .voice-card:has(.visit-report-shell) { max-width:900px; }
 .visit-report-shell { margin-top:32px; }
@@ -1259,4 +1274,6 @@ textarea {
   .visit-report-list { grid-template-columns:1fr 1fr; }
   .visit-report-evidence > :not(summary),
   .visit-report-source > :not(summary) { display:block !important; }
+  .print-only { display:block; }
+  .screen-only { display:none !important; }
 }
