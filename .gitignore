@@ -51,3 +51,6 @@ __pycache__/
 # Local-only research notes
 docs/research/
 CLAUDE.local.md
+
+# Neon CLI local project link
+.neon
