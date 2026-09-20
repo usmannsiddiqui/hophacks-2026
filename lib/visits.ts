@@ -41,6 +41,7 @@ export async function submitVisit(input: VisitSubmission): Promise<VisitRecord> 
     id: newId(),
     createdAt: new Date().toISOString(),
     patient: input.patient,
+    outreachAreaId: input.outreachAreaId,
     report: input.report,
     status: "waiting",
   } satisfies VisitRecord);

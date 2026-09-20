@@ -1,4 +1,2 @@
-import { PharmacistQueue } from "@/components/pharmacist";
-export default function Page() {
-  return <PharmacistQueue />;
-}
+import { VisitQueue } from "@/components/pharmacist-visit";
+export default function Page() { return <VisitQueue />; }

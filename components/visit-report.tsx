@@ -1,3 +1,4 @@
+import { outreachAreaNames } from "@/lib/outreach/location";
 import type { ReactNode } from "react";
 import type { VisitDraft } from "@/lib/visit-draft";
 import { itemLabel, itemDetail } from "@/lib/display";
@@ -25,7 +26,7 @@ export function VisitReportView({
   return (
     <section className="visit-report-shell" aria-label="English visit report">
       <div className="report-toolbar visit-report-toolbar">
-        <span className="small muted">Draft preview</span>
+        <span className="small muted">Your visit report</span>
         <button className="button secondary" onClick={() => window.print()}>
           Print / save PDF
         </button>
@@ -34,11 +35,11 @@ export function VisitReportView({
         <header className="report-heading">
           <span className="brand">Mashwara</span>
           <strong className="report-draft-label">
-            AI draft · not sent · not pharmacist-reviewed
+            AI-generated account
           </strong>
         </header>
         <h1>English visit report</h1>
-        {decisionPanel}
+        {draft.outreachAreaId && <p className="small muted">{outreachAreaNames[draft.outreachAreaId]} tehsil</p>}
         <dl className="visit-report-patient">
           <div><dt>Patient</dt><dd>{draft.patient.name}</dd></div>
           <div><dt>Age</dt><dd>{draft.patient.age}</dd></div>
@@ -125,8 +126,9 @@ export function VisitReportView({
           <p className="urdu" lang="ur" dir="rtl">{report.rawUrdu}</p>
         </details>
 
+        {decisionPanel}
         <footer className="report-signature">
-          <strong>AI draft · not sent · not pharmacist-reviewed</strong>
+          <strong>AI-generated draft. This printout does not include pharmacist authorisation.</strong>
         </footer>
       </article>
     </section>

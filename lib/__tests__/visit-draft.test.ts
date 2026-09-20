@@ -203,3 +203,8 @@ it("refuses to save a report that does not belong to the draft", async () => {
   } as never;
   expect(() => saveVisitDraft({ getItem: () => null, setItem: () => undefined }, invalid)).toThrow();
 });
+
+it("keeps the selected outreach area when a draft is corrected and restored", () => {
+  const draft = createVisitDraft({name:"Sample",age:60,sex:"F"}, {text:"اصل عبارت",language:"ur",words:[]}, 12, "pasni");
+  expect(readVisitDraft(JSON.stringify(reviewVisitDraft(draft,"درست عبارت")))?.outreachAreaId).toBe("pasni");
+});

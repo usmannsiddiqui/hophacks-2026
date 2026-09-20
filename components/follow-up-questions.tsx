@@ -189,7 +189,7 @@ export function FollowUpQuestions({
   function answerEditor(item: FollowUp) {
     return (
       <label className="follow-up-answer">
-        Patient answer · edit if xAI misheard
+        Check the recorded answer
         <textarea
           className="urdu"
           lang="ur"
@@ -201,7 +201,7 @@ export function FollowUpQuestions({
           onChange={(event) => onChange(editFollowUp(draft, item.id, event.target.value))}
         />
         <span className="small muted">
-          {item.seconds}s · transcribed with xAI · not in the report yet
+          {item.seconds}s · not in the report yet
         </span>
         <button
           type="button"
@@ -219,7 +219,7 @@ export function FollowUpQuestions({
     <div className="follow-up-questions">
       {questions.length ? (
         <p className="small muted">
-          Ask each question in Urdu with xAI speech, record the patient&apos;s answer, then add the
+          Ask each question in Urdu, record the answer, then add the
           answers to the account and update the report.
         </p>
       ) : null}
@@ -246,7 +246,7 @@ export function FollowUpQuestions({
                 disabled={busy}
                 onClick={() => void ask(question)}
               >
-                {speaking === question.id ? "Speaking…" : "Ask in Urdu (xAI speech)"}
+                {speaking === question.id ? "Speaking…" : "Ask in Urdu"}
               </button>
               {active && phase === "permission" ? (
                 <>
@@ -269,7 +269,7 @@ export function FollowUpQuestions({
                   </button>
                 </>
               ) : active && phase === "transcribing" ? (
-                <span role="status">Transcribing the answer with xAI…</span>
+                <span role="status">Transcribing the answer…</span>
               ) : (
                 <button
                   type="button"
@@ -303,7 +303,7 @@ export function FollowUpQuestions({
             {answered.length === 1
               ? "1 answer is recorded but not in the report yet."
               : `${answered.length} answers are recorded but not in the report yet.`}{" "}
-            Adding them appends the dialogue to the reviewed account and re-runs the Gemini report.
+            Update the report to include these answers.
           </p>
           <button
             type="button"

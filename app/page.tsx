@@ -1,4 +1,2 @@
-import { Intake } from "@/components/intake";
-export default function Page() {
-  return <Intake />;
-}
+import OutreachMap from "./outreach/outreach-map";
+export default function Page() { return <OutreachMap />; }
