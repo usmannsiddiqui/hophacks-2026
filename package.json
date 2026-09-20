@@ -9,11 +9,7 @@
     "lint": "eslint",
     "test": "vitest run",
     "db:push": "drizzle-kit push",
-    "db:seed": "node scripts/seed-demo.mjs",
-    "context:init": "python3 scripts/context_sync.py init",
-    "context:check": "python3 scripts/context_sync.py check",
-    "context:import": "python3 scripts/context_sync.py import",
-    "context:export": "python3 scripts/context_sync.py export"
+    "db:seed": "node scripts/seed-demo.mjs"
   },
   "dependencies": {
     "@ai-sdk/google": "^4.0.76",

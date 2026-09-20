@@ -1,4 +1,4 @@
-// Executable copy of docs/specs/contracts.md. Change both together.
+// Executable PatientFile contract. Update Hophacks/specs/contracts.md in Obsidian alongside it.
 
 export type Lang = "ur" | "en";
 export type Status = "new" | "recording" | "structured" | "asking" | "sent" | "signed";

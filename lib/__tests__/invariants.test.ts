@@ -7,7 +7,7 @@ import { STATUS_ORDER, speakerFor, type PatientFile } from "@/lib/types";
 const f = file as unknown as PatientFile;
 const table = (substances as { interactions: Array<{ a: string; b: string }> }).interactions;
 
-describe("contract invariants (docs/specs/contracts.md)", () => {
+describe("PatientFile contract invariants", () => {
   it("1. a turn's speaker is derived from the language heard", () => {
     for (const t of f.turns) expect(t.by).toBe(speakerFor(t.heard));
     for (const r of f.recordings) expect(r.speaker).toBe("patient");
