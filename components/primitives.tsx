@@ -1,3 +1,4 @@
+import { LiquidButton } from "@/components/ui/liquid-glass-button";
 import Link from "next/link";
 import { GlassMaterial } from "./glass-material";
 import type { ButtonHTMLAttributes, ReactNode } from "react";
@@ -16,7 +17,7 @@ export function Button({
   ...props
 }: ButtonHTMLAttributes<HTMLButtonElement> & { secondary?: boolean }) {
   return (
-    <button
+    <LiquidButton
       {...props}
       className={`button ${secondary ? "secondary" : ""} ${className}`}
     />
@@ -166,7 +167,7 @@ export function QuestionCard({
                 className="text-link"
                 href={`/file/${fileId}/ask?q=${question.id}`}
               >
-                Ask this question →
+                Ask this question
               </Link>
             )
           )}

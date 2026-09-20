@@ -37,7 +37,7 @@ export function FileOverview() {
                 <strong>Follow-up conversation</strong>
                 <span>{file.turns.length} turns</span>
                 <Link className="text-link" href={`/file/${file.id}/translate`}>
-                  Read the conversation →
+                  Read the conversation
                 </Link>
               </div>
             )}
@@ -50,7 +50,7 @@ export function FileOverview() {
           </Section>
           <div className="next-action">
             <Link className="button" href={`/file/${file.id}/findings`}>
-              Review the findings →
+              Review the findings
             </Link>
             <p className="small muted">
               Her account stays beside the clinical terms, all the way to the
@@ -87,7 +87,7 @@ export function FileOverview() {
         )}
         {!file.recordings.length && (
           <Link className="button" href={`/file/${file.id}/record`}>
-            Let her talk →
+            Let her talk
           </Link>
         )}
       </Section>
@@ -132,7 +132,7 @@ export function Findings() {
                   className="button secondary"
                   href={`/file/${file.id}/ask`}
                 >
-                  Open one question at a time →
+                  Open one question at a time
                 </Link>
               </>
             ) : (
@@ -155,10 +155,10 @@ export function Findings() {
               {busy
                 ? "Sending…"
                 : file.status === "sent"
-                  ? "Open pharmacist review →"
+                  ? "Open pharmacist review"
                   : file.status === "signed"
-                    ? "Open signed review →"
-                    : "Send to a pharmacist →"}
+                    ? "Open signed review"
+                    : "Send to a pharmacist"}
             </Button>
             <Link className="text-link" href={`/file/${file.id}/advice`}>
               View the counter’s waiting screen

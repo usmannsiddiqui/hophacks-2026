@@ -82,12 +82,11 @@ export function PharmacistQueue() {
         </Link>
         <span className="topbar-context">Pharmacist console</span>
         <Link className="text-link" href="/file/new">
-          Back to the counter →
+          Back to the counter
         </Link>
       </header>
       <main className="queue-page">
         <div className="page-heading">
-          <span className="eyebrow">Your expertise, where it is needed</span>
           <h1>A second pair of eyes.</h1>
           <p>
             Read her account. Resolve what you can. Leave a plan she can
@@ -132,11 +131,6 @@ export function PharmacistQueue() {
             )}
           </Section>
         </div>
-        <p className="small muted">
-          Refreshes every 3 seconds. Sample files stay in this browser. The
-          console is a hackathon prototype with no authenticated pharmacist
-          identity.
-        </p>
       </main>
     </div>
   );
@@ -147,7 +141,7 @@ function QueueRow({ file }: { file: Summary }) {
       <div className="row-between">
         <h3>{file.patient.name}</h3>
         <span>
-          {file.flags > 0 ? `${file.flags} flags` : "No table matches"} →
+          {file.flags > 0 ? `${file.flags} flags` : "No table matches"}
         </span>
       </div>
       <p>
@@ -292,7 +286,7 @@ export function PharmacistReview() {
         </Section>
         <div className="actions">
           <Link className="button" href={`/file/${file.id}/advice`}>
-            Open advice at the counter →
+            Open advice at the counter
           </Link>
           <Link className="button secondary" href={`/file/${file.id}/report`}>
             Open signed report
@@ -310,7 +304,7 @@ export function PharmacistReview() {
             pharmacist.
           </p>
           <Link className="button" href={`/file/${file.id}/findings`}>
-            Go to findings →
+            Go to findings
           </Link>
         </div>
       </AppShell>
@@ -442,8 +436,8 @@ export function PharmacistReview() {
             {busy
               ? "Signing…"
               : demo
-                ? "Sign sample review & send →"
-                : "Sign review & send →"}
+                ? "Sign sample review & send"
+                : "Sign review & send"}
           </Button>
           <p className="small muted">
             Prototype signature: entered identity, not credential verification.
@@ -454,10 +448,10 @@ export function PharmacistReview() {
       <div className="page-heading">
         <span className="eyebrow">Pharmacist review / {file.patient.name}</span>
         <h1>Read the whole story.</h1>
-        <p>Her words, the evidence, and the questions still open.</p>
+        <p>The patient’s account, supporting evidence, and outstanding questions.</p>
       </div>
       <FileHeader file={file} />
-      <Section title="Her account">
+      <Section title="Patient’s account">
         <p className="history-copy">{cleanCopy(file.history.english)}</p>
         <details className="original-account">
           <summary>Read original Urdu</summary>

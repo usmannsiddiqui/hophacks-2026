@@ -106,7 +106,7 @@ export function PharmacistDecision({ draft }: { draft: VisitDraft }) {
           </p>
         )}
         <Button type="button" onClick={send} disabled={busy}>
-          {busy ? "Sending…" : "Send to a pharmacist →"}
+          {busy ? "Sending…" : "Send to a pharmacist"}
         </Button>
       </section>
     );
@@ -116,7 +116,7 @@ export function PharmacistDecision({ draft }: { draft: VisitDraft }) {
 
   return (
     <section className="pharmacist-decision screen-only" aria-label="Pharmacist review">
-      <Link className="text-link" href={`/visit/${encodeURIComponent(visitId)}`}>Open visit status and next steps →</Link>
+      <Link className="text-link" href={`/visit/${encodeURIComponent(visitId)}`}>Open visit status and next steps</Link>
       {error && (
         <p role="alert" className="error-box">
           Could not reach the pharmacist queue: {error}

@@ -49,8 +49,8 @@ export function AdviceView() {
             }
           >
             {file.status === "sent"
-              ? "Open pharmacist review →"
-              : "Open findings →"}
+              ? "Open pharmacist review"
+              : "Open findings"}
           </Link>
         </div>
       </AppShell>
@@ -91,7 +91,7 @@ export function AdviceView() {
           ))}
         </Section>
         <Link className="button secondary" href={`/file/${file.id}/report`}>
-          Open her take-home report →
+          Open her take-home report
         </Link>
       </div>
     </AppShell>

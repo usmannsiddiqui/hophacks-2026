@@ -1,3 +1,4 @@
+import { LiquidButton } from "@/components/ui/liquid-glass-button";
 import { outreachAreaNames } from "@/lib/outreach/location";
 import type { ReactNode } from "react";
 import type { VisitDraft } from "@/lib/visit-draft";
@@ -27,9 +28,9 @@ export function VisitReportView({
     <section className="visit-report-shell" aria-label="English visit report">
       <div className="report-toolbar visit-report-toolbar">
         <span className="small muted">Your visit report</span>
-        <button className="button secondary" onClick={() => window.print()}>
+        <LiquidButton className="button secondary" onClick={() => window.print()}>
           Print / save PDF
-        </button>
+        </LiquidButton>
       </div>
       <article className="report-sheet visit-report-sheet">
         <header className="report-heading">
@@ -39,7 +40,7 @@ export function VisitReportView({
           </strong>
         </header>
         <h1>English visit report</h1>
-        {draft.outreachAreaId && <p className="small muted">{outreachAreaNames[draft.outreachAreaId]} tehsil</p>}
+        {draft.outreachAreaId && <p className="small muted">{outreachAreaNames[draft.outreachAreaId]}</p>}
         <dl className="visit-report-patient">
           <div><dt>Patient</dt><dd>{draft.patient.name}</dd></div>
           <div><dt>Age</dt><dd>{draft.patient.age}</dd></div>
