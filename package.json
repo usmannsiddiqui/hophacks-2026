@@ -17,6 +17,8 @@
   "dependencies": {
     "@ai-sdk/google": "^4.0.76",
     "@elevenlabs/elevenlabs-js": "^2.68.0",
+    "@neon/config": "^1.7.2",
+    "@neon/env": "^1.4.3",
     "@neondatabase/serverless": "^1.1.0",
     "ai": "^7.0.107",
     "drizzle-orm": "^0.45.2",
