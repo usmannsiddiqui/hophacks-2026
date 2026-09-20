@@ -10,6 +10,25 @@ Wireframes are the spec: `docs/specs/wireframes.html` (open in a browser). Contr
 every screen after P2 renders against it with no env vars.
 
 
+## Current slice: xAI follow-up questions after the English report
+
+On `Ahmad-Branch-GrokSTT`, Scribe remains the source of the first recording. xAI is
+on the output side only (ADR 0009): each draft question in the report has "Ask in
+Urdu" (xAI speech) and "Record patient answer" (Grok STT rewritten into Arabic-script
+Urdu, editable). Answers sit on the draft as `followUps` until "Add answers and update
+English report" appends them as `سوال:`/`جواب:` dialogue and re-runs Gemini. Browser
+verified 20 Sep: answer mentioning metformin → new report extracted Metformin from the
+`جواب:` line and dropped the answered dose question. The earlier xAI transcript panes
+on the input side are removed.
+
+Gemini: the free-tier daily quota on `gemini-3.6-flash` ran out during testing and
+`gemini-3.8-flash` returned intermittent 503 "high demand". Primary is now
+`gemini-3.5-flash-lite`; `lib/llm.ts` tries 3.5-lite → 3.8 → 3.7 → 3.6 on quota/busy
+only (still one provider) and reports 429/503 with plain messages instead of a
+generic failure. The "stuck on Preparing
+English report" symptom was an orphaned `next dev` process with a broken stdout pipe
+(`EPIPE`), not the report code; restart `pnpm dev` if a route stops answering.
+
 ## Current slice: English report after reviewed Urdu
 
 The backend and frontend are implemented and reviewed on `voice-transcript-capture`.
@@ -18,7 +37,8 @@ in the implementation note. Scope: patient Urdu recording → original
 Scribe transcript → volunteer corrections → saved visit → Gemini English translation
 and pharmacist draft. No visual/map redesign in this slice.
 
-- Gemini is called only through `lib/llm.ts`, using live-verified Gemini 3.6 Flash.
+- Gemini is called only through `lib/llm.ts`, live-verified on Gemini 3.6 Flash then
+  switched to 3.5 Flash-Lite as primary on 20 Sep (see the xAI follow-up slice above).
 - Reports preserve raw and reviewed Urdu, source-ground extracted quotes, and compute
   flags only from the existing interaction table. No Grok or provider fallback.
 - Reports remain in the current browser tab. Shared queue, pharmacist approval, Urdu

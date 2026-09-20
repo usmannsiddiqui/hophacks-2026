@@ -1,3 +1,4 @@
+import type { ReactNode } from "react";
 import type { VisitDraft } from "@/lib/visit-draft";
 
 const roleLabel = {
@@ -6,7 +7,15 @@ const roleLabel = {
   remedy: "Home or herbal remedy",
 } as const;
 
-export function VisitReportView({ draft }: { draft: VisitDraft }) {
+// questionPanel replaces the static question list on screen (ask + record answers).
+// The static list still prints so the paper report carries the questions.
+export function VisitReportView({
+  draft,
+  questionPanel,
+}: {
+  draft: VisitDraft;
+  questionPanel?: ReactNode;
+}) {
   const report = draft.report;
   if (!report) return null;
 
@@ -63,20 +72,23 @@ export function VisitReportView({ draft }: { draft: VisitDraft }) {
 
         <section className="section">
           <h2>Draft questions</h2>
-          {report.questions.length ? report.questions.map((question) => (
-            <div className="question-result" key={question.id}>
-              <h3>{question.text.english}</h3>
-              <p>{question.why}</p>
-              <p className="small muted">Unresolved</p>
-              <details className="visit-report-evidence">
-                <summary>Urdu evidence</summary>
-                <p className="urdu" lang="ur" dir="rtl">{question.text.urdu}</p>
-                <p className="urdu small muted" lang="ur" dir="rtl">
-                  Source: {question.source.excerpt}
-                </p>
-              </details>
-            </div>
-          )) : <p>No draft clarification questions were generated.</p>}
+          {questionPanel ? <div className="screen-only">{questionPanel}</div> : null}
+          <div className={questionPanel ? "print-only" : undefined}>
+            {report.questions.length ? report.questions.map((question) => (
+              <div className="question-result" key={question.id}>
+                <h3>{question.text.english}</h3>
+                <p>{question.why}</p>
+                <p className="small muted">Unresolved</p>
+                <details className="visit-report-evidence">
+                  <summary>Urdu evidence</summary>
+                  <p className="urdu" lang="ur" dir="rtl">{question.text.urdu}</p>
+                  <p className="urdu small muted" lang="ur" dir="rtl">
+                    Source: {question.source.excerpt}
+                  </p>
+                </details>
+              </div>
+            )) : <p>No draft clarification questions were generated.</p>}
+          </div>
         </section>
 
         <section className="section">

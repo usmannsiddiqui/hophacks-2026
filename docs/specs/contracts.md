@@ -137,17 +137,30 @@ media duration. Do not expose the paid route publicly without abuse controls and
 
 Success: { text: string, language: "ur", words: [{ text: string, start: number, end: number }] }.
 Word timestamps come from Scribe; missing/invalid individual intervals are omitted without changing raw text. No voice diarization or inferred speaker identity.
-The only active transcription service is lib/voice/stt.ts using the adapted Scribe provider.
+The only active transcription service for VisitDraft is lib/voice/stt.ts using the adapted Scribe provider.
 Urdu and scribe_v2 are fixed on the server. Client provider/model overrides are unsupported.
 No automatic provider/SDK retry, Gemini/Grok transcription or canned success fallback.
+
+POST /api/transcribe/xai transcribes a follow-up answer (ADR 0009). Query `lang` is `ur`
+or `en`. Same audio multipart rules as /api/transcribe. Grok STT output is rewritten by
+Grok chat: `ur` is Arabic-script Urdu, `en` is an English translation. Success:
+`{ text, language: "ur"|"en", words }`. It never writes VisitDraft on the server; the
+client holds the answer as a follow-up. POST /api/tts/xai speaks supplied text
+(`language` `ur` or `en`) as audio/mpeg; the client uses it to ask a draft question in
+Urdu. Both require `XAI_API_KEY` and use no-store.
 Errors: 400 malformed/missing audio; 413 size; 415 MIME; 422 no usable speech/audio;
 429 provider busy; 503 configuration; 504 timeout; 502 provider failure.
 Responses use no-store. No provider errors, keys, audio or transcripts are logged.
 
 VisitDraft is defined in lib/visit-draft.ts. It preserves raw transcription separately
-from reviewedUrdu and uses transcript-review/transcript-ready statuses. It is tab-local,
-not a PatientFile and not ready for clinical sign-off. Legacy bilingual contracts above
-remain in effect for existing /file routes until the next migration.
+from reviewedUrdu and uses transcript-review/transcript-ready statuses. `followUps`
+holds recorded answers `{ id, questionId, question: { urdu, english }, answerUrdu,
+seconds, recordedAt }` (max 50) that are not yet in the account; drafts saved before
+this field read as `[]`. `mergeFollowUps` appends `سوال:`/`جواب:` dialogue lines to
+reviewedUrdu, empties `followUps` and clears the report; the raw transcript is
+untouched. It is tab-local, not a PatientFile and not ready for clinical sign-off.
+Legacy bilingual contracts above remain in effect for existing /file routes until the
+next migration.
 
 
 ## English pharmacist draft boundary
@@ -168,4 +181,9 @@ names come from the closed vocabulary; unknown terms remain unidentified. The
 report does not reuse raw-word timestamps after corrections. Corrections invalidate
 a previous report; late results cannot attach to a different draft or source. Old
 transcript-only saved visits remain readable. Gemini errors never create a canned
-report or trigger another provider.
+report or trigger another provider. Within Gemini, quota exhaustion or "high demand"
+on one model moves the same request to the next model in `lib/llm.ts`; `model.name`
+records the one that answered. Errors: 400 invalid body; 413 size; 415 content type;
+429 daily quota exhausted on every model; 503 not configured, or every model busy;
+504 timeout; 502 other provider failure. The reviewed Urdu may end with
+`سوال:`/`جواب:` dialogue lines; the prompt names `جواب:` lines as the patient's words.

@@ -21,6 +21,7 @@ import {
 } from "@/lib/audio";
 import {
   createVisitDraft,
+  mergeFollowUps,
   readVisitDraft,
   reviewVisitDraft,
   VISIT_DRAFT_KEY,
@@ -32,6 +33,7 @@ import {
 } from "@/lib/visit-draft";
 import { ReportRequestOwner, requestVisitReport } from "@/lib/report-request";
 import { VisitReportView } from "./visit-report";
+import { FollowUpQuestions } from "./follow-up-questions";
 
 const subscribe = () => () => {};
 function storedDraft() {
@@ -342,13 +344,13 @@ function VisitCapture() {
     setError("");
     if (persist(next)) setStage("saved");
   }
-  async function prepareReport() {
-    if (!draft || draft.status !== "transcript-ready" || reportBusy) return;
-    const owned = reportRequest.current.begin(draft.id);
+  async function prepareReport(target: VisitDraft | null = draft) {
+    if (!target || target.status !== "transcript-ready" || reportBusy) return;
+    const owned = reportRequest.current.begin(target.id);
     setReportBusy(true);
     setReportError("");
     try {
-      const next = await requestVisitReport(draft, owned.signal);
+      const next = await requestVisitReport(target, owned.signal);
       if (!mounted.current || !reportRequest.current.isCurrent(owned)) return;
       setDraft(next);
       persist(next);
@@ -360,6 +362,26 @@ function VisitCapture() {
     } finally {
       if (mounted.current && reportRequest.current.isCurrent(owned)) setReportBusy(false);
     }
+  }
+  function updateDraft(next: VisitDraft) {
+    setDraft(next);
+    persist(next);
+  }
+  // Appends the recorded answers to the reviewed account as marked dialogue, then
+  // re-runs the Gemini report on the longer account.
+  async function updateReportWithAnswers() {
+    if (!draft || reportBusy) return;
+    let merged: VisitDraft;
+    try {
+      merged = mergeFollowUps(draft);
+    } catch (cause) {
+      setReportError((cause as Error).message);
+      return;
+    }
+    reportRequest.current.cancel();
+    setReportError("");
+    updateDraft(merged);
+    await prepareReport(merged);
   }
   const timer = `${Math.floor(seconds / 60)}:${String(seconds % 60).padStart(2, "0")}`;
   return (
@@ -618,7 +640,26 @@ function VisitCapture() {
                   </button>
                 </div>
               )}
-              {draft?.report && <VisitReportView draft={draft} />}
+              {draft?.report ? (
+                <VisitReportView
+                  draft={draft}
+                  questionPanel={
+                    <FollowUpQuestions
+                      draft={draft}
+                      disabled={reportBusy}
+                      onChange={updateDraft}
+                      onUpdateReport={() => void updateReportWithAnswers()}
+                    />
+                  }
+                />
+              ) : draft && draft.followUps.length > 0 ? (
+                <FollowUpQuestions
+                  draft={draft}
+                  disabled={reportBusy}
+                  onChange={updateDraft}
+                  onUpdateReport={() => void updateReportWithAnswers()}
+                />
+              ) : null}
               <button className="text-link" onClick={newVisit}>
                 Start another visit
               </button>

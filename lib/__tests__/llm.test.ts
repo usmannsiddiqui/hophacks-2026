@@ -4,7 +4,13 @@ const generateObject = vi.fn();
 vi.mock("ai", () => ({ generateObject: (...args: unknown[]) => generateObject(...args) }));
 vi.mock("@ai-sdk/google", () => ({ google: (id: string) => ({ modelId: id }) }));
 
-import { prepareVisitReport, VISIT_REPORT_MODEL } from "@/lib/llm";
+import {
+  LLM_BUSY_ERROR,
+  LLM_QUOTA_ERROR,
+  prepareVisitReport,
+  VISIT_REPORT_FALLBACK_MODELS,
+  VISIT_REPORT_MODEL,
+} from "@/lib/llm";
 
 const reviewedUrdu = "میں روز میٹفارمن لیتی ہوں اور حکیم کا سفوف بھی لیتی ہوں";
 
@@ -80,5 +86,60 @@ describe("Gemini report preparation", () => {
       flags: [{ severity: "high" }],
     } });
     await expect(prepareVisitReport({ draftId: "d1", rawUrdu: reviewedUrdu, reviewedUrdu })).rejects.toThrow();
+  });
+
+  it("tells Gemini whose words the follow-up dialogue lines are", async () => {
+    await prepareVisitReport({ draftId: "d1", rawUrdu: reviewedUrdu, reviewedUrdu });
+    const system: string = generateObject.mock.calls[0][0].system;
+    expect(system).toContain("سوال:");
+    expect(system).toContain("جواب:");
+    expect(system).toContain("not the patient's words");
+  });
+});
+
+describe("Gemini quota fallback", () => {
+  const quota = () => Object.assign(new Error("You exceeded your current quota"), { statusCode: 429 });
+
+  it("moves to the next Gemini model when the primary daily quota is exhausted", async () => {
+    const success = generateObject.getMockImplementation();
+    generateObject.mockRejectedValueOnce(quota());
+    if (success) generateObject.mockImplementationOnce(success);
+    const report = await prepareVisitReport({ draftId: "d1", rawUrdu: reviewedUrdu, reviewedUrdu });
+    expect(generateObject).toHaveBeenCalledTimes(2);
+    expect(generateObject.mock.calls[0][0].model).toEqual({ modelId: VISIT_REPORT_MODEL });
+    expect(generateObject.mock.calls[1][0].model).toEqual({ modelId: VISIT_REPORT_FALLBACK_MODELS[0] });
+    expect(report.model).toEqual({ provider: "google", name: VISIT_REPORT_FALLBACK_MODELS[0] });
+  });
+
+  it("reports quota exhaustion once every configured model is out", async () => {
+    generateObject.mockRejectedValue(quota());
+    await expect(prepareVisitReport({ draftId: "d1", rawUrdu: reviewedUrdu, reviewedUrdu }))
+      .rejects.toThrow(LLM_QUOTA_ERROR);
+    expect(generateObject).toHaveBeenCalledTimes(1 + VISIT_REPORT_FALLBACK_MODELS.length);
+  });
+
+  it("moves past a model reporting high demand and names the busy state if all are", async () => {
+    const overloaded = () => Object.assign(
+      new Error("This model is currently experiencing high demand."),
+      { statusCode: 503 },
+    );
+    const success = generateObject.getMockImplementation();
+    generateObject.mockRejectedValueOnce(quota()).mockRejectedValueOnce(overloaded());
+    if (success) generateObject.mockImplementationOnce(success);
+    const report = await prepareVisitReport({ draftId: "d1", rawUrdu: reviewedUrdu, reviewedUrdu });
+    expect(generateObject).toHaveBeenCalledTimes(3);
+    expect(report.model.name).toBe(VISIT_REPORT_FALLBACK_MODELS[1]);
+
+    generateObject.mockReset();
+    generateObject.mockRejectedValue(overloaded());
+    await expect(prepareVisitReport({ draftId: "d1", rawUrdu: reviewedUrdu, reviewedUrdu }))
+      .rejects.toThrow(LLM_BUSY_ERROR);
+  });
+
+  it("does not retry other provider failures on another model", async () => {
+    generateObject.mockRejectedValue(Object.assign(new Error("Bad request"), { statusCode: 400 }));
+    await expect(prepareVisitReport({ draftId: "d1", rawUrdu: reviewedUrdu, reviewedUrdu }))
+      .rejects.toThrow("Bad request");
+    expect(generateObject).toHaveBeenCalledTimes(1);
   });
 });
