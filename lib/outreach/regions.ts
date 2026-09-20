@@ -44,6 +44,6 @@ export const pilotBounds = {
 };
 // Preserve existing settlement plans; a new region plan never silently replaces them.
 export const planningLocations = [
-  ...regions.map(r => ({ id: r.id, name: `${r.name} tehsil`, regionId: r.id })),
+  ...regions.map(r => ({ id: r.id, name: r.name, regionId: r.id })),
   ...settlements.map(s => ({ id: s.id, name: s.name, regionId: "pasni" })),
 ];

@@ -1,4 +1,7 @@
 "use client";
+import { LiquidButton } from "@/components/ui/liquid-glass-button";
+
+import { useRouter } from "next/navigation";
 import { outreachAreaNames, type OutreachAreaId } from "@/lib/outreach/location";
 import { ProductHeader } from "./product-header";
 import { GlassMaterial } from "./glass-material";
@@ -406,6 +409,9 @@ function VisitCapture({initialAreaId,initialFresh}:{initialAreaId?:OutreachAreaI
     await prepareReport(merged);
   }
   const timer = `${Math.floor(seconds / 60)}:${String(seconds % 60).padStart(2, "0")}`;
+  if(initialFresh) return storageError
+    ? <div className="error-box" role="alert"><p>{storageError}</p><LiquidButton className="button secondary" onClick={()=>router.replace("/visit/new")}>Return to the saved visit</LiquidButton></div>
+    : <p role="status">Starting a new visit…</p>;
   return (
     <>
       <ol className="journey-progress" aria-label="Visit progress">
@@ -422,7 +428,7 @@ function VisitCapture({initialAreaId,initialFresh}:{initialAreaId?:OutreachAreaI
             Visit area <span className="small muted">(optional)</span>
             <select value={outreachAreaId??""} onChange={event=>setOutreachAreaId((event.target.value||undefined) as OutreachAreaId|undefined)}>
               <option value="">Choose an area</option>
-              {Object.entries(outreachAreaNames).map(([id,name])=><option key={id} value={id}>{name} tehsil</option>)}
+              {Object.entries(outreachAreaNames).map(([id,name])=><option key={id} value={id}>{name}</option>)}
             </select>
           </label>
           <label>
@@ -444,14 +450,14 @@ function VisitCapture({initialAreaId,initialFresh}:{initialAreaId?:OutreachAreaI
             </label>
           </div>
           <p className="small muted">Explain how the recording will be used and ask permission before you begin. Patient language: Urdu.</p>
-          <button className="button voice-primary" type="submit">
-            Start conversation →
-          </button>
+          <LiquidButton className="button voice-primary" type="submit">
+            Start conversation
+          </LiquidButton>
           {history.length > 0 && (
             <details>
               <summary>Saved transcripts ({history.length})</summary>
               {history.map((previous) => (
-                <button
+                <LiquidButton
                   type="button"
                   key={previous.id}
                   className="text-link full"
@@ -461,14 +467,14 @@ function VisitCapture({initialAreaId,initialFresh}:{initialAreaId?:OutreachAreaI
                   {previous.status === "transcript-ready"
                     ? "Reviewed"
                     : "Draft"}
-                </button>
+                </LiquidButton>
               ))}
             </details>
           )}
         </form>
       ) : (
         <>
-          <span className="eyebrow">{patient.name} · Urdu{outreachAreaId ? ` · ${outreachAreaNames[outreachAreaId]} tehsil` : ""}</span>
+          <span className="eyebrow">{patient.name} · Urdu{outreachAreaId ? ` · ${outreachAreaNames[outreachAreaId]}` : ""}</span>
           {stage === "capture" ? (
             <>
               <h1>Tell us in your own words.</h1>
@@ -495,27 +501,27 @@ function VisitCapture({initialAreaId,initialFresh}:{initialAreaId?:OutreachAreaI
                 </p>
                 {recording === "recording" || recording === "paused" ? (
                   <div className="actions">
-                    <button className="button secondary" onClick={pause}>
+                    <LiquidButton className="button secondary" onClick={pause}>
                       {recording === "paused" ? "Resume" : "Pause"}
-                    </button>
-                    <button
+                    </LiquidButton>
+                    <LiquidButton
                       className="button"
                       onClick={() => capture.current?.stop()}
                     >
                       Finish recording
-                    </button>
+                    </LiquidButton>
                   </div>
                 ) : (
-                  <button
+                  <LiquidButton
                     className="button voice-primary"
                     onClick={record}
                     disabled={busy || recording === "permission"}
                   >
                     {audio ? "Record again" : "Start recording"}
-                  </button>
+                  </LiquidButton>
                 )}
                 {recording === "permission" && (
-                  <button
+                  <LiquidButton
                     className="text-link"
                     onClick={() => {
                       microphone.current?.abort();
@@ -524,7 +530,7 @@ function VisitCapture({initialAreaId,initialFresh}:{initialAreaId?:OutreachAreaI
                     }}
                   >
                     Cancel
-                  </button>
+                  </LiquidButton>
                 )}
               </div>
               {audio && recording === "idle" && (
@@ -534,13 +540,13 @@ function VisitCapture({initialAreaId,initialFresh}:{initialAreaId?:OutreachAreaI
                     src={audioUrl || undefined}
                     aria-label="Recorded patient account"
                   />
-                  <button
+                  <LiquidButton
                     className="button voice-primary"
                     disabled={busy}
                     onClick={transcribe}
                   >
-                    {busy ? "Transcribing…" : "Transcribe recording →"}
-                  </button>
+                    {busy ? "Transcribing…" : "Transcribe recording"}
+                  </LiquidButton>
                 </>
               )}
               {recording === "idle" && (
@@ -608,10 +614,10 @@ function VisitCapture({initialAreaId,initialFresh}:{initialAreaId?:OutreachAreaI
                   aria-label="Recorded patient account"
                 />
               )}
-              <button className="button voice-primary" onClick={save}>
+              <LiquidButton className="button voice-primary" onClick={save}>
                 Save transcript
-              </button>
-              <button
+              </LiquidButton>
+              <LiquidButton
                 className="text-link"
                 onClick={() => {
                   reportRequest.current.cancel();
@@ -622,7 +628,7 @@ function VisitCapture({initialAreaId,initialFresh}:{initialAreaId?:OutreachAreaI
                 }}
               >
                 Back to recording
-              </button>
+              </LiquidButton>
             </>
           ) : (
             <>
@@ -632,7 +638,7 @@ function VisitCapture({initialAreaId,initialFresh}:{initialAreaId?:OutreachAreaI
               <p className="urdu voice-saved" lang="ur" dir="rtl">
                 {draft?.reviewedUrdu}
               </p>
-              <button
+              <LiquidButton
                 className="button secondary voice-primary"
                 onClick={() => {
                   reportRequest.current.cancel();
@@ -642,13 +648,13 @@ function VisitCapture({initialAreaId,initialFresh}:{initialAreaId?:OutreachAreaI
                 }}
               >
                 Review transcript
-              </button>
+              </LiquidButton>
               <p className="small muted">
                 Saved in this browser tab. The English report is an AI draft
                 for volunteer review and is not sent to a pharmacist.
               </p>
               </>}
-              <button
+              <LiquidButton
                 className={stage === "report" ? "text-link" : "button voice-primary"}
                 disabled={reportBusy}
                 onClick={() => void prepareReport()}
@@ -657,10 +663,10 @@ function VisitCapture({initialAreaId,initialFresh}:{initialAreaId?:OutreachAreaI
                   ? "Preparing English report…"
                   : draft?.report
                     ? "Prepare report again"
-                    : "Prepare English report →"}
-              </button>
+                    : "Prepare English report"}
+              </LiquidButton>
               {reportBusy && (
-                <button
+                <LiquidButton
                   className="text-link"
                   onClick={() => {
                     reportRequest.current.cancel();
@@ -668,14 +674,14 @@ function VisitCapture({initialAreaId,initialFresh}:{initialAreaId?:OutreachAreaI
                   }}
                 >
                   Cancel report preparation
-                </button>
+                </LiquidButton>
               )}
               {reportError && (
                 <div className="error-box" role="alert">
                   <p>{reportError}</p>
-                  <button className="text-link" onClick={() => void prepareReport()}>
+                  <LiquidButton className="text-link" onClick={() => void prepareReport()}>
                     Retry English report
-                  </button>
+                  </LiquidButton>
                 </div>
               )}
               {draft?.report ? (
@@ -699,10 +705,10 @@ function VisitCapture({initialAreaId,initialFresh}:{initialAreaId?:OutreachAreaI
                   onUpdateReport={() => void updateReportWithAnswers()}
                 />
               ) : null}
-              {stage === "report" && <button className="text-link" onClick={() => { reportRequest.current.cancel(); setReportBusy(false); setReportError(""); setStage("review"); }}>Edit the source transcript</button>}
-              <button className="text-link" onClick={newVisit}>
+              {stage === "report" && <LiquidButton className="text-link" onClick={() => { reportRequest.current.cancel(); setReportBusy(false); setReportError(""); setStage("review"); }}>Edit the source transcript</LiquidButton>}
+              <LiquidButton className="text-link" onClick={newVisit}>
                 Start another visit
-              </button>
+              </LiquidButton>
             </>
           )}
         </>

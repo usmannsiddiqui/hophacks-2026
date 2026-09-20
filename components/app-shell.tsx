@@ -42,7 +42,7 @@ export function AppShell({
         <div className="topbar-actions">
           <FlagPill file={file} />
           <Link href="/pharmacist/files" className="text-link">
-            Pharmacist queue ↗
+            Pharmacist queue
           </Link>
         </div>
       </header>

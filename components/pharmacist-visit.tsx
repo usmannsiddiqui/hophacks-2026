@@ -77,7 +77,6 @@ export function VisitQueue() {
       <ProductHeader title="Pharmacist console" />
       <main className="queue-page">
         <div className="page-heading">
-          <span className="eyebrow">Your expertise, where it is needed</span>
           <h1>A second pair of eyes.</h1>
           <p>Read the account, review the evidence, and send your decision to the volunteer.</p>
         </div>
@@ -114,11 +113,6 @@ export function VisitQueue() {
           </Section>
         </div>
 
-        <p className="small muted">
-          Refreshes every 3 seconds. Prototype console — there is no authenticated
-          pharmacist identity, and a signed decision is a typed name, not a verified
-          credential.
-        </p>
       </main>
     </div>
   );
@@ -135,8 +129,8 @@ function VisitRow({ visit }: { visit: VisitSummary }) {
               ? "Authorised"
               : "Not authorised"
             : visit.flags > 0
-              ? `${visit.flags} flags →`
-              : "No table matches →"}
+              ? `${visit.flags} flags`
+              : "No table matches"}
         </span>
       </div>
       <p>
@@ -263,7 +257,7 @@ function VisitReviewForm({
         <div className="page-heading">
           <span className="eyebrow">Pharmacist review / {visit.patient.name}</span>
           <h1>Read the whole story.</h1>
-          {visit.outreachAreaId && <p>{outreachAreaNames[visit.outreachAreaId]} tehsil</p>}
+          {visit.outreachAreaId && <p>{outreachAreaNames[visit.outreachAreaId]}</p>}
           <p>
             {visit.patient.age} / {visit.patient.sex} · {report.medList.length} medicines ·{" "}
             {report.flags.length} sourced flags
@@ -305,11 +299,11 @@ function VisitReviewForm({
           )}
         </Section>
 
-        <Section title="Her account">
+        <Section title="Patient’s account">
           <p className="history-copy">{report.english.account}</p>
           <p className="small muted">{report.english.summary}</p>
           <details className="original-account">
-            <summary>Read the Urdu she actually spoke</summary>
+            <summary>View Urdu transcript</summary>
             <p className="urdu" lang="ur" dir="rtl">
               {report.reviewedUrdu}
             </p>
@@ -367,7 +361,7 @@ function VisitReviewForm({
 
                   {decision.decision === "declined" && (
                     <label>
-                      Why not, in words the counter can repeat
+                      Reason for declining
                       <textarea
                         required
                         rows={2}
@@ -383,19 +377,21 @@ function VisitReviewForm({
             })}
           </Section>
 
-          <Section title="Your answer to the counter">
+          <Section title="Your feedback">
             <label>
-              Plain English for the volunteer <span className="small muted">(optional)</span>
+              Feedback for the volunteer <span className="small muted">(optional)</span>
               <textarea
                 rows={5}
                 disabled={done}
                 value={note}
                 onChange={(e) => setNote(e.target.value)}
-                placeholder="Anything the counter should say to her. Leave blank if the file is fine as it stands."
+                placeholder="Advice and next steps for the volunteer to share with the patient."
               />
             </label>
+            <details className="optional-feedback" open={done && Boolean(urdu) ? true : undefined}>
+              <summary>Urdu feedback (optional)</summary>
             <label>
-              Urdu for the patient (optional)
+              Feedback in Urdu
               <textarea
                 rows={4}
                 lang="ur"
@@ -406,6 +402,10 @@ function VisitReviewForm({
                 onChange={(e) => setUrdu(e.target.value)}
               />
             </label>
+            </details>
+          </Section>
+
+          <Section title="Pharmacist details">
 
             <label>
               Pharmacist name
@@ -449,8 +449,8 @@ function VisitReviewForm({
               {busy
                 ? "Sending…"
                 : outcome === "authorised"
-                  ? "Send back: authorised →"
-                  : `Send back: not authorised (${declined.length}) →`}
+                  ? "Send back: authorised"
+                  : `Send back: not authorised (${declined.length})`}
             </Button>
           )}
 

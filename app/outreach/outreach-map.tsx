@@ -1,4 +1,6 @@
 "use client";
+import { LiquidButton } from "@/components/ui/liquid-glass-button";
+
 import { useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
 import Link from "next/link";
 import Image from "next/image";
@@ -31,12 +33,10 @@ export default function OutreachMap() {
   const plans: string[] = useMemo(()=>{try{const value=JSON.parse(rawPlans);return Array.isArray(value)?value.filter(id=>planningLocations.some(s=>s.id===id)):[]}catch{return []}},[rawPlans]);
   const area = regions.find(s=>s.id===selected)!;
   const current = results[category] || {};
-  const evidence = current[selected];
-  const count = evidence && "count" in evidence ? evidence.count : undefined;
-  const rate = rateOf(area, evidence);
-  const people = area.census.population2023;
-  // Thinnest coverage per resident first; unchecked areas sink to the bottom.
-  const sorted = [...regions].sort((a,b)=>(rateOf(a,current[a.id]) ?? Infinity)-(rateOf(b,current[b.id]) ?? Infinity));
+  const sorted = [...regions].sort((a,b)=>{
+    const first=current[a.id], second=current[b.id];
+    return (first && "count" in first ? first.count : Infinity)-(second && "count" in second ? second.count : Infinity);
+  });
   const choose = useCallback((id: string)=>{setSelected(id);setPlanMessage("");const region=regions.find(r=>r.id===id);if(region)map.current?.fitBounds(region.bounds,40);},[]);
   useEffect(()=>{
     const scope=window as typeof window & {gm_authFailure?:()=>void};
@@ -62,24 +62,25 @@ export default function OutreachMap() {
     }
     return()=>overlays.forEach(c=>{google.maps.event.clearInstanceListeners(c);c.setMap(null)});
   },[ready,area,selected,category,results,choose]);
-  async function loadCounts(){
+  async function loadCounts(requested: Category){
     if(busy.current) return;
     busy.current=true;setLoading(true);
-    // One click fills both tabs, visible category first, so switching tabs never lands on an empty pane.
-    const order=[category,...(Object.keys(categories) as Category[]).filter(key=>key!==category)];
-    setResults({});
-    for(const requested of order){
-      for(const settlement of regions){
-        let result: AccessResult;
-        try {
-          const response=await fetch("/api/outreach/access",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({regionId:settlement.id,category:requested})});
-          const data=await response.json();
-          result=response.ok && Number.isSafeInteger(data.count) && data.count>=0 ? {count:data.count,fetchedAt:data.fetchedAt} : {error:data.error || "Data unavailable. Please try again."};
-        }catch{result={error:"Connection interrupted. Availability is unknown."}}
-        setResults(old=>({...old,[requested]:{...old[requested],[settlement.id]:result}}));
-      }
+    setResults(old=>({...old,[requested]:{}}));
+    for(const settlement of regions){
+      let result: AccessResult;
+      try {
+        const response=await fetch("/api/outreach/access",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({regionId:settlement.id,category:requested})});
+        const data=await response.json();
+        result=response.ok && Number.isSafeInteger(data.count) && data.count>=0 ? {count:data.count,fetchedAt:data.fetchedAt} : {error:data.error || "Data unavailable. Please try again."};
+      }catch{result={error:"Connection interrupted. Availability is unknown."}}
+      setResults(old=>({...old,[requested]:{...old[requested],[settlement.id]:result}}));
     }
     busy.current=false;setLoading(false);
+  }
+  function selectCategory(next: Category) {
+    if (busy.current) return;
+    setCategory(next);
+    if (!results[next]) void loadCounts(next);
   }
   function togglePlan(){
     const exists=plans.includes(selected);
@@ -93,7 +94,7 @@ export default function OutreachMap() {
   return <main className={styles.page}>
     <header className={styles.header}>
       <Link href="/" className={styles.brand}>MASHWARA <span lang="ur" dir="rtl">مشورہ</span></Link>
-      <nav aria-label="Main navigation"><Link href="/visits">Your visits</Link><Link href="/visit/new?new=1">New visit ↗</Link><Link href="/pharmacist">Pharmacist console</Link></nav>
+      <nav aria-label="Main navigation" className="product-navigation"><Link className="liquid-button" href="/visits">Your visits</Link><Link className="liquid-button button" href="/visit/new?new=1">New visit</Link><Link className="liquid-button" href="/pharmacist">Pharmacist console</Link></nav>
     </header>
     <section className={styles.intro}>
       <h1>Care starts with showing up.</h1>
@@ -102,41 +103,43 @@ export default function OutreachMap() {
       <Image src="/images/community-village.png" alt="An older man and a young volunteer talking beneath a leafy tree in a Pakistani village courtyard." width={1456} height={816} priority sizes="(max-width: 620px) 100vw, 90vw" />
     </figure>
     <section id="access-map" className={styles.workspace} aria-label="Healthcare access explorer"><GlassMaterial/>
-      <div className={styles.toolbar}><div><h2>Potential access gaps</h2><p>Pasni & the Makran coast, Balochistan</p></div><div className={styles.tabs} aria-label="Listing category"><GlassMaterial/>{(Object.keys(categories) as Category[]).map(key=><button key={key} aria-pressed={category===key} disabled={loading} onClick={()=>setCategory(key)}>{categories[key]}</button>)}</div></div>
+      <div className={styles.toolbar}><div><h2>Potential access gaps</h2><p>Pasni & the Makran coast, Balochistan</p></div><div className={styles.tabs} aria-label="Listing category"><GlassMaterial/>{(Object.keys(categories) as Category[]).map(key=><LiquidButton key={key} aria-pressed={category===key} disabled={loading} onClick={()=>selectCategory(key)}>{categories[key]}</LiquidButton>)}</div></div>
       <div className={styles.explorer}>
         <aside className={styles.sidebar}>
-          <div className={styles.listHeader}><span>{regions.length} REGIONS</span><span>TEHSILS</span></div>
-          <button className={styles.loadButton} disabled={loading} onClick={loadCounts}>{loading?"Checking Google listings…":hasData?"Refresh areas ↻":"Show access gaps ↗"}</button>
+          <div className={styles.listHeader}><span>4 REGIONS</span></div>
+          <LiquidButton className={`button ${styles.loadButton}`} disabled={loading} onClick={()=>void loadCounts(category)}>{loading?`Checking ${categories[category].toLowerCase()}…`:hasData?"Refresh areas":"Show access gaps"}</LiquidButton>
+          <p className={styles.categoryStatus} role="status" aria-live="polite">
+            {loading ? `${categories[category]}: ${Object.keys(current).length} of ${regions.length} regions checked`
+              : hasData ? `Showing ${category === "medical" ? "medical-care" : "pharmacy"} listings`
+              : `${categories[category]} selected. Check listings to shade the map.`}
+          </p>
           <div className={styles.areaList}>{sorted.map((s,index)=>{
-            const result=current[s.id]; const value=result && "count" in result?result.count:undefined; const perTenK=rateOf(s,result);
-            return <button key={s.id} className={styles.areaButton} aria-pressed={selected===s.id} onClick={()=>choose(s.id)}><span className={styles.number}>{String(index+1).padStart(2,"0")}</span><span><strong>{s.name}</strong><small>{plans.includes(s.id)?"In your visit plan":result && "error" in result?"Data unavailable":value===undefined||perTenK===undefined?"Not checked yet":value===0?"None listed":`${value} listed · ${formatRate(perTenK)} per 10,000 people`}</small></span><span className={styles.dot} style={{background:accessColor(perTenK)}}/></button>;
+            const result=current[s.id]; const value=result && "count" in result?result.count:undefined;
+            return <LiquidButton key={s.id} className={styles.areaButton} aria-pressed={selected===s.id} onClick={()=>choose(s.id)}><span className={styles.number}>{String(index+1).padStart(2,"0")}</span><span><strong>{s.name}</strong><small>{result && "error" in result?"Data unavailable":value===undefined?(loading?"Checking listings…":"Not checked yet"):`${value} ${category==="medical"?(value===1?"medical-care listing":"medical-care listings"):(value===1?"pharmacy":"pharmacies")}`}</small>{plans.includes(s.id) && <small>In your visit plan</small>}</span><span className={styles.dot} style={{background:accessColor(value)}}/></LiquidButton>;
           })}</div>
           {unmappedUnits.map(unit=><p key={unit.id} className={styles.listHint}>Not shown: {unit.name} sub-tehsil, {number(unit.census.population2023)} people. It has no boundary in the 2017 dataset, so it is not shaded.</p>)}
           <p className={styles.googleAttribution} translate="no">Listing counts: Google Maps</p>
         </aside>
         <div className={styles.mapColumn}>
           <div className={styles.mapFrame}>
-            <div ref={mapElement} className={styles.map} aria-label="Map of Makran coast tehsil boundaries"/>
+            <div ref={mapElement} className={styles.map} aria-label="Map of Makran coast regions"/>
             {(!browserKey || mapError || !ready) && <div className={styles.mapNotice} role="status"><strong>{mapError?"Map unavailable":!browserKey?"Map setup needed":"Opening the map…"}</strong><p>{mapError || (!browserKey?"Add the Google Maps browser key to enable the map. The community list still works.":"Finding our communities along the Makran coast.")}</p></div>}
-            <div className={styles.mapLabel}><GlassMaterial/>MAKRAN COAST <span>BALOCHISTAN, PAKISTAN</span></div>
+            <div className={styles.mapLabel}><GlassMaterial/>MAKRAN COAST <span>{categories[category].toUpperCase()} LISTINGS</span></div>
           </div>
-          <div className={styles.legend} aria-label="Listing rate legend">{[["#c34236","None listed"],["#de8a25",`Under ${WHO_FACILITY_BENCHMARK_PER_10K} per 10,000 people`],["#035352",`${WHO_FACILITY_BENCHMARK_PER_10K} or more per 10,000 people`],["#777d77","Not known"]].map(([color,label])=><span key={label}><i style={{background:color}}/>{label}</span>)}<small>Tehsil boundaries: <a href="https://www.geoboundaries.org/api/current/gbOpen/PAK/ADM3/">geoBoundaries</a> 2017 · <a href="https://opendatacommons.org/licenses/odbl/1-0/">ODbL 1.0</a> · <a href="/data/makran-tehsils.json" download>Download</a></small></div>
-          <p className={styles.legendNote}>Rates divide Google listings by each tehsil&rsquo;s 2023 census population. {WHO_FACILITY_BENCHMARK_PER_10K} per 10,000 is the WHO service-availability benchmark for health facilities; pharmacies have no WHO target, so for them the line is a reference only.</p>
+          <div className={styles.legend} aria-label="Listing count legend">{[["#c34236","0 listed"],["#de8a25","1–2 listed"],["#035352","3+ listed"],["#777d77","Not known"]].map(([color,label])=><span key={label}><i style={{background:color}}/>{label}</span>)}<small>Regional boundaries · 2017</small></div>
         </div>
       </div>
       <div className={styles.detail}><GlassMaterial/>
-        <div className={styles.placeHeading}><h2>{area.name}</h2><p>{number(people)} people · {number(area.census.areaKm2)} km² · {Math.round(people/area.census.areaKm2)} per km² · 2023 census</p></div>
-        <details className={styles.areaEvidence}><summary>Area details</summary>
-          <p>{count === undefined || rate === undefined ? "Listing count not available yet." : count === 0 ? `Google lists no ${category === "medical" ? "hospital or doctor" : "pharmacy"} inside this boundary.` : `${count} ${category === "medical" ? "medical-care" : "pharmacy"} ${count === 1 ? "listing" : "listings"} inside this boundary: ${formatRate(rate)} per 10,000 people, about one for every ${number(peoplePerListing(count, people)!)} residents.`}</p>
-          <p>{category === "medical" ? `The WHO service-availability benchmark is ${WHO_FACILITY_BENCHMARK_PER_10K} health facilities per 10,000 people, which would mean ${listingsToBenchmark(people)} here. Listings are not verified facilities.` : `WHO sets no pharmacy target; ${WHO_FACILITY_BENCHMARK_PER_10K} per 10,000 people (${listingsToBenchmark(people)} here) is shown as a reference only. Listings are not licensed pharmacies.`}</p>
-          <p>{evidence && "fetchedAt" in evidence ? `Checked ${new Date(evidence.fetchedAt).toLocaleString()} · Google Maps` : evidence && "error" in evidence ? evidence.error : "Choose Show access gaps to check this area."}</p>
-          <p>In the 2023 census, {number(area.census.disability2023)} people here ({percent(area.census.disability2023, area.census.disabilityBase2023)}) reported a lot of difficulty seeing, hearing, walking, remembering, with self-care or communicating, and {number(area.census.functionalLimitation2023)} ({percent(area.census.functionalLimitation2023, area.census.disabilityBase2023)}) reported some difficulty. District-wide: {percent(district.disability2023, district.disabilityBase2023)} and {percent(district.functionalLimitation2023, district.disabilityBase2023)}.{area.census.disabilityBase2023 !== people ? ` These shares use the census base of ${number(area.census.disabilityBase2023)} people for this unit.` : ""}</p>
-          <p>{area.census.unit}, Pakistan Bureau of Statistics Census 2023 (Tables 1 and 16), drawn with the published 2017 boundary. Population, area and difficulty counts are census figures, not sickness counts; listings are Google Maps listings.</p>
-        </details>
-        <div className={styles.planAction}><button onClick={togglePlan}>{plans.includes(selected)?"Remove from visit plan":"Plan a visit here"}<span>↗</span></button><p role="status">{planMessage}</p></div>
+        <div className={styles.placeHeading}><h2>{area.name}</h2></div>
+        <div className={styles.planAction}><LiquidButton className="button" onClick={togglePlan}>{plans.includes(selected)?"Remove from visit plan":"Plan a visit here"}</LiquidButton><p role="status">{planMessage}</p></div>
       </div>
     </section>
-    <footer className={styles.footer}><span>MASHWARA · مشورہ</span><span>Better care begins with listening.</span></footer>
+    <section className={styles.bottom}>
+      <div><h2>Find a place to begin.<br/>Make time to listen.</h2></div>
+      <div className={styles.notes}>
+      <div className={styles.savedPlans}><GlassMaterial/><h3>Your visit plan <span>{plans.length}</span></h3>{plans.length?<><div>{plans.map(id=><span className={styles.savedPlanItem} key={id}><LiquidButton onClick={()=>choose(planningLocations.find(s=>s.id===id)!.regionId)}>{planningLocations.find(s=>s.id===id)?.name}</LiquidButton><LiquidButton aria-label={`Remove ${planningLocations.find(s=>s.id===id)?.name} from visit plan`} onClick={()=>removePlan(id)}>×</LiquidButton></span>)}</div><Link className="liquid-button button" href={`/visit/new?new=1&area=${encodeURIComponent(selected)}`}>Start a visit conversation</Link></>:<p>Select a region and save a place to visit.</p>}</div></div>
+    </section>
+    <footer className={styles.footer}><span>MASHWARA · مشورہ</span><span>Boundaries: <a href="https://www.geoboundaries.org/">geoBoundaries / Pathways Data</a> · <a href="https://opendatacommons.org/licenses/odbl/1-0/">ODbL</a> · <a href="/data/makran-tehsils.json" download>Download</a></span></footer>
     {browserKey && <Script id="outreach-google-maps" src={`https://maps.googleapis.com/maps/api/js?key=${encodeURIComponent(browserKey)}&v=weekly`} onReady={()=>setReady(true)} onError={()=>setMapError("Could not load Google Maps. Check your connection and browser key.")}/>}
   </main>;
 }

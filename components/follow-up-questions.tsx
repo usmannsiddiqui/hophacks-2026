@@ -1,4 +1,6 @@
 "use client";
+import { LiquidButton } from "@/components/ui/liquid-glass-button";
+
 
 import { useEffect, useRef, useState } from "react";
 import { audioUploadFilename } from "@/lib/audio";
@@ -203,14 +205,14 @@ export function FollowUpQuestions({
         <span className="small muted">
           {item.seconds}s · not in the report yet
         </span>
-        <button
+        <LiquidButton
           type="button"
           className="text-link"
           disabled={busy}
           onClick={() => onChange(removeFollowUp(draft, item.id))}
         >
           Discard answer
-        </button>
+        </LiquidButton>
       </label>
     );
   }
@@ -240,45 +242,45 @@ export function FollowUpQuestions({
               </p>
             </details>
             <div className="follow-up-actions">
-              <button
+              <LiquidButton
                 type="button"
                 className="button secondary"
                 disabled={busy}
                 onClick={() => void ask(question)}
               >
                 {speaking === question.id ? "Speaking…" : "Ask in Urdu"}
-              </button>
+              </LiquidButton>
               {active && phase === "permission" ? (
                 <>
                   <span role="status">Waiting for microphone permission…</span>
-                  <button type="button" className="text-link" onClick={cancelRecording}>
+                  <LiquidButton type="button" className="text-link" onClick={cancelRecording}>
                     Cancel
-                  </button>
+                  </LiquidButton>
                 </>
               ) : active && phase === "recording" ? (
                 <>
                   <span role="status" className="follow-up-timer">
                     Listening to patient · {timer}
                   </span>
-                  <button
+                  <LiquidButton
                     type="button"
                     className="button"
                     onClick={() => capture.current?.stop()}
                   >
                     Stop and transcribe
-                  </button>
+                  </LiquidButton>
                 </>
               ) : active && phase === "transcribing" ? (
                 <span role="status">Transcribing the answer…</span>
               ) : (
-                <button
+                <LiquidButton
                   type="button"
                   className="button"
                   disabled={busy}
                   onClick={() => void recordAnswer(question)}
                 >
                   {answer ? "Record answer again" : "Record patient answer"}
-                </button>
+                </LiquidButton>
               )}
             </div>
             {answer ? answerEditor(answer) : null}
@@ -305,14 +307,14 @@ export function FollowUpQuestions({
               : `${answered.length} answers are recorded but not in the report yet.`}{" "}
             Update the report to include these answers.
           </p>
-          <button
+          <LiquidButton
             type="button"
             className="button voice-primary"
             disabled={busy}
             onClick={onUpdateReport}
           >
-            Add answers and update English report →
-          </button>
+            Add answers and update English report
+          </LiquidButton>
         </div>
       ) : null}
       {playback ? (

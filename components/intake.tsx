@@ -1,4 +1,6 @@
 "use client";
+import { LiquidButton } from "@/components/ui/liquid-glass-button";
+
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState, type FormEvent } from "react";
@@ -62,10 +64,10 @@ export function Intake() {
           </span>
         </Link>
         <Link className="text-link" href="/visit/new">
-          Start a voice visit →
+          Start a voice visit
         </Link>
         <Link className="text-link" href="/pharmacist/files">
-          Pharmacist queue ↗
+          Pharmacist queue
         </Link>
       </header>
       <main className="intake-layout">
@@ -120,7 +122,7 @@ export function Intake() {
           </div>
           <p className="muted">Three details before you hand the phone over.</p>
           <div className="segmented" role="group" aria-label="Walkthrough mode">
-            <button
+            <LiquidButton
               aria-pressed={mode === "sample"}
               onClick={() => {
                 setMode("sample");
@@ -128,8 +130,8 @@ export function Intake() {
               }}
             >
               Sample walkthrough
-            </button>
-            <button
+            </LiquidButton>
+            <LiquidButton
               aria-pressed={mode === "live"}
               onClick={() => {
                 setMode("live");
@@ -137,7 +139,7 @@ export function Intake() {
               }}
             >
               New patient
-            </button>
+            </LiquidButton>
           </div>
           <p className="mode-note">
             {mode === "sample"
@@ -189,7 +191,7 @@ export function Intake() {
               </p>
             )}
             <Button className="phone-button" disabled={busy} type="submit">
-              {busy ? "Opening file…" : "Let her talk →"}
+              {busy ? "Opening file…" : "Let her talk"}
             </Button>
             <p className="small muted">
               Start with her uninterrupted account. Follow-up questions come

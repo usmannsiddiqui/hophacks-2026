@@ -50,3 +50,17 @@
 /* Focused landing copy and progressive disclosure for area evidence. */
 .intro{padding:24px 0}.detail{grid-template-columns:1fr 1fr 1fr}.areaEvidence{font-size:12px;line-height:1.7}.areaEvidence summary{cursor:pointer;text-decoration:underline;text-underline-offset:4px}.areaEvidence p{font-size:11px;margin:10px 0;max-width:320px}.villageHero img{height:clamp(280px,calc(100svh - 225px),700px)}
 @media(max-width:620px){.intro{padding:20px 0}.detail{display:flex;flex-direction:column;align-items:stretch;gap:16px}.villageHero img{height:clamp(240px,38svh,350px)}}
+
+.savedPlanItem{display:inline-flex;align-items:center;margin:0 8px 8px 0}.savedPlans .savedPlanItem button{margin:0;min-height:44px}.savedPlanItem button:last-child{min-width:44px;margin-left:3px}
+
+/* Shared glass controls retain the map's compact list layout. */
+.header nav { gap:10px; flex-wrap:wrap; }
+.areaButton:global(.liquid-button) { border-radius:18px; justify-content:flex-start; text-align:left; padding:12px; }
+.areaList { gap:7px; }
+@media(max-width:620px) { .header { flex-wrap:wrap; gap:14px; } .header nav { width:100%; gap:7px; margin-left:0; } }
+
+/* Category results remain visible, including for saved places. */
+.categoryStatus { font-size:11px; line-height:1.5; margin:14px 0 16px; min-height:32px; }
+.detail { grid-template-columns:1fr 1fr; }
+.areaButton:global(.liquid-button)[aria-pressed="true"] { background:linear-gradient(165deg,#287675,#0b5b59 52%,#034b49); color:#fff5d3; border-color:#024644; }
+@media(max-width:620px) { .detail { display:flex; } }
