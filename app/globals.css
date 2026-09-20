@@ -1558,3 +1558,10 @@ a.button:focus-visible { outline: 3px solid #035352; outline-offset: 4px; }
 .optional-feedback { margin-top: 20px; }
 .optional-feedback summary { min-height:44px; padding:10px 0; font-weight:600; cursor:pointer; }
 .optional-feedback[open] summary { margin-bottom:12px; }
+
+.report-view-tabs { display:flex; gap:8px; margin:0 0 24px; }
+.report-map-panel { padding:12px 0; }
+@media print {
+  .report-view-tabs, .report-map-panel { display:none!important; }
+  .report-details-panel[hidden] { display:block!important; }
+}

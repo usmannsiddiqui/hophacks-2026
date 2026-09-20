@@ -1,6 +1,9 @@
+"use client";
+
 import { LiquidButton } from "@/components/ui/liquid-glass-button";
 import { outreachAreaNames } from "@/lib/outreach/location";
-import type { ReactNode } from "react";
+import { useId, useRef, useState, type ReactNode } from "react";
+import { ReportBubbleMap } from "./report-bubble-map";
 import type { VisitDraft } from "@/lib/visit-draft";
 import { itemLabel, itemDetail } from "@/lib/display";
 import { ReportFlag } from "./report-flag";
@@ -22,11 +25,33 @@ export function VisitReportView({
   questionPanel?: ReactNode;
   decisionPanel?: ReactNode;
 }) {
+  const [view, setView] = useState<"details" | "map">("details");
+  const id = useId();
+  const tabs = useRef<Array<HTMLButtonElement | null>>([]);
   const report = draft.report;
   if (!report) return null;
 
   return (
     <section className="visit-report-shell" aria-label="English visit report">
+      <div className="report-view-tabs" role="tablist" aria-label="Report view">
+        {(["details", "map"] as const).map((tab, index) => (
+          <LiquidButton key={tab} ref={element => { tabs.current[index] = element; }}
+            type="button" role="tab" id={`${id}-${tab}-tab`}
+            aria-controls={`${id}-${tab}-panel`} aria-selected={view === tab}
+            tabIndex={view === tab ? 0 : -1} className={view === tab ? "button" : "button secondary"}
+            onClick={() => setView(tab)} onKeyDown={event => {
+              if (!["ArrowLeft", "ArrowRight", "Home", "End"].includes(event.key)) return;
+              event.preventDefault();
+              const next = event.key === "Home" ? 0 : event.key === "End" ? 1 : 1 - index;
+              setView(next ? "map" : "details");
+              tabs.current[next]?.focus();
+            }}>
+            {tab === "details" ? "Details" : "Map"}
+          </LiquidButton>
+        ))}
+      </div>
+      <div className="report-details-panel" role="tabpanel" id={`${id}-details-panel`}
+        aria-labelledby={`${id}-details-tab`} hidden={view !== "details"} tabIndex={0}>
       <div className="report-toolbar visit-report-toolbar">
         <span className="small muted">Your visit report</span>
         <LiquidButton className="button secondary" onClick={() => window.print()}>
@@ -135,6 +160,11 @@ export function VisitReportView({
           <p>This report does not include pharmacist authorisation.</p>
         </footer>
       </article>
+      </div>
+      <div className="report-map-panel" role="tabpanel" id={`${id}-map-panel`}
+        aria-labelledby={`${id}-map-tab`} hidden={view !== "map"} tabIndex={0}>
+        {view === "map" && <ReportBubbleMap key={`${draft.id}-${report.generatedAt}`} report={{ ...report, medList: report.medList.map(item => ({ ...item, excerpt: item.source.excerpt })) }} />}
+      </div>
     </section>
   );
 }
