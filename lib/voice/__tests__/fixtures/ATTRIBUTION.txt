@@ -1,0 +1,14 @@
+Urdu test fixtures
+
+urdu-hospital.wav: 10.4 seconds, FLEURS ur_pk test split, id 1938 (row 4).
+urdu-short.wav: 6.2 seconds, FLEURS ur_pk test split, id 1930 (row 1).
+Human reference transcripts in urdu.json use the dataset raw_transcription field.
+These are speech-to-text test fixtures; this context migration does not modify them.
+
+Source: Google FLEURS, https://huggingface.co/datasets/google/fleurs
+License: Creative Commons Attribution 4.0 International (CC BY 4.0),
+https://creativecommons.org/licenses/by/4.0/
+Citation: Conneau et al., "FLEURS: Few-shot Learning Evaluation of Universal
+Representations of Speech", 2022. https://arxiv.org/abs/2205.12446
+
+Full context: Hophacks/reference/urdu-fixtures.md in the owner's Obsidian vault.

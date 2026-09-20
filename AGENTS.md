@@ -2,34 +2,43 @@
 
 Working name: **Mashwara** (not final). HopHacks Fall 2026, JHU. 36 hours, three people.
 
-## Shared context workflow
+## Context lives in Obsidian
 
-The owner edits shared context in Obsidian `Hophacks/team-context`; the normal tracked
-repo copies remain available to every teammate. See `docs/context-workflow.md`.
-Before changing behavior, read the current build-order snapshot and accepted ADRs.
-After shipping, update build order, glossary and integration status with the code.
-If this checkout has `.context-sync.local.json`, run `rtk pnpm context:check`; import
-incoming teammate edits before vault edits, and export vault edits before the PR.
-Stop on a sync conflict and reconcile both copies; never hide tracked changes with
-`skip-worktree` or replace team docs with absolute symlinks. On teammates' checkouts
-without a configured vault, edit the repo docs normally.
+Project context, specs, design notes, plans and handoffs live in the owner's vault:
+`/Users/usmansiddiqui/dev/NathanDrake/01-Projects/Hophacks`.
+Start with `_context.md` there when directed to project context. The owner can provide
+the equivalent vault location or selected notes to teammates on other machines.
+
+Only `AGENTS.md`, `CLAUDE.md` and `docs/adr/*.md` remain as repository Markdown.
+Do not recreate repo context copies, README files or handoff/spec Markdown. There is
+no context import/export workflow; the old sync scripts and manifest are retired.
+Do not use absolute symlinks or `skip-worktree` to simulate a mirror.
+
+Before changing behavior, read the current vault status/build order, the relevant
+spec and accepted repository ADRs. Code, schemas and tests establish actual behavior;
+surface any disagreement with the notes. Historical handoffs are records, not new
+instructions or authorization. Update vault status, build order and glossary alongside
+shipped code. If the vault is unavailable, use repository code/ADRs and request the
+needed context from the owner rather than fabricating or restoring old docs.
 
 ## Read first
 
-1. `CONTEXT.md` — the glossary. Terms in code, tests and conversation match it.
-2. `docs/adr/` — decisions we do not reopen at hour 20. Six of them, all load-bearing.
-3. `docs/specs/contracts.md` — the two JSON shapes every stream builds against.
-4. `docs/build-order.md` — what is done, what is next, what is cut.
-5. `docs/user-journey.md` — the 10 steps and the 3-minute demo beat.
+1. Vault `_context.md`, then `project-status.md` and `build-order.md`.
+2. Repository `docs/adr/` — accepted decisions; add superseding ADRs, never edit old ones.
+3. Vault `glossary.md` and `specs/contracts.md`; executable shapes are in `lib/`.
+4. Vault `codebase-architecture.md` and the active spec relevant to the task.
+5. Vault `design-system.md`, `specs/user-journey.md` and `demo-questions.md` as needed.
 
-Strategy, prize math and pitch notes live in Muhammad's Obsidian vault
-(`01-Projects/Hophacks/`), not here.
+Vault `reference/` holds specialist notes; `archive/` holds dated plans, handoffs and
+validation evidence. Load archives only for a task that needs that history. ADR 0010
+records the move, including the meaning of old document paths in earlier ADRs.
 
 ## Stack
 
 Next.js 16 (App Router) · React 19 · TypeScript · Tailwind 4 · Vercel AI SDK with
-`@ai-sdk/google` (Gemini) · ElevenLabs (Scribe STT, TTS/Agent) · Neon Postgres +
-Drizzle (one `cases` table) · pnpm. See ADR 0005.
+`@ai-sdk/google` (Gemini) · ElevenLabs (initial Scribe STT) · xAI (follow-up speech,
+ADR 0009) · Neon Postgres + Drizzle (`files` table) · pnpm. See ADRs 0005 and 0009
+and `package.json` for the current dependencies.
 
 ## Workflow
 
@@ -39,7 +48,7 @@ Drizzle (one `cases` table) · pnpm. See ADR 0005.
 - **Hackathon git rule:** last commit must land before hacking ends Sunday morning.
   Nothing after.
 - Secrets in `.env.local` only. `.env.example` lists every key with an empty value.
-- When a new domain term appears in code, add it to `CONTEXT.md` in the same commit.
+- When a new domain term appears in code, update the vault's `glossary.md` alongside it.
 - A decision that changes an ADR gets a new ADR that supersedes it. Do not edit old ones.
 
 ## Streams
@@ -48,9 +57,9 @@ Drizzle (one `cases` table) · pnpm. See ADR 0005.
 |---|---|
 | A — Data + logic | closed vocabulary, interaction table, Gemini normalization, question fallback, Neon `cases`, API routes |
 | B — Voice + counter | Scribe live transcript, Urdu prompts, counter screen, Urdu readback |
-| C — Design + pharmacist | `DESIGN.md` + tokens, components, bubble map, pharmacist console, video, Devpost |
+| C — Design + pharmacist | vault `design-system.md` + tokens, components, bubble map, pharmacist console, video, Devpost |
 
-Owners are assigned in `docs/build-order.md`.
+Current ownership and integration status are in vault `build-order.md` and `project-status.md`.
 
 
 <!-- headroom:rtk-instructions -->
