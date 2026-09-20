@@ -18,7 +18,7 @@
   --color-flag-line: #e9bdb9;
 }
 @theme inline {
-  --font-sans: var(--font-inter);
+  --font-sans: var(--font-figtree);
 }
 @utility urdu {
   font-family: var(--font-nastaliq), serif;
@@ -59,7 +59,7 @@ body {
   margin: 0;
   background: var(--color-surface);
   color: var(--color-ink);
-  font-family: var(--font-inter), sans-serif;
+  font-family: var(--font-figtree), sans-serif;
   font-size: 15px;
   line-height: 1.65;
   -webkit-font-smoothing: antialiased;

@@ -17,6 +17,9 @@ importers:
       '@neondatabase/serverless':
         specifier: ^1.1.0
         version: 1.1.0
+      '@samasante/liquid-glass':
+        specifier: ^0.1.1
+        version: 0.1.1(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
       ai:
         specifier: ^7.0.107
         version: 7.0.107(zod@4.6.5)
@@ -42,6 +45,9 @@ importers:
       '@tailwindcss/postcss':
         specifier: ^4
         version: 4.3.3
+      '@types/google.maps':
+        specifier: ^3.66.3
+        version: 3.66.3
       '@types/node':
         specifier: ^20
         version: 20.19.43
@@ -1045,6 +1051,12 @@ packages:
   '@rtsao/scc@1.1.0':
     resolution: {integrity: sha512-zt6OdqaDoOnJ1ZYsCYGt9YmWzDXl4vQdKTyJev62gFhRGKdx7mcT54V9KIjg+d2wi9EXsPvAPKe7i7WjfVWB8g==}
 
+  '@samasante/liquid-glass@0.1.1':
+    resolution: {integrity: sha512-i4cQzlwmpYnVl9eBDuBFyPsOsuBMMYDp1ijxul5Z/H+ns5aQ1qiVV5pTEBbO4EQo8ct+eVlS9bVZW8YUfX6nXg==}
+    peerDependencies:
+      react: '>=18'
+      react-dom: '>=18'
+
   '@standard-schema/spec@1.1.0':
     resolution: {integrity: sha512-l2aFy5jALhniG5HgqrD6jXLi/rUWrKvqN/qJx6yoJsgKhblVd+iqqU4RCXavm/jPityDo5TCvKMnpjKnOriy0w==}
 
@@ -1150,6 +1162,9 @@ packages:
 
   '@types/estree@1.0.9':
     resolution: {integrity: sha512-GhdPgy1el4/ImP05X05Uw4cw2/M93BCUmnEvWZNStlCzEKME4Fkk+YpoA5OiHNQmoS7Cafb8Xa3Pya8m1Qrzeg==}
+
+  '@types/google.maps@3.66.3':
+    resolution: {integrity: sha512-IH8Pg3eIxDQapkiwZbpMZNTNth4v6bQvyatML9PFnDrOvrttsO/hUgrJSgQgoWmJSYRQq2X9cDZekTQRVGJT6A==}
 
   '@types/json-schema@7.0.15':
     resolution: {integrity: sha512-5+fP8P8MFNC+AyZCDxrB2pkZFPGzqQWUzpSeuuVLvm8VMcorNYavBqoFcxK8bQz4Qsbn4oUEEem4wDLfcysGHA==}
@@ -3698,6 +3713,11 @@ snapshots:
 
   '@rtsao/scc@1.1.0': {}
 
+  '@samasante/liquid-glass@0.1.1(react-dom@19.2.8(react@19.2.8))(react@19.2.8)':
+    dependencies:
+      react: 19.2.8
+      react-dom: 19.2.8(react@19.2.8)
+
   '@standard-schema/spec@1.1.0': {}
 
   '@swc/helpers@0.5.23':
@@ -3786,6 +3806,8 @@ snapshots:
   '@types/deep-eql@4.0.2': {}
 
   '@types/estree@1.0.9': {}
+
+  '@types/google.maps@3.66.3': {}
 
   '@types/json-schema@7.0.15': {}
 
