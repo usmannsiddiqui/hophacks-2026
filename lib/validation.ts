@@ -105,14 +105,27 @@ const shape = z.object({
   impression: z.string().max(20000).optional(),
   advice: z
     .object({
-      urdu: text,
-      english: text,
+      // Prose is not required to approve. A pharmacist who reads the file and finds
+      // nothing to change should be able to say so; making them write two paragraphs,
+      // one of them in Urdu they may not speak, is a toll on a volunteer's ten minutes.
+      // What is required is written below: anything other than `keep` has to be
+      // explained, because "stop this" with no reason is not something the counter can
+      // repeat to her.
+      urdu: z.string().max(20000),
+      english: z.string().max(20000),
       verdicts: z.record(id, z.enum(["keep", "stop", "swap"])),
       by: text,
       at: date,
       audioUrl: z.url().optional(),
     })
-    .optional(),
+    .optional()
+    .refine(
+      (a) =>
+        !a ||
+        Object.values(a.verdicts).every((v) => v === "keep") ||
+        Boolean(a.english.trim()),
+      "Stopping or swapping something needs a line of English the counter can repeat",
+    ),
   attachments: z
     .array(
       z.object({
@@ -171,7 +184,7 @@ export function validateFile(input: unknown): PatientFile {
   if (f.status === "signed") {
     if (!f.advice || !f.reviewedBy || f.advice.by !== f.reviewedBy.name)
       throw new FileError(
-        "Signing requires bilingual advice and the reviewing pharmacist's identity",
+        "Signing requires a decision on every medicine and the reviewing pharmacist's identity",
       );
     if (f.medList.some((m) => !f.advice?.verdicts[m.id]))
       throw new FileError("Review every medicine before signing");

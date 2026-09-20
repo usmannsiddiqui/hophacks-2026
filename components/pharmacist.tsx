@@ -239,8 +239,15 @@ export function PharmacistReview() {
     setLocalError("");
     const form = new FormData(event.currentTarget);
     if (!confirmed || file.medList.some((m) => !verdicts[m.id])) {
+      setLocalError("Decide on every medicine and confirm before signing.");
+      return;
+    }
+    // Prose is optional for a clean approval, but not when something is being taken
+    // away: the counter has to be able to tell her why.
+    const changed = file.medList.filter((m) => verdicts[m.id] !== "keep");
+    if (changed.length && !english.trim()) {
       setLocalError(
-        "Review every item and confirm both versions of the advice before signing.",
+        `You are stopping or swapping ${changed.length === 1 ? "one medicine" : `${changed.length} medicines`}. Write a line of English the counter can repeat to her.`,
       );
       return;
     }
@@ -312,8 +319,13 @@ export function PharmacistReview() {
         <form onSubmit={sign} className="review-form">
           <Section title="Your advice" detail="English + Urdu">
             <p className="small muted">
-              Review both versions. Urdu is what the patient will hear. Any swap
-              must name the replacement in your advice.
+              Both are optional. If the file is fine as it stands, decide on each
+              medicine and sign — you do not have to write anything. Urdu is what the
+              patient will hear, so leave it blank rather than writing English there.
+            </p>
+            <p className="small muted">
+              Anything you stop or swap does need a line of English: the counter has to
+              repeat it to her, and a swap has to name the replacement.
             </p>
             <p className="small muted">
               Unsigned edits are saved in this browser tab. Review and confirm
@@ -340,7 +352,6 @@ export function PharmacistReview() {
             <label>
               Advice in English
               <textarea
-                required
                 value={english}
                 onChange={(e) => setEnglish(e.target.value)}
                 rows={5}
@@ -349,7 +360,6 @@ export function PharmacistReview() {
             <label>
               Reviewed Urdu advice
               <textarea
-                required
                 lang="ur"
                 dir="rtl"
                 className="urdu"
@@ -427,8 +437,7 @@ export function PharmacistReview() {
               required
             />
             <span>
-              I reviewed the full file, both advice versions, and the{" "}
-              {open.length} unanswered questions.
+              I reviewed the full file and the {open.length} unanswered questions.
             </span>
           </label>
           {localError && (
