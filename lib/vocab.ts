@@ -38,9 +38,12 @@ const data = substances as unknown as {
 /** The term used when she described something we cannot name. Never flags, always asks. */
 export const UNIDENTIFIED = "unidentified";
 
-/** Shown on the dashed node and medicine row. A possible interacting thing — not a flag. */
-export const UNIDENTIFIED_WHY =
-  "Detected as something she takes that could interact with her other medicines — we could not name it, so it stays a question, not a flag.";
+/** One-line ask for an unnamed thing, using her words as X. */
+export function unidentifiedAsk(herWords: string | null): string {
+  const x = herWords?.replace(/\s+/g, " ").trim();
+  if (!x) return "Detected something she takes. What is it?";
+  return `Detected some ${x}. What is it?`;
+}
 
 export const SUBSTANCES: Substance[] = data.substances;
 export const INTERACTIONS: Interaction[] = data.interactions;

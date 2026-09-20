@@ -63,8 +63,8 @@ a document item has none and the row says so.
 invariant: a med item never appears without the words that produced it.
 
 **Unidentified.** (was: unrecognised) Gemini could not map her words to a vocabulary term. Not an error —
-it sends the app back to ask a follow-up. Renders as a dashed card. Copy: it was detected as
-something she takes that could interact, but unnamed, so it stays a question, never a flag.
+it sends the app back to ask a follow-up. Renders as a dashed card. Copy uses her words as X:
+"Detected some X. What is it?"
 
 ## Safety vocabulary
 
@@ -130,6 +130,10 @@ what to ask, importing a document, the report. The counter operator's desk view.
 color or neutral; edges = interaction rows. Hover shows her words. Two layouts: a static
 ring, and a D3 force-directed graph. The force layout settles and stays put; click a node
 to zoom in, with the one-sentence reason inside the bubble.
+
+**Result panes.** Findings and the pharmacist file split into two sliding views: Detailed
+(flags, medicines, questions) and Visualized (the bubble map alone). A capsule switcher
+slides a paper pane under the selected icon.
 
 ## Design words
 

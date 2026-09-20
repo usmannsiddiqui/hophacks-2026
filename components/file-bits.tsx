@@ -1,5 +1,5 @@
 import type { Flag, MedItem, Question } from "@/lib/types";
-import { displayOf, UNIDENTIFIED, UNIDENTIFIED_WHY } from "@/lib/vocab";
+import { displayOf, UNIDENTIFIED } from "@/lib/vocab";
 
 const ROLE: Record<MedItem["role"], string> = {
   requested: "Requested",
@@ -45,7 +45,11 @@ export function MedicineRow({ item }: { item: MedItem }) {
       </div>
       <HerWords text={item.herWords} />
       {item.term === UNIDENTIFIED ? (
-        <p className="mt-2 text-sm text-ask">{UNIDENTIFIED_WHY}</p>
+        <p className="mt-2 text-sm text-ask">
+          {item.herWords
+            ? <>Detected some {isArabic(item.herWords) ? <span className="urdu">{item.herWords}</span> : item.herWords}. What is it?</>
+            : "Detected something she takes. What is it?"}
+        </p>
       ) : null}
     </li>
   );

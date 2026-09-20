@@ -3,7 +3,7 @@
 import { useEffect, useId, useRef } from "react";
 import type { D3DragEvent, SimulationLinkDatum, SimulationNodeDatum } from "d3";
 import type { Flag, MedItem } from "@/lib/types";
-import { displayOf, UNIDENTIFIED_WHY } from "@/lib/vocab";
+import { displayOf, unidentifiedAsk } from "@/lib/vocab";
 
 const WIDTH = 720;
 const HEIGHT = 460;
@@ -14,6 +14,7 @@ type SimNode = SimulationNodeDatum & {
   id: string;
   label: string;
   body: string;
+  innerHtml: string;
   r: number;
   sev: "high" | "moderate" | null;
   unidentified: boolean;
@@ -51,9 +52,31 @@ function nodeBody(id: string, medList: MedItem[], flags: Flag[]): string {
     .sort((a, b) => Number(b.severity === "high") - Number(a.severity === "high"));
   if (hits.length) return oneLine(hits[0].reason);
   if (med.term === "unidentified") {
-    return UNIDENTIFIED_WHY;
+    return unidentifiedAsk(med.herWords);
   }
   return "No cited interaction on this file.";
+}
+
+function hasArabic(s: string) {
+  return /[\u0600-\u06FF]/.test(s);
+}
+
+function unidentifiedAskHtml(herWords: string | null) {
+  const x = herWords?.replace(/\s+/g, " ").trim();
+  if (!x) return escapeHtml(unidentifiedAsk(null));
+  if (hasArabic(x)) {
+    return `Detected some<br><span class="urdu">${escapeHtml(x)}</span><br>What is it?`;
+  }
+  return `Detected some ${escapeHtml(x)}. What is it?`;
+}
+
+function nodeInnerHtml(id: string, medList: MedItem[], flags: Flag[]) {
+  const med = medList.find(m => m.id === id);
+  const body = nodeBody(id, medList, flags);
+  if (med?.term === "unidentified") {
+    return `<strong>unidentified</strong><p>${unidentifiedAskHtml(med.herWords)}</p>`;
+  }
+  return `<strong>${escapeHtml(shortLabel(med?.term ?? id))}</strong><p>${escapeHtml(body)}</p>`;
 }
 
 function fillOf(d: SimNode) {
@@ -82,7 +105,7 @@ function wirePath(a: SimNode, b: SimNode) {
 export function ForceBubbleMap({ medList, flags }: { medList: MedItem[]; flags: Flag[] }) {
   const host = useRef<HTMLDivElement>(null);
   const uid = useId().replace(/:/g, "");
-  const graphKey = `${medList.map(m => `${m.id}:${m.term}`).join(",")}|${flags.map(f => f.id).join(",")}`;
+  const graphKey = `${medList.map(m => `${m.id}:${m.term}:${m.herWords ?? ""}`).join(",")}|${flags.map(f => f.id).join(",")}`;
 
   useEffect(() => {
     const root = host.current;
@@ -120,6 +143,7 @@ function mountForceGraph(
       id: m.id,
       label: shortLabel(m.term),
       body: nodeBody(m.id, medList, flags),
+      innerHtml: nodeInnerHtml(m.id, medList, flags),
       r: sev === "high" ? 34 : sev === "moderate" ? 28 : 22,
       sev,
       unidentified: m.term === "unidentified",
@@ -297,9 +321,7 @@ function mountForceGraph(
     .style("pointer-events", "none")
     .style("opacity", 0);
 
-  card.append("xhtml:div").attr("class", "bubble-inner").html(d => (
-    `<strong>${escapeHtml(d.label)}</strong><p>${escapeHtml(d.body)}</p>`
-  ));
+  card.append("xhtml:div").attr("class", "bubble-inner").html(d => d.innerHtml);
 
   node.each(function (d) {
     this.addEventListener("click", event => {
