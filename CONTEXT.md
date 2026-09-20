@@ -138,6 +138,16 @@ only. An `unidentified` item has no vocabulary name, so without this it would re
 "Unidentified" and nothing more. Her Urdu stays on the evidence panel and the source
 excerpt, where it is the proof rather than the label.
 
+**Set aside.** A drafted question the volunteer has judged not worth asking. It stays
+listed on the volunteer screen, greyed, with a way back — a decision someone made, not
+something that quietly vanished. Dismissals are cleared whenever the report is rebuilt,
+because a new report means a new set of questions to judge.
+
+**Outstanding question.** One the volunteer has neither asked nor set aside. While any
+remain, the report cannot be sent: a pharmacist should get a file someone has worked
+through, not the first draft the model produced. A recorded answer that has not been
+added to her account blocks sending too, or the pharmacist would read a copy missing it.
+
 ## Pharmacist decision
 
 **Sent visit.** The moment the counter sends a report for review, a copy of it leaves the

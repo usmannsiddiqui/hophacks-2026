@@ -6,8 +6,11 @@ import { startCapture, type CaptureSession } from "@/lib/audio-capture";
 import {
   addFollowUp,
   answeredFollowUps,
+  dismissQuestion,
   editFollowUp,
+  outstandingQuestions,
   removeFollowUp,
+  restoreQuestion,
   type FollowUp,
   type VisitDraft,
 } from "@/lib/visit-draft";
@@ -83,6 +86,7 @@ export function FollowUpQuestions({
 
   const busy = disabled || speaking !== null || phase !== "idle";
   const answered = answeredFollowUps(draft);
+  const outstanding = outstandingQuestions(draft);
   const orphaned = draft.followUps.filter(
     (item) => !questions.some((question) => question.id === item.questionId),
   );
@@ -219,13 +223,35 @@ export function FollowUpQuestions({
     <div className="follow-up-questions">
       {questions.length ? (
         <p className="small muted">
-          Ask each question in Urdu with xAI speech, record the patient&apos;s answer, then add the
-          answers to the account and update the report.
+          Ask each question in Urdu with xAI speech and record her answer, or set it aside if it
+          does not need asking. Answers are appended to her account and the report is rebuilt
+          from it. The pharmacist can only be sent a report once every question has been dealt
+          with.
         </p>
       ) : null}
       {questions.map((question) => {
         const answer = draft.followUps.find((item) => item.questionId === question.id);
         const active = recordingFor === question.id;
+        const setAside = draft.dismissed.includes(question.id);
+
+        if (setAside) {
+          return (
+            <div className="question-result question-set-aside" key={question.id}>
+              <p className="small muted">
+                Set aside: {question.text.english}
+              </p>
+              <button
+                type="button"
+                className="text-link"
+                disabled={busy}
+                onClick={() => onChange(restoreQuestion(draft, question.id))}
+              >
+                Ask it after all
+              </button>
+            </div>
+          );
+        }
+
         return (
           <div className="question-result" key={question.id}>
             <h3>{question.text.english}</h3>
@@ -271,14 +297,26 @@ export function FollowUpQuestions({
               ) : active && phase === "transcribing" ? (
                 <span role="status">Transcribing the answer with xAI…</span>
               ) : (
-                <button
-                  type="button"
-                  className="button"
-                  disabled={busy}
-                  onClick={() => void recordAnswer(question)}
-                >
-                  {answer ? "Record answer again" : "Record patient answer"}
-                </button>
+                <>
+                  <button
+                    type="button"
+                    className="button"
+                    disabled={busy}
+                    onClick={() => void recordAnswer(question)}
+                  >
+                    {answer ? "Record answer again" : "Record patient answer"}
+                  </button>
+                  {!answer ? (
+                    <button
+                      type="button"
+                      className="text-link"
+                      disabled={busy}
+                      onClick={() => onChange(dismissQuestion(draft, question.id))}
+                    >
+                      Not needed
+                    </button>
+                  ) : null}
+                </>
               )}
             </div>
             {answer ? answerEditor(answer) : null}
@@ -303,7 +341,7 @@ export function FollowUpQuestions({
             {answered.length === 1
               ? "1 answer is recorded but not in the report yet."
               : `${answered.length} answers are recorded but not in the report yet.`}{" "}
-            Adding them appends the dialogue to the reviewed account and re-runs the Gemini report.
+            Adding them appends the dialogue to her account and re-runs the Gemini report.
           </p>
           <button
             type="button"
@@ -313,6 +351,21 @@ export function FollowUpQuestions({
           >
             Add answers and update English report →
           </button>
+        </div>
+      ) : questions.length && outstanding.length ? (
+        <div className="follow-up-footer">
+          <p className="small">
+            {outstanding.length === 1
+              ? "1 question still needs asking or setting aside."
+              : `${outstanding.length} questions still need asking or setting aside.`}{" "}
+            The report cannot go to a pharmacist until then.
+          </p>
+        </div>
+      ) : questions.length ? (
+        <div className="follow-up-footer">
+          <p className="small">
+            Every question has been dealt with. The report is ready for a pharmacist.
+          </p>
         </div>
       ) : null}
       {playback ? (

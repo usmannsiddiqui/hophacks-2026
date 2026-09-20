@@ -11,6 +11,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { fetchJson } from "./file-provider";
 import { Button } from "./primitives";
 import { decisionSummary, type VisitRecord } from "@/lib/review";
+import { answeredFollowUps, outstandingQuestions } from "@/lib/visit-draft";
 import type { VisitDraft } from "@/lib/visit-draft";
 
 const sentKey = (draftId: string) => `mashwara-sent-visit-${draftId}`;
@@ -88,22 +89,46 @@ export function PharmacistDecision({ draft }: { draft: VisitDraft }) {
 
   if (!draft.report) return null;
 
-  // Not sent yet.
+  // Not sent yet. The volunteer works through the questions first: a pharmacist should
+  // get a file someone has actually been through, and an answer recorded but not added
+  // would be missing from the copy they read.
   if (!visitId) {
+    const outstanding = outstandingQuestions(draft);
+    const unmerged = answeredFollowUps(draft).length;
+    const blocked = outstanding.length > 0 || unmerged > 0;
+
     return (
       <section className="pharmacist-decision screen-only" aria-label="Pharmacist review">
         <p className="small muted">
-          This is an AI draft. A pharmacist has not seen it. Send it for review and the
-          answer appears here.
+          This is an AI draft. A pharmacist has not seen it.
         </p>
         {error && (
           <p role="alert" className="error-box">
             {error}
           </p>
         )}
-        <Button type="button" onClick={send} disabled={busy}>
-          {busy ? "Sending…" : "Send to a pharmacist →"}
-        </Button>
+        {blocked ? (
+          <div className="decision-banner waiting" role="status">
+            <strong>Not ready to send.</strong>
+            {unmerged > 0 && (
+              <p>
+                {unmerged === 1 ? "1 recorded answer is" : unmerged + " recorded answers are"} not
+                in the report yet. Add them and update the report first.
+              </p>
+            )}
+            {outstanding.length > 0 && (
+              <p>
+                {outstanding.length === 1
+                  ? "1 question still needs asking or setting aside."
+                  : outstanding.length + " questions still need asking or setting aside."}
+              </p>
+            )}
+          </div>
+        ) : (
+          <Button type="button" onClick={send} disabled={busy}>
+            {busy ? "Sending…" : "Send to a pharmacist →"}
+          </Button>
+        )}
       </section>
     );
   }

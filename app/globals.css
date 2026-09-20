@@ -1409,3 +1409,8 @@ textarea {
 
 /* The English description of an unidentified item, shown when someone asks for detail. */
 .map-evidence-detail { font-size:14px; margin-bottom:10px; }
+
+/* A question the volunteer has set aside: still listed, so it is visibly a decision
+   rather than something that quietly vanished, but out of the way. */
+.question-set-aside { display:flex; align-items:baseline; justify-content:space-between; gap:16px; opacity:.72; }
+.question-set-aside p { margin:0; }

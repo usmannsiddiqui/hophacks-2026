@@ -46,6 +46,7 @@ const draftSchema = z
     status: z.enum(["transcript-review", "transcript-ready"]),
     report: visitReportSchema.optional(),
     followUps: z.array(followUpSchema).max(50).default([]),
+    dismissed: z.array(z.string().min(1).max(20)).max(50).default([]),
   })
   .refine(
     (d) => d.status !== "transcript-ready" || Boolean(d.reviewedUrdu.trim()),
@@ -76,6 +77,7 @@ export function createVisitDraft(
     reviewedUrdu: transcript.text,
     status: "transcript-review",
     followUps: [],
+    dismissed: [],
   });
 }
 export function reviewVisitDraft(draft: VisitDraft, text: string): VisitDraft {
@@ -84,7 +86,7 @@ export function reviewVisitDraft(draft: VisitDraft, text: string): VisitDraft {
     ...draft,
     reviewedUrdu,
     status: "transcript-ready",
-    ...(reviewedUrdu === draft.reviewedUrdu ? {} : { report: undefined }),
+    ...(reviewedUrdu === draft.reviewedUrdu ? {} : { report: undefined, dismissed: [] }),
   });
 }
 
@@ -152,8 +154,36 @@ export function mergeFollowUps(draft: VisitDraft): VisitDraft {
     reviewedUrdu: `${draft.reviewedUrdu.trimEnd()}\n\n${dialogue}`,
     status: "transcript-ready",
     followUps: [],
+    dismissed: [],
     report: undefined,
   });
+}
+
+/** Set a question aside as not worth asking. Reversible until the report is sent. */
+export function dismissQuestion(draft: VisitDraft, questionId: string): VisitDraft {
+  if (draft.dismissed.includes(questionId)) return draft;
+  return draftSchema.parse({ ...draft, dismissed: [...draft.dismissed, questionId] });
+}
+
+export function restoreQuestion(draft: VisitDraft, questionId: string): VisitDraft {
+  return draftSchema.parse({
+    ...draft,
+    dismissed: draft.dismissed.filter((id) => id !== questionId),
+  });
+}
+
+/**
+ * The questions the volunteer has neither asked nor set aside.
+ *
+ * The pharmacist should get a file someone has actually worked through, not the first
+ * draft the model produced. While this is non-empty the report is not ready to send.
+ */
+export function outstandingQuestions(draft: VisitDraft): string[] {
+  const questions = draft.report?.questions ?? [];
+  const answered = new Set(answeredFollowUps(draft).map((item) => item.questionId));
+  return questions
+    .filter((q) => !draft.dismissed.includes(q.id) && !answered.has(q.id))
+    .map((q) => q.id);
 }
 
 export type { VisitReport };
