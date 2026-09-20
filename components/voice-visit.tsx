@@ -41,6 +41,9 @@ import { VisitReportView } from "./visit-report";
 import { FollowUpQuestions } from "./follow-up-questions";
 import { PharmacistDecision } from "./pharmacist-decision";
 
+/** A recorded Urdu visit, served from public/, for testers who do not speak Urdu. */
+const SAMPLE_AUDIO_URL = "/samples/sample-visit-urdu.mp3";
+
 const subscribe = () => () => {};
 function storedDraft() {
   try {
@@ -252,6 +255,21 @@ function VisitCapture({initialAreaId,initialFresh}:{initialAreaId?:OutreachAreaI
     } else {
       capture.current?.pause();
       setRecording("paused");
+    }
+  }
+  // A recorded Urdu visit, so someone who does not speak Urdu can still walk the whole
+  // flow. Goes through selectAudio like any other file — no separate code path.
+  async function loadSampleAudio() {
+    setError("");
+    try {
+      const response = await fetch(SAMPLE_AUDIO_URL);
+      if (!response.ok) throw new Error(String(response.status));
+      const blob = await response.blob();
+      await selectAudio(
+        new File([blob], "sample-visit-urdu.mp3", { type: "audio/mpeg" }),
+      );
+    } catch {
+      setError("The sample recording could not be loaded.");
     }
   }
   async function selectAudio(file: File | undefined) {
@@ -535,6 +553,15 @@ function VisitCapture({initialAreaId,initialFresh}:{initialAreaId?:OutreachAreaI
                     }}
                   >
                     Cancel
+                  </LiquidButton>
+                )}
+                {recording === "idle" && (
+                  <LiquidButton
+                    className="button secondary"
+                    disabled={busy}
+                    onClick={() => void loadSampleAudio()}
+                  >
+                    Use the sample Urdu recording
                   </LiquidButton>
                 )}
               </div>
