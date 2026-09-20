@@ -1277,3 +1277,56 @@ textarea {
   .print-only { display:block; }
   .screen-only { display:none !important; }
 }
+
+/* The pharmacist's answer on the counter's report, and on the console after signing.
+   Colour marks the status and nothing else (ADR 0006): authorised is `clear`,
+   not authorised is `flag`, still waiting is `ask`. */
+.pharmacist-decision {
+  margin: 20px 0 8px;
+}
+.decision-banner {
+  border: 1px solid var(--color-line);
+  background: var(--color-surface-raised);
+  border-radius: 16px;
+  padding: 20px 24px;
+  margin-bottom: 16px;
+  break-inside: avoid;
+}
+.decision-banner strong {
+  display: block;
+  margin-bottom: 6px;
+}
+.decision-banner p {
+  font-size: 14px;
+  color: var(--color-ink-muted);
+  margin: 6px 0;
+}
+.decision-banner.authorised {
+  background: var(--color-clear-wash);
+  border-color: var(--color-clear-line);
+}
+.decision-banner.authorised strong {
+  color: var(--color-clear);
+}
+.decision-banner.declined {
+  background: var(--color-flag-wash);
+  border-color: var(--color-flag-line);
+}
+.decision-banner.declined strong {
+  color: var(--color-flag);
+}
+.decision-banner.waiting {
+  background: var(--color-ask-wash);
+  border-color: var(--color-ask-line);
+}
+.decision-banner.waiting strong {
+  color: var(--color-ask);
+}
+.decision-items {
+  margin: 10px 0 0;
+  padding-left: 20px;
+  font-size: 14px;
+}
+.decision-items li {
+  margin-bottom: 6px;
+}

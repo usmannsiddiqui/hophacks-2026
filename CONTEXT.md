@@ -115,6 +115,27 @@ clinical read, on the report only.
 
 **Readback.** The advice spoken to the patient in her language via TTS. Step 10.
 
+## Pharmacist decision
+
+**Sent visit.** The moment the counter sends a report for review, a copy of it leaves the
+volunteer's browser and lives in the shared store (`lib/visits.ts`). The draft itself never
+leaves, so a decision can never write back over her account. Ids look like `MV-9880`.
+
+**Authorised / Not authorised.** The pharmacist's answer to one question: may she take this
+today. Recorded per medicine, and once for the visit as a whole.
+
+**Outcome.** The visit-level yes/no the counter screen shows. Derived from the per-medicine
+decisions — declining one medicine makes the whole visit `declined` — so the answer and the
+reasons can never disagree. Authorising overall while an item is declined is rejected by the
+schema, not by the UI.
+
+**Reason.** Required on every declined medicine. A refusal the volunteer cannot explain to
+her at the counter is not advice.
+
+**Waiting / reviewed.** A sent visit is `waiting` until a pharmacist answers, then
+`reviewed`. A reviewed visit cannot be reviewed again: the decision is what the counter
+acted on, and silently replacing it would make "what was she told?" unanswerable.
+
 ## Surfaces
 
 **Phone** (P1–P5): new case, let her talk, live translate, ask her this, advice in Urdu.

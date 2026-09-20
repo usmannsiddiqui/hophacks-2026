@@ -34,6 +34,7 @@ import {
 import { ReportRequestOwner, requestVisitReport } from "@/lib/report-request";
 import { VisitReportView } from "./visit-report";
 import { FollowUpQuestions } from "./follow-up-questions";
+import { PharmacistDecision } from "./pharmacist-decision";
 
 const subscribe = () => () => {};
 function storedDraft() {
@@ -643,6 +644,7 @@ function VisitCapture() {
               {draft?.report ? (
                 <VisitReportView
                   draft={draft}
+                  decisionPanel={<PharmacistDecision key={draft.id} draft={draft} />}
                   questionPanel={
                     <FollowUpQuestions
                       draft={draft}

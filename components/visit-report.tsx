@@ -12,9 +12,11 @@ const roleLabel = {
 export function VisitReportView({
   draft,
   questionPanel,
+  decisionPanel,
 }: {
   draft: VisitDraft;
   questionPanel?: ReactNode;
+  decisionPanel?: ReactNode;
 }) {
   const report = draft.report;
   if (!report) return null;
@@ -35,6 +37,7 @@ export function VisitReportView({
           </strong>
         </header>
         <h1>English visit report</h1>
+        {decisionPanel}
         <dl className="visit-report-patient">
           <div><dt>Patient</dt><dd>{draft.patient.name}</dd></div>
           <div><dt>Age</dt><dd>{draft.patient.age}</dd></div>
