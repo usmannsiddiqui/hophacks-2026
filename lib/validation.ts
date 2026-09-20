@@ -26,6 +26,7 @@ const medicine = z
     id,
     term: text.refine((t) => terms.has(t), "Unknown medicine term"),
     herWords: text.nullable(),
+    english: z.string().trim().min(1).max(300).optional(),
     source: z.enum(["voice", "photo", "document"]),
     role: z.enum(["requested", "takes", "remedy", "prescribed"]),
     since: text.optional(),

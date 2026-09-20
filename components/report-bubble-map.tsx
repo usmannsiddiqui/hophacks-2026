@@ -5,11 +5,33 @@ import { select, zoom, zoomIdentity, zoomTransform } from "d3";
 import type { ZoomBehavior, ZoomTransform } from "d3";
 import { layoutReportMap } from "@/lib/report-map";
 import { itemLabel, itemDetail } from "@/lib/display";
-import type { VisitReport } from "@/lib/visit-report";
+
+/**
+ * What the map needs, independent of where it came from. A VisitReport satisfies this
+ * directly; a PatientFile is adapted by `fileToBubbleSource` in lib/map-source.ts.
+ * `excerpt` is optional because a counter file records a timestamp, not a quotation.
+ */
+export type BubbleMedicine = {
+  id: string;
+  term: string;
+  name: string;
+  herWords: string | null;
+  english?: string;
+  excerpt?: string;
+};
+export type BubbleFlag = {
+  id: string;
+  a: string;
+  b: string;
+  severity: "high" | "moderate";
+  reason: string;
+  citation: string;
+};
+export type BubbleMapSource = { medList: BubbleMedicine[]; flags: BubbleFlag[] };
 
 type Selection = { kind: "medicine" | "flag"; id: string } | null;
 
-export function ReportBubbleMap({ report }: { report: VisitReport }) {
+export function ReportBubbleMap({ report }: { report: BubbleMapSource }) {
   const [selection, setSelection] = useState<Selection>(null);
   const [size, setSize] = useState({ width: 900, height: 580 });
   const host = useRef<HTMLDivElement>(null);
@@ -235,12 +257,14 @@ export function ReportBubbleMap({ report }: { report: VisitReport }) {
       {selection && (medicine || flag) && (
         <aside className="map-evidence" aria-label="Selected evidence" aria-live="polite">
           <button type="button" className="map-evidence-close" onClick={dismissEvidence} aria-label="Close evidence">×</button>
-          <span className="eyebrow">{flag ? "Sourced interaction" : "Patient’s words"}</span>
+          <span className="eyebrow">{flag ? "Sourced interaction" : medicine?.herWords ? "Patient’s words" : "From a document"}</span>
           <h3>{medicine ? itemLabel(medicine) : `${itemLabel(byId.get(flag!.a)!)} + ${itemLabel(byId.get(flag!.b)!)}`}</h3>
           {medicine && itemDetail(medicine) && <p className="map-evidence-detail">{itemDetail(medicine)}</p>}
-          {medicine && <><p className="urdu" lang="ur" dir="rtl">{medicine.herWords}</p><details><summary>Source excerpt</summary><p className="urdu" lang="ur" dir="rtl">{medicine.source.excerpt}</p></details></>}
+          {medicine?.herWords ? <p className="urdu" lang="ur" dir="rtl">{medicine.herWords}</p> : null}
+          {medicine && !medicine.herWords ? <p className="ask-text">From a document, not her spoken account.</p> : null}
+          {medicine?.excerpt ? <details><summary>Source excerpt</summary><p className="urdu" lang="ur" dir="rtl">{medicine.excerpt}</p></details> : null}
           {flag && [flag.a, flag.b].map(id => <p key={id} className="urdu" lang="ur" dir="rtl">{byId.get(id)?.herWords}</p>)}
-          {selectedFlags.map(item => <div key={item.id} className="map-evidence-flag"><strong>{item.severity === "high" ? "High" : "Moderate"} · {itemLabel(byId.get(item.a)!)} + {itemLabel(byId.get(item.b)!)}</strong><p>{item.reason}</p><a href={item.citation} target="_blank" rel="noreferrer">Read source ↗</a></div>)}
+          {selectedFlags.map(item => <div key={item.id} className="map-evidence-flag"><strong>{item.severity === "high" ? "High" : "Moderate"} · {itemLabel(byId.get(item.a)!)} + {itemLabel(byId.get(item.b)!)}</strong><p>{item.reason}</p>{/^https?:\/\//.test(item.citation) ? <a href={item.citation} target="_blank" rel="noreferrer">Read source ↗</a> : <span className="small muted">Source: {item.citation}</span>}</div>)}
           {medicine && !selectedFlags.length && <p>{medicine.term === "unidentified" ? "This item needs identification. It is not a confirmed interaction." : "No match in the limited sourced table. This does not establish safety."}</p>}
         </aside>
       )}

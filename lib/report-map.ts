@@ -1,17 +1,19 @@
 import { forceCollide, forceLink, forceManyBody, forceSimulation, forceX, forceY } from "d3";
 import type { SimulationLinkDatum } from "d3";
-import type { ReportMedItem, VisitReport } from "./visit-report";
 
-export type MapNode = ReportMedItem & {
+// Structural, so one layout serves both a VisitReport and a PatientFile. The layout
+// only ever needs an id per medicine and the pairs between them.
+export type MapFlagInput = { id: string; a: string; b: string; severity: "high" | "moderate" };
+export type MapNode<T extends { id: string } = { id: string }> = T & {
   x: number; y: number; r: number; fx?: number;
   severity: "high" | "moderate" | null;
 };
 
 // D3 owns only these disposable layout copies, never the report or its evidence.
-export function layoutReportMap(meds: ReportMedItem[], flags: VisitReport["flags"], width: number, height: number) {
+export function layoutReportMap<T extends { id: string }>(meds: T[], flags: MapFlagInput[], width: number, height: number) {
   const narrow = width < 600;
   const columns = width < 340 ? 1 : 2;
-  const nodes: MapNode[] = meds.map((med, i) => {
+  const nodes: MapNode<T>[] = meds.map((med, i) => {
     const touching = flags.filter(flag => flag.a === med.id || flag.b === med.id);
     const severity = touching.some(flag => flag.severity === "high") ? "high"
       : touching.length ? "moderate" : null;
@@ -23,13 +25,13 @@ export function layoutReportMap(meds: ReportMedItem[], flags: VisitReport["flags
   });
   const ids = new Set(nodes.map(node => node.id));
   const links = flags.filter(flag => ids.has(flag.a) && ids.has(flag.b)).map(flag => ({ ...flag }));
-  const simulationLinks: SimulationLinkDatum<MapNode>[] = links.map(flag => ({ source: flag.a, target: flag.b }));
-  const simulation = forceSimulation(nodes).stop()
-    .force("link", forceLink<MapNode, SimulationLinkDatum<MapNode>>(simulationLinks).id(node => node.id).distance(230).strength(narrow ? 0.015 : 0.45))
+  const simulationLinks: SimulationLinkDatum<MapNode<T>>[] = links.map(flag => ({ source: flag.a, target: flag.b }));
+  const simulation = forceSimulation<MapNode<T>>(nodes).stop()
+    .force("link", forceLink<MapNode<T>, SimulationLinkDatum<MapNode<T>>>(simulationLinks).id(node => node.id).distance(230).strength(narrow ? 0.015 : 0.45))
     .force("charge", forceManyBody().strength(-180))
     .force("x", forceX(0).strength(0.08))
-    .force("y", forceY<MapNode>((_, index) => narrow ? Math.floor(index / columns) * 190 + 80 : 0).strength(narrow ? 0.7 : 0.10))
-    .force("collision", forceCollide<MapNode>().radius(node => node.r + (narrow ? 40 : 62)).iterations(3));
+    .force("y", forceY<MapNode<T>>((_, index) => narrow ? Math.floor(index / columns) * 190 + 80 : 0).strength(narrow ? 0.7 : 0.10))
+    .force("collision", forceCollide<MapNode<T>>().radius(node => node.r + (narrow ? 40 : 62)).iterations(3));
   simulation.tick(240);
   simulation.stop();
   if (!nodes.length) return { nodes, links, width, height };
