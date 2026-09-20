@@ -1,0 +1,150 @@
+{
+  "id": "MV-2051",
+  "createdAt": "2026-09-20T09:40:00.000Z",
+  "patient": {
+    "name": "Ghulam Fatima",
+    "age": 67,
+    "sex": "F"
+  },
+  "report": {
+    "schemaVersion": 1,
+    "draftId": "demo-fatima",
+    "rawUrdu": "میرا نام غلام فاطمہ ہے، عمر سڑسٹھ سال۔ دل کے والو کا آپریشن ہوا تھا، تب سے خون پتلا کرنے والی گولی چل رہی ہے۔ گھٹنوں میں درد رہتا ہے، اس لیے ڈسپرین لے لیتی ہوں، ہفتے میں تین چار بار۔ ہلدی والا دودھ روز رات کو پیتی ہوں، اور ہلدی کے کیپسول بھی بہو لے آئی ہے۔ ساگ مجھے بہت پسند ہے، سردیوں میں تو روز ہی بنتا ہے۔ مسوڑھوں سے خون آتا ہے آج کل، اور بازو پر نیل بھی پڑ جاتے ہیں۔ ایک حکیم صاحب کی پھکی بھی لیتی ہوں، جوڑوں کے لیے، اس پر کچھ لکھا نہیں۔",
+    "reviewedUrdu": "میرا نام غلام فاطمہ ہے، عمر سڑسٹھ سال۔ دل کے والو کا آپریشن ہوا تھا، تب سے خون پتلا کرنے والی گولی چل رہی ہے۔ گھٹنوں میں درد رہتا ہے، اس لیے ڈسپرین لے لیتی ہوں، ہفتے میں تین چار بار۔ ہلدی والا دودھ روز رات کو پیتی ہوں، اور ہلدی کے کیپسول بھی بہو لے آئی ہے۔ ساگ مجھے بہت پسند ہے، سردیوں میں تو روز ہی بنتا ہے۔ مسوڑھوں سے خون آتا ہے آج کل، اور بازو پر نیل بھی پڑ جاتے ہیں۔ ایک حکیم صاحب کی پھکی بھی لیتی ہوں، جوڑوں کے لیے، اس پر کچھ لکھا نہیں۔",
+    "generatedAt": "2026-09-20T09:40:00.000Z",
+    "model": {
+      "provider": "google",
+      "name": "gemini-3.5-flash-lite"
+    },
+    "english": {
+      "account": "Ghulam Fatima, 67, has been on a blood-thinning tablet since heart valve surgery. She takes Disprin for knee pain three or four times a week, drinks turmeric milk every night and has recently started turmeric capsules her daughter-in-law brought, and eats saag most days through the winter. She reports bleeding gums and bruising on her arms. She also takes an unlabelled powder from a hakeem for her joints.",
+      "summary": "On warfarin, with three separate things pulling at her clotting — and already bleeding."
+    },
+    "medList": [
+      {
+        "id": "m1",
+        "term": "warfarin",
+        "name": "Warfarin",
+        "herWords": "خون پتلا کرنے والی گولی",
+        "role": "takes",
+        "source": {
+          "kind": "reviewed-urdu",
+          "excerpt": "دل کے والو کا آپریشن ہوا تھا، تب سے خون پتلا کرنے والی گولی چل رہی ہے"
+        }
+      },
+      {
+        "id": "m2",
+        "term": "aspirin",
+        "name": "Aspirin",
+        "herWords": "ڈسپرین",
+        "role": "requested",
+        "source": {
+          "kind": "reviewed-urdu",
+          "excerpt": "گھٹنوں میں درد رہتا ہے، اس لیے ڈسپرین لے لیتی ہوں، ہفتے میں تین چار بار"
+        }
+      },
+      {
+        "id": "m3",
+        "term": "turmeric",
+        "name": "Turmeric / curcumin",
+        "herWords": "ہلدی کے کیپسول",
+        "role": "remedy",
+        "source": {
+          "kind": "reviewed-urdu",
+          "excerpt": "ہلدی والا دودھ روز رات کو پیتی ہوں، اور ہلدی کے کیپسول بھی بہو لے آئی ہے"
+        }
+      },
+      {
+        "id": "m4",
+        "term": "vitamin_k",
+        "name": "Vitamin K",
+        "herWords": "ساگ",
+        "role": "remedy",
+        "source": {
+          "kind": "reviewed-urdu",
+          "excerpt": "ساگ مجھے بہت پسند ہے، سردیوں میں تو روز ہی بنتا ہے"
+        }
+      },
+      {
+        "id": "m5",
+        "term": "unidentified",
+        "name": "unidentified",
+        "herWords": "حکیم صاحب کی پھکی",
+        "english": "An unlabelled powder from a hakeem, for her joints",
+        "role": "remedy",
+        "source": {
+          "kind": "reviewed-urdu",
+          "excerpt": "ایک حکیم صاحب کی پھکی بھی لیتی ہوں، جوڑوں کے لیے، اس پر کچھ لکھا نہیں"
+        }
+      }
+    ],
+    "questions": [
+      {
+        "id": "q1",
+        "text": {
+          "urdu": "مسوڑھوں سے خون کب سے آ رہا ہے، اور کیا خون کا ٹیسٹ (آئی این آر) حال میں ہوا ہے؟",
+          "english": "How long have the gums been bleeding, and when was her last INR blood test?"
+        },
+        "why": "Bleeding gums and easy bruising in a patient on warfarin may mean the INR is too high.",
+        "source": {
+          "kind": "reviewed-urdu",
+          "excerpt": "مسوڑھوں سے خون آتا ہے آج کل، اور بازو پر نیل بھی پڑ جاتے ہیں"
+        },
+        "status": "draft"
+      },
+      {
+        "id": "q2",
+        "text": {
+          "urdu": "حکیم صاحب کی پھکی میں کیا ہے، اور کیا اُس کا لفافہ آپ کے پاس ہے؟",
+          "english": "What is in the hakeem's powder for her joints, and does she still have the packet?"
+        },
+        "why": "An unidentified joint remedy in a patient on warfarin — many contain an anti-inflammatory.",
+        "source": {
+          "kind": "reviewed-urdu",
+          "excerpt": "ایک حکیم صاحب کی پھکی بھی لیتی ہوں، جوڑوں کے لیے"
+        },
+        "status": "draft"
+      },
+      {
+        "id": "q3",
+        "text": {
+          "urdu": "ساگ کتنے دنوں سے روز کھا رہی ہیں؟ پہلے بھی اتنا ہی کھاتی تھیں؟",
+          "english": "How many days has she been eating saag daily, and was she eating this much before?"
+        },
+        "why": "A recent change in leafy greens shifts vitamin K intake and can move the INR.",
+        "source": {
+          "kind": "reviewed-urdu",
+          "excerpt": "ساگ مجھے بہت پسند ہے، سردیوں میں تو روز ہی بنتا ہے"
+        },
+        "status": "draft"
+      }
+    ],
+    "flags": [
+      {
+        "id": "flag_m1_m2",
+        "severity": "high",
+        "a": "m1",
+        "b": "m2",
+        "reason": "Additive bleeding risk.",
+        "citation": "NHS — Warfarin: taking it with other medicines (bleeding risk)  https://www.nhs.uk/medicines/warfarin/"
+      },
+      {
+        "id": "flag_m1_m4",
+        "severity": "high",
+        "a": "m1",
+        "b": "m4",
+        "reason": "Directly antagonises warfarin.",
+        "citation": "NHS — Warfarin: food and drink (vitamin K and leafy greens)  https://www.nhs.uk/medicines/warfarin/"
+      },
+      {
+        "id": "flag_m1_m3",
+        "severity": "moderate",
+        "a": "m1",
+        "b": "m3",
+        "reason": "Antiplatelet effect at supplement doses.",
+        "citation": "Memorial Sloan Kettering — Turmeric, About Herbs  https://www.mskcc.org/cancer-care/integrative-medicine/herbs/turmeric"
+      }
+    ]
+  },
+  "status": "waiting"
+}

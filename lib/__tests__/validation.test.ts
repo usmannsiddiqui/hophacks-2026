@@ -58,10 +58,13 @@ describe("clinical file invariants at write time", () => {
   it("does not flag unidentified or unsourced interactions", () => {
     const f = fixture();
     expect(computeFlags([f.medList[0], f.medList[5]])).toEqual([]);
+    // warfarin + st_johns_wort is major and real but carries no source, so it stays
+    // a question rather than a flag. (warfarin + aspirin used to stand here; it has
+    // since been cited, which is why this pair replaced it.)
     expect(
       computeFlags([
         { ...f.medList[0], term: "warfarin" },
-        { ...f.medList[1], term: "aspirin" },
+        { ...f.medList[1], term: "st_johns_wort" },
       ]),
     ).toEqual([]);
   });

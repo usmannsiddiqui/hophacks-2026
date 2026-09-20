@@ -10,6 +10,29 @@ Wireframes are the spec: `docs/specs/wireframes.html` (open in a browser). Contr
 every screen after P2 renders against it with no env vars.
 
 
+## Current slice: the pharmacist authorises the report
+
+On `pharmacist-authorises-report`. The counter sends the English report for review; a
+pharmacist opens it on their own device, reads the interaction map, authorises or declines
+each medicine, and the yes/no comes back onto the volunteer's report.
+
+- **Shared store.** `lib/visits.ts` mirrors `lib/files.ts`: Neon when `DATABASE_URL` is
+  set, an in-memory map otherwise. The volunteer's draft stays in their browser; only the
+  report is sent. **The in-memory fallback does not survive a restart and is per-instance,
+  so `DATABASE_URL` must be set before deploying** or the pharmacist sees an empty queue.
+- **The decision cannot contradict itself.** `outcome` is derived from the per-medicine
+  decisions; authorising overall with an item declined is rejected by the schema. Every
+  decline needs a reason the counter can repeat.
+- **A review is write-once.** A second PATCH returns 409 rather than overwriting what the
+  counter already acted on.
+- Routes: `/pharmacist/visit` (queue, polls every 3s) and `/pharmacist/visit/[id]`.
+  `/api/visits` GET+POST, `/api/visits/[id]` GET+PATCH.
+- `InteractionMap` now takes a structural `{ medList, flags }` instead of `PatientFile`, so
+  the same map serves the counter file and the visit report.
+- `apiError` now maps a Zod failure to 400 with the failing field, instead of a blanket 503.
+- Verified in the browser 20 Sep: send → queue → decline the karela juice → the counter's
+  report shows "Not authorised" with the reason. 133 tests pass, 3 skipped.
+
 ## Current slice: xAI follow-up questions after the English report
 
 On `Ahmad-Branch-GrokSTT`, Scribe remains the source of the first recording. xAI is

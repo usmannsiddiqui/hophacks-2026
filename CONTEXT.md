@@ -115,6 +115,50 @@ clinical read, on the report only.
 
 **Readback.** The advice spoken to the patient in her language via TTS. Step 10.
 
+**Class row.** A table row written against a drug class rather than a named medicine —
+`warfarin + class:nsaid`. A medicine is matched by its own id *and* by `class:<its class>`,
+so these rows can fire. Two thirds of the table is written this way; before this matching
+existed they were silently dead. Where a specific row and a class row both match, the
+specific one wins: "warfarin + aspirin" says more than "warfarin + an NSAID".
+
+**Duplicate-ingredient flag.** A table row whose two sides are the same token
+(`acetaminophen + acetaminophen`, `class:nsaid + class:nsaid`). It says "this one is
+dangerous twice over": two products with the same active ingredient, neither wrong alone.
+That is the ordinary way a paracetamol overdose happens — Panadol for the fever and a flu
+sachet for the cold. Brand names all normalise to one term, so without these rows nothing
+added them up.
+
+**Sample case.** `data/visits/mv-2051.json` — Ghulam Fatima, 67, on warfarin. Nasreen
+Bibi's risk is her blood sugar going too low; Fatima's is bleeding, so the two exercise
+different halves of the table. Loadable into the queue from the console's empty state.
+
+**English gloss.** `MedItem.english` — a short English rendering of what she described.
+The map is read by a volunteer clinician who does not read Urdu, so bubbles carry English
+only. An `unidentified` item has no vocabulary name, so without this it would read as
+"Unidentified" and nothing more. Her Urdu stays on the evidence panel and the source
+excerpt, where it is the proof rather than the label.
+
+## Pharmacist decision
+
+**Sent visit.** The moment the counter sends a report for review, a copy of it leaves the
+volunteer's browser and lives in the shared store (`lib/visits.ts`). The draft itself never
+leaves, so a decision can never write back over her account. Ids look like `MV-9880`.
+
+**Authorised / Not authorised.** The pharmacist's answer to one question: may she take this
+today. Recorded per medicine, and once for the visit as a whole.
+
+**Outcome.** The visit-level yes/no the counter screen shows. Derived from the per-medicine
+decisions — declining one medicine makes the whole visit `declined` — so the answer and the
+reasons can never disagree. Authorising overall while an item is declined is rejected by the
+schema, not by the UI.
+
+**Reason.** Required on every declined medicine. A refusal the volunteer cannot explain to
+her at the counter is not advice.
+
+**Waiting / reviewed.** A sent visit is `waiting` until a pharmacist answers, then
+`reviewed`. A reviewed visit cannot be reviewed again: the decision is what the counter
+acted on, and silently replacing it would make "what was she told?" unanswerable.
+
 ## Surfaces
 
 **Phone** (P1–P5): new case, let her talk, live translate, ask her this, advice in Urdu.

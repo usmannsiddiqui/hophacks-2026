@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 import type { VisitDraft } from "@/lib/visit-draft";
+import { itemLabel, itemDetail } from "@/lib/display";
 
 const roleLabel = {
   requested: "Requested",
@@ -12,9 +13,11 @@ const roleLabel = {
 export function VisitReportView({
   draft,
   questionPanel,
+  decisionPanel,
 }: {
   draft: VisitDraft;
   questionPanel?: ReactNode;
+  decisionPanel?: ReactNode;
 }) {
   const report = draft.report;
   if (!report) return null;
@@ -35,6 +38,7 @@ export function VisitReportView({
           </strong>
         </header>
         <h1>English visit report</h1>
+        {decisionPanel}
         <dl className="visit-report-patient">
           <div><dt>Patient</dt><dd>{draft.patient.name}</dd></div>
           <div><dt>Age</dt><dd>{draft.patient.age}</dd></div>
@@ -53,7 +57,8 @@ export function VisitReportView({
             <div className="visit-report-list">
               {report.medList.map((item) => (
                 <div className={`visit-report-item ${item.term === "unidentified" ? "unidentified" : ""}`} key={item.id}>
-                  <h3>{item.term === "unidentified" ? "Unidentified" : item.name}</h3>
+                  <h3>{itemLabel(item)}</h3>
+                  {itemDetail(item) && <p className="small">{itemDetail(item)}</p>}
                   <p className="small">{roleLabel[item.role]}</p>
                   <p className="urdu" lang="ur" dir="rtl">{item.herWords}</p>
                   <details className="visit-report-evidence">
@@ -99,7 +104,7 @@ export function VisitReportView({
             return (
               <div className={`flag-card ${flag.severity === "moderate" ? "moderate" : ""}`} key={flag.id}>
                 <strong>
-                  {flag.severity === "high" ? "High" : "Moderate"}: {a?.name ?? "Unidentified"} + {b?.name ?? "Unidentified"}
+                  {flag.severity === "high" ? "High" : "Moderate"}: {a ? itemLabel(a) : "Unidentified"} + {b ? itemLabel(b) : "Unidentified"}
                 </strong>
                 <p>{flag.reason}</p>
                 <p className="small">
