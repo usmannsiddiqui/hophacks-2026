@@ -48,8 +48,12 @@ export const reviewSchema = z
     // The yes/no the counter screen shows.
     outcome: z.enum(["authorised", "declined"]),
     items: z.array(itemDecisionSchema).max(100),
-    /** Plain English for the volunteer. */
-    note: boundedText(4000),
+    /**
+     * Plain English for the volunteer. Optional: authorising a file with nothing to
+     * change is a real answer, and every decline already carries its own reason, so
+     * there is nothing left for a note to be load-bearing about.
+     */
+    note: z.string().trim().max(4000).default(""),
     /** What the patient hears, in her language. Never a Latin fallback (ADR 0006). */
     urdu: z.string().trim().max(4000).default(""),
     by: pharmacistSchema,

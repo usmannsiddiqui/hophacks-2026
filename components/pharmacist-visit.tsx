@@ -401,14 +401,13 @@ function VisitReviewForm({
 
           <Section title="Your answer to the counter">
             <label>
-              Plain English for the volunteer
+              Plain English for the volunteer <span className="small muted">(optional)</span>
               <textarea
-                required
                 rows={5}
                 disabled={done}
                 value={note}
                 onChange={(e) => setNote(e.target.value)}
-                placeholder="What should happen now, and what she should watch for."
+                placeholder="Anything the counter should say to her. Leave blank if the file is fine as it stands."
               />
             </label>
             <label>

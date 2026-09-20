@@ -4,6 +4,7 @@ import { useEffect, useRef, useState, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
 import { demoFiles } from "@/lib/demo";
 import { answerText, cleanCopy, medicineName } from "@/lib/display";
+import { adviceCopy } from "@/lib/advice-text";
 import type { Advice, PatientFile } from "@/lib/types";
 import { AppShell } from "./app-shell";
 import { fetchJson, useFile } from "./file-provider";
@@ -239,8 +240,15 @@ export function PharmacistReview() {
     setLocalError("");
     const form = new FormData(event.currentTarget);
     if (!confirmed || file.medList.some((m) => !verdicts[m.id])) {
+      setLocalError("Decide on every medicine and confirm before signing.");
+      return;
+    }
+    // Prose is optional for a clean approval, but not when something is being taken
+    // away: the counter has to be able to tell her why.
+    const changed = file.medList.filter((m) => verdicts[m.id] !== "keep");
+    if (changed.length && !english.trim()) {
       setLocalError(
-        "Review every item and confirm both versions of the advice before signing.",
+        `You are stopping or swapping ${changed.length === 1 ? "one medicine" : `${changed.length} medicines`}. Write a line of English the counter can repeat to her.`,
       );
       return;
     }
@@ -275,10 +283,12 @@ export function PharmacistReview() {
         </div>
         <FileHeader file={file} />
         <Section title="Advice">
-          <p>{file.advice?.english}</p>
-          <p className="urdu phone-urdu" lang="ur" dir="rtl">
-            {file.advice?.urdu}
-          </p>
+          <p>{adviceCopy(file)?.english}</p>
+          {adviceCopy(file)?.urdu ? (
+            <p className="urdu phone-urdu" lang="ur" dir="rtl">
+              {adviceCopy(file)!.urdu}
+            </p>
+          ) : null}
         </Section>
         <div className="actions">
           <Link className="button" href={`/file/${file.id}/advice`}>
@@ -312,12 +322,7 @@ export function PharmacistReview() {
         <form onSubmit={sign} className="review-form">
           <Section title="Your advice" detail="English + Urdu">
             <p className="small muted">
-              Review both versions. Urdu is what the patient will hear. Any swap
-              must name the replacement in your advice.
-            </p>
-            <p className="small muted">
-              Unsigned edits are saved in this browser tab. Review and confirm
-              again before signing.
+              Optional. Anything you stop or swap needs a line of English.
             </p>
             {draftError && (
               <p role="alert" className="error-box">
@@ -330,7 +335,7 @@ export function PharmacistReview() {
               </Button>
             )}
             <label>
-              Clinical impression
+              Clinical impression <span className="muted">· optional</span>
               <textarea
                 value={impression}
                 onChange={(e) => setImpression(e.target.value)}
@@ -338,18 +343,16 @@ export function PharmacistReview() {
               />
             </label>
             <label>
-              Advice in English
+              Advice in English <span className="muted">· optional</span>
               <textarea
-                required
                 value={english}
                 onChange={(e) => setEnglish(e.target.value)}
                 rows={5}
               />
             </label>
             <label>
-              Reviewed Urdu advice
+              Reviewed Urdu advice <span className="muted">· what she hears</span>
               <textarea
-                required
                 lang="ur"
                 dir="rtl"
                 className="urdu"
@@ -427,8 +430,7 @@ export function PharmacistReview() {
               required
             />
             <span>
-              I reviewed the full file, both advice versions, and the{" "}
-              {open.length} unanswered questions.
+              I reviewed the full file and the {open.length} unanswered questions.
             </span>
           </label>
           {localError && (

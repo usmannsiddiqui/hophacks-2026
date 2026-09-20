@@ -11,6 +11,7 @@ import {
 } from "./primitives";
 import { SpeakButton } from "./conversation";
 import { answerText, cleanCopy } from "@/lib/display";
+import { adviceCopy } from "@/lib/advice-text";
 
 export function AdviceView() {
   const { file, demo } = useFile();
@@ -54,6 +55,10 @@ export function AdviceView() {
         </div>
       </AppShell>
     );
+  // The pharmacist may have signed without writing anything, which is allowed only
+  // when nothing is being changed. She still needs a sentence and something to play.
+  const spoken = adviceCopy(file)!;
+
   return (
     <AppShell title="Advice to take home" phone>
       <div className="phone-content">
@@ -68,13 +73,13 @@ export function AdviceView() {
         </p>
         <div className="advice-urdu">
           <p className="urdu phone-urdu" lang="ur" dir="rtl">
-            {file.advice.urdu}
+            {spoken.urdu}
           </p>
         </div>
-        <SpeakButton text={file.advice.urdu} />
+        <SpeakButton text={spoken.urdu} />
         <details className="original-account">
           <summary>Read the English advice</summary>
-          <p>{file.advice.english}</p>
+          <p>{spoken.english}</p>
         </details>
         <Section title="What to do with each one">
           {file.medList.map((m) => (
@@ -176,15 +181,29 @@ export function ReportView() {
           <p>{file.impression || "No pharmacist impression recorded."}</p>
         </Section>
         <Section title="Advice given">
-          {signed ? (
-            <>
-              <p>{file.advice?.english}</p>
-              <p className="urdu" lang="ur" dir="rtl">
-                {file.advice?.urdu}
-              </p>
-            </>
-          ) : (
+          {!signed ? (
             <p>Awaiting pharmacist review. No signed advice.</p>
+          ) : (
+            (() => {
+              const given = adviceCopy(file);
+              if (!given) return <p>Awaiting pharmacist review. No signed advice.</p>;
+              return (
+                <>
+                  <p>{given.english}</p>
+                  {given.urdu ? (
+                    <p className="urdu" lang="ur" dir="rtl">
+                      {given.urdu}
+                    </p>
+                  ) : null}
+                  {!given.written ? (
+                    <p className="small muted">
+                      No written advice: every medicine was kept as it is. The decisions
+                      are listed above.
+                    </p>
+                  ) : null}
+                </>
+              );
+            })()
           )}
         </Section>
         <Section title="Limitations">
