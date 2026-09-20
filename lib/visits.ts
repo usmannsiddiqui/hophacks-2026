@@ -23,12 +23,14 @@ import { FileError } from "@/lib/validation";
 const hasDb = () => Boolean(process.env.DATABASE_URL);
 
 /**
- * In-memory fallback. Survives between requests in one `next dev` process, which is
- * enough for two tabs or two laptops pointed at the same dev server. It does NOT
- * survive a restart, and on a multi-instance deploy each instance keeps its own copy —
- * set DATABASE_URL before deploying or the pharmacist will not see the queue.
+ * In-memory fallback, pinned on globalThis so POST /api/visits and GET /api/visits/[id]
+ * share one map. Turbopack can bundle those routes separately; a module-local Map made
+ * a just-sent visit vanish, so "waiting for review" 404ed. Does not survive a restart.
+ * Set DATABASE_URL before deploying or each instance keeps its own copy.
  */
-const memory = new Map<string, VisitRecord>();
+const processStore = globalThis as typeof globalThis & { __mashwaraVisits?: Map<string, VisitRecord> };
+const memory = processStore.__mashwaraVisits ?? new Map<string, VisitRecord>();
+processStore.__mashwaraVisits = memory;
 
 function newId(): string {
   // Short and sayable out loud across a room during the demo.
