@@ -24,5 +24,11 @@ Next.js · React  · TypeScript · Tailwind · Neon Postgres + Drizzle · Gemini
 ### Running it ### 
 
 pnpm install
+
 cp .env.example .env.local   # fill in the keys
+
+pnpm db:push
+
+pnpm db:seed                 # optional: the demo case
+
 pnpm dev
