@@ -29,6 +29,10 @@ export type MedItem = {
   id: string;
   term: string; // substances.json id, or "unidentified"
   herWords: string | null; // null ONLY when source is "document"
+  // A short English rendering of what she described. Only an `unidentified` item
+  // needs one: everything else is named by the vocabulary, but "Unidentified" plus a
+  // line of Urdu tells a clinician who does not read Urdu nothing about the thing.
+  english?: string;
   source: "voice" | "photo" | "document";
   role: "requested" | "takes" | "remedy" | "prescribed";
   since?: string;

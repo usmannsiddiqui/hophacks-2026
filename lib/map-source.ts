@@ -18,6 +18,7 @@ export function fileToBubbleSource(file: PatientFile): BubbleMapSource {
       name: medicineName(item.term),
       // A document item genuinely has none; the map says so rather than leaving a gap.
       herWords: item.herWords,
+      ...(item.english?.trim() ? { english: item.english.trim() } : {}),
       // A counter file quotes no excerpt — it points at a second of the recording — so
       // the evidence panel simply has no excerpt to open for these.
     })),
