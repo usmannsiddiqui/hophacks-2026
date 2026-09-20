@@ -61,6 +61,9 @@ export function Intake() {
             مشورہ
           </span>
         </Link>
+        <Link className="text-link" href="/visit/new">
+          Start a voice visit →
+        </Link>
         <Link className="text-link" href="/pharmacist">
           Pharmacist queue ↗
         </Link>

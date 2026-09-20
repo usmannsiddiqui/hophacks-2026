@@ -14,5 +14,12 @@
   "docs/adr/0007-monologue-first-no-diarisation.md",
   "docs/implementation-demo-journey.md",
   "docs/pressure-test.md",
-  "docs/context-workflow.md"
+  "docs/context-workflow.md",
+  "docs/implementation-voice-capture.md",
+  "docs/adr/0008-community-outreach-and-volunteer-follow-up.md",
+  "docs/implementation-elevenlabs-integration.md",
+  "docs/elevenlabs/README.md",
+  "docs/elevenlabs/plan.md",
+  "docs/elevenlabs/research.md",
+  "docs/implementation-english-report.md"
 ]
