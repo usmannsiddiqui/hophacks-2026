@@ -17,6 +17,7 @@ import {
 import type { VisitSummary } from "@/lib/visits";
 import { sampleSubmission } from "@/lib/sample-visit";
 import { itemLabel, itemDetail } from "@/lib/display";
+import { ReportFlag } from "./report-flag";
 
 const roleLabel = {
   requested: "Requested",
@@ -282,14 +283,9 @@ function VisitReviewForm({
               const a = report.medList.find((m) => m.id === flag.a);
               const b = report.medList.find((m) => m.id === flag.b);
               return (
-                <div className={`flag-card ${flag.severity === "moderate" ? "moderate" : ""}`} key={flag.id}>
-                  <strong>
-                    {flag.severity === "high" ? "High" : "Moderate"}: {a ? itemLabel(a) : "Unidentified"} +{" "}
-                    {b ? itemLabel(b) : "Unidentified"}
-                  </strong>
-                  <p>{flag.reason}</p>
-                  <p className="small">Source: {flag.citation}</p>
-                </div>
+                <ReportFlag key={flag.id} severity={flag.severity}
+                  medicines={<>{a ? itemLabel(a) : "Unidentified"} + {b ? itemLabel(b) : "Unidentified"}</>}
+                  reason={flag.reason} citation={flag.citation} />
               );
             })
           ) : (

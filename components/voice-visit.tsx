@@ -1,7 +1,7 @@
 "use client";
+import Link from "next/link";
 import { LiquidButton } from "@/components/ui/liquid-glass-button";
 
-import { useRouter } from "next/navigation";
 import { outreachAreaNames, type OutreachAreaId } from "@/lib/outreach/location";
 import { ProductHeader } from "./product-header";
 import { GlassMaterial } from "./glass-material";
@@ -75,7 +75,6 @@ export function VoiceVisit({initialAreaId,initialFresh=false}:{initialAreaId?:Ou
 function VisitCapture({initialAreaId,initialFresh}:{initialAreaId?:OutreachAreaId;initialFresh:boolean}) {
   const [draft, setDraft] = useState<VisitDraft | null>(() => {
     if (!initialFresh) return storedDraft();
-    try { clearActiveDraft(); } catch { /* storageError is set in the effect below */ }
     return null;
   });
   const [outreachAreaId,setOutreachAreaId]=useState<OutreachAreaId|undefined>(()=>draft?.outreachAreaId??initialAreaId);
@@ -100,6 +99,7 @@ function VisitCapture({initialAreaId,initialFresh}:{initialAreaId?:OutreachAreaI
   const [text, setText] = useState(() => draft?.reviewedUrdu ?? "");
   const [error, setError] = useState("");
   const [storageError, setStorageError] = useState("");
+  const [initialClearError, setInitialClearError] = useState("");
   const [recording, setRecording] = useState<
     "idle" | "permission" | "recording" | "paused"
   >("idle");
@@ -111,14 +111,17 @@ function VisitCapture({initialAreaId,initialFresh}:{initialAreaId?:OutreachAreaI
   const [reportError, setReportError] = useState("");
   useEffect(() => {
     if (!initialFresh) return;
-    try { clearActiveDraft(); }
-    catch {
-      setStorageError("This browser could not clear the active draft. Your saved transcript history remains available.");
-      return;
-    }
-    // history.replaceState drops ?new=1 without a Next.js navigation. router.replace
-    // on this same route never finished, which froze New visit on "Starting a new visit…".
-    window.history.replaceState(window.history.state, "", continuingVisitUrl(initialAreaId));
+    let active = true;
+    void Promise.resolve().then(() => {
+      if (!active) return;
+      try { clearActiveDraft(); }
+      catch {
+        setInitialClearError("This browser could not clear the active draft. Your saved transcript history remains available.");
+        return;
+      }
+      window.history.replaceState(window.history.state, "", continuingVisitUrl(initialAreaId));
+    });
+    return () => { active = false; };
   }, [initialFresh, initialAreaId]);
   const capture = useRef<CaptureSession | null>(null);
   const microphone = useRef<AbortController | null>(null);
@@ -409,9 +412,11 @@ function VisitCapture({initialAreaId,initialFresh}:{initialAreaId?:OutreachAreaI
     await prepareReport(merged);
   }
   const timer = `${Math.floor(seconds / 60)}:${String(seconds % 60).padStart(2, "0")}`;
-  if(initialFresh) return storageError
-    ? <div className="error-box" role="alert"><p>{storageError}</p><LiquidButton className="button secondary" onClick={()=>router.replace("/visit/new")}>Return to the saved visit</LiquidButton></div>
-    : <p role="status">Starting a new visit…</p>;
+  if (initialClearError) return (
+    <div className="error-box" role="alert"><p>{initialClearError}</p>
+      <Link className="button secondary" href="/visit/new">Return to the saved visit</Link>
+    </div>
+  );
   return (
     <>
       <ol className="journey-progress" aria-label="Visit progress">
@@ -474,7 +479,7 @@ function VisitCapture({initialAreaId,initialFresh}:{initialAreaId?:OutreachAreaI
         </form>
       ) : (
         <>
-          <span className="eyebrow">{patient.name} · Urdu{outreachAreaId ? ` · ${outreachAreaNames[outreachAreaId]}` : ""}</span>
+          <p className="voice-patient-context">{patient.name} · Urdu{outreachAreaId ? ` · ${outreachAreaNames[outreachAreaId]}` : ""}</p>
           {stage === "capture" ? (
             <>
               <h1>Tell us in your own words.</h1>
@@ -705,10 +710,12 @@ function VisitCapture({initialAreaId,initialFresh}:{initialAreaId?:OutreachAreaI
                   onUpdateReport={() => void updateReportWithAnswers()}
                 />
               ) : null}
+              <div className="visit-footer-actions">
               {stage === "report" && <LiquidButton className="text-link" onClick={() => { reportRequest.current.cancel(); setReportBusy(false); setReportError(""); setStage("review"); }}>Edit the source transcript</LiquidButton>}
               <LiquidButton className="text-link" onClick={newVisit}>
                 Start another visit
               </LiquidButton>
+              </div>
             </>
           )}
         </>

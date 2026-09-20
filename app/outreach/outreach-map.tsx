@@ -6,11 +6,10 @@ import Link from "next/link";
 import Image from "next/image";
 import Script from "next/script";
 import { Glass } from "@samasante/liquid-glass";
-import { accessColor, categories, regions, pilotBounds, planningLocations, unmappedUnits, district, ratePer10k, peoplePerListing, listingsToBenchmark, formatRate, WHO_FACILITY_BENCHMARK_PER_10K, type AccessResult, type Category, type Region } from "@/lib/outreach/regions";
+import { accessColor, categories, regions, pilotBounds, planningLocations, unmappedUnits, ratePer10k, formatRate, type AccessResult, type Category, type Region } from "@/lib/outreach/regions";
 import styles from "./outreach.module.css";
 // Listings per 10,000 residents inside the same boundary; undefined until Google has answered.
 const rateOf = (region: Region, result?: AccessResult) => result && "count" in result ? ratePer10k(result.count, region.census.population2023) : undefined;
-const percent = (part: number, whole: number) => `${((part / whole) * 100).toFixed(1)}%`;
 const number = (value: number) => value.toLocaleString("en-US");
 function GlassMaterial() { return <Glass aria-hidden="true" className={styles.glassMaterial} style={{position:"absolute",inset:0,width:"100%",height:"100%",pointerEvents:"none",borderRadius:"inherit",background:"rgba(243,232,188,.24)"}} optics={{frost:8,strength:.012,dispersion:.08,brightness:.02}} />; }
 const PLAN_KEY = "mashwara-outreach-plans-v1";
@@ -35,7 +34,7 @@ export default function OutreachMap() {
   const current = results[category] || {};
   const sorted = [...regions].sort((a,b)=>{
     const first=current[a.id], second=current[b.id];
-    return (first && "count" in first ? first.count : Infinity)-(second && "count" in second ? second.count : Infinity);
+    return (rateOf(a, first) ?? Infinity)-(rateOf(b, second) ?? Infinity);
   });
   const choose = useCallback((id: string)=>{setSelected(id);setPlanMessage("");const region=regions.find(r=>r.id===id);if(region)map.current?.fitBounds(region.bounds,40);},[]);
   useEffect(()=>{
@@ -90,6 +89,13 @@ export default function OutreachMap() {
       setPlanMessage(exists?"Removed from your visit plan.":`${area.name} added to your visit plan on this device.`);
     }catch{setPlanMessage("This browser could not save your plan. Please allow local storage.")}
   }
+  function removePlan(id: string) {
+    try {
+      localStorage.setItem(PLAN_KEY, JSON.stringify(plans.filter(plan => plan !== id)));
+      window.dispatchEvent(new Event("outreach-plan"));
+      setPlanMessage("Removed from your visit plan.");
+    } catch { setPlanMessage("This browser could not update your plan. Please allow local storage."); }
+  }
   const hasData=Object.keys(current).length>0;
   return <main className={styles.page}>
     <header className={styles.header}>
@@ -115,9 +121,9 @@ export default function OutreachMap() {
           </p>
           <div className={styles.areaList}>{sorted.map((s,index)=>{
             const result=current[s.id]; const value=result && "count" in result?result.count:undefined;
-            return <LiquidButton key={s.id} className={styles.areaButton} aria-pressed={selected===s.id} onClick={()=>choose(s.id)}><span className={styles.number}>{String(index+1).padStart(2,"0")}</span><span><strong>{s.name}</strong><small>{result && "error" in result?"Data unavailable":value===undefined?(loading?"Checking listings…":"Not checked yet"):`${value} ${category==="medical"?(value===1?"medical-care listing":"medical-care listings"):(value===1?"pharmacy":"pharmacies")}`}</small>{plans.includes(s.id) && <small>In your visit plan</small>}</span><span className={styles.dot} style={{background:accessColor(value)}}/></LiquidButton>;
+            return <LiquidButton key={s.id} className={styles.areaButton} aria-pressed={selected===s.id} onClick={()=>choose(s.id)}><span className={styles.number}>{String(index+1).padStart(2,"0")}</span><span><strong>{s.name}</strong><small>{result && "error" in result?"Data unavailable":value===undefined?(loading?"Checking listings…":"Not checked yet"):`${value} ${category==="medical"?(value===1?"medical-care listing":"medical-care listings"):(value===1?"pharmacy":"pharmacies")}`}</small>{value !== undefined && <small>{formatRate(ratePer10k(value, s.census.population2023))} per 10,000 people</small>}{plans.includes(s.id) && <small>In your visit plan</small>}</span><span className={styles.dot} style={{background:accessColor(rateOf(s, result))}}/></LiquidButton>;
           })}</div>
-          {unmappedUnits.map(unit=><p key={unit.id} className={styles.listHint}>Not shown: {unit.name} sub-tehsil, {number(unit.census.population2023)} people. It has no boundary in the 2017 dataset, so it is not shaded.</p>)}
+          {unmappedUnits.map(unit=><p key={unit.id} className={styles.listHint}>Not shown: {unit.name}, {number(unit.census.population2023)} people. It has no boundary in the 2017 dataset, so it is not shaded.</p>)}
           <p className={styles.googleAttribution} translate="no">Listing counts: Google Maps</p>
         </aside>
         <div className={styles.mapColumn}>
@@ -126,11 +132,11 @@ export default function OutreachMap() {
             {(!browserKey || mapError || !ready) && <div className={styles.mapNotice} role="status"><strong>{mapError?"Map unavailable":!browserKey?"Map setup needed":"Opening the map…"}</strong><p>{mapError || (!browserKey?"Add the Google Maps browser key to enable the map. The community list still works.":"Finding our communities along the Makran coast.")}</p></div>}
             <div className={styles.mapLabel}><GlassMaterial/>MAKRAN COAST <span>{categories[category].toUpperCase()} LISTINGS</span></div>
           </div>
-          <div className={styles.legend} aria-label="Listing count legend">{[["#c34236","0 listed"],["#de8a25","1–2 listed"],["#035352","3+ listed"],["#777d77","Not known"]].map(([color,label])=><span key={label}><i style={{background:color}}/>{label}</span>)}<small>Regional boundaries · 2017</small></div>
+          <div className={styles.legend} aria-label="Listing count legend">{[["#c34236","0"],["#de8a25","Below 2"],["#035352","2 or more"],["#777d77","Not known"]].map(([color,label])=><span key={label}><i style={{background:color}}/>{label}</span>)}<small>Listings per 10,000 people · 2023 census</small></div>
         </div>
       </div>
       <div className={styles.detail}><GlassMaterial/>
-        <div className={styles.placeHeading}><h2>{area.name}</h2></div>
+        <div className={styles.placeHeading}><h2>{area.name}</h2><p>{number(area.census.population2023)} residents · 2023 census</p></div>
         <div className={styles.planAction}><LiquidButton className="button" onClick={togglePlan}>{plans.includes(selected)?"Remove from visit plan":"Plan a visit here"}</LiquidButton><p role="status">{planMessage}</p></div>
       </div>
     </section>
