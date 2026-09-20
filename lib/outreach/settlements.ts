@@ -43,9 +43,6 @@ export type Settlement = (typeof settlements)[number];
 export type Category = "medical" | "pharmacy";
 export type AccessResult = { count: number; fetchedAt: string } | { error: string };
 export const categories = { medical: "Medical care", pharmacy: "Pharmacies" } as const;
-export function accessColor(count?: number) {
-  return count === undefined ? "#777d77" : count === 0 ? "#c34236" : count <= 2 ? "#de8a25" : "#035352";
-}
 
 // Equal-size pilot sampling cells, not administrative or verified service boundaries.
 // Closed counterclockwise geodesic hexagons, shared by display and provider query.

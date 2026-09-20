@@ -186,3 +186,10 @@ it("carries the selected region with the sent report and pharmacist response", a
   const reviewed = await reviewVisit(visit.id,review());
   expect(reviewed.outreachAreaId).toBe("pasni");
 });
+
+it("puts the in-memory queue on globalThis so a just-sent visit is visible to other route modules", async () => {
+  const visit = await submitVisit({patient,report});
+  const shared = (globalThis as { __mashwaraVisits?: Map<string, { id: string }> }).__mashwaraVisits;
+  expect(shared?.get(visit.id)?.id).toBe(visit.id);
+  expect(await getVisit(visit.id)).toMatchObject({ id: visit.id, status: "waiting" });
+});

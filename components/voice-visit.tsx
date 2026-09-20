@@ -49,6 +49,12 @@ function storedDraft() {
     return null;
   }
 }
+function clearActiveDraft() {
+  sessionStorage.removeItem(VISIT_DRAFT_KEY);
+}
+function continuingVisitUrl(areaId?: OutreachAreaId) {
+  return areaId ? `/visit/new?area=${encodeURIComponent(areaId)}` : "/visit/new";
+}
 export function VoiceVisit({initialAreaId,initialFresh=false}:{initialAreaId?:OutreachAreaId;initialFresh?:boolean}) {
   const client = useSyncExternalStore(
     subscribe,
@@ -67,7 +73,11 @@ export function VoiceVisit({initialAreaId,initialFresh=false}:{initialAreaId?:Ou
   );
 }
 function VisitCapture({initialAreaId,initialFresh}:{initialAreaId?:OutreachAreaId;initialFresh:boolean}) {
-  const [draft, setDraft] = useState<VisitDraft | null>(()=>initialFresh ? null : storedDraft());
+  const [draft, setDraft] = useState<VisitDraft | null>(() => {
+    if (!initialFresh) return storedDraft();
+    try { clearActiveDraft(); } catch { /* storageError is set in the effect below */ }
+    return null;
+  });
   const [outreachAreaId,setOutreachAreaId]=useState<OutreachAreaId|undefined>(()=>draft?.outreachAreaId??initialAreaId);
   const [stage, setStage] = useState<"setup" | "capture" | "review" | "saved" | "report">(
     () =>
@@ -99,18 +109,17 @@ function VisitCapture({initialAreaId,initialFresh}:{initialAreaId?:OutreachAreaI
   const [busy, setBusy] = useState(false);
   const [reportBusy, setReportBusy] = useState(false);
   const [reportError, setReportError] = useState("");
-  const router=useRouter();
-  useEffect(()=>{
-    if(!initialFresh)return;
-    let active=true;
-    void Promise.resolve().then(()=>{
-      if(!active)return;
-      try { sessionStorage.removeItem(VISIT_DRAFT_KEY); }
-      catch { setStorageError("This browser could not clear the active draft. Your saved transcript history remains available."); return; }
-      router.replace(initialAreaId ? `/visit/new?area=${initialAreaId}` : "/visit/new");
-    });
-    return()=>{active=false};
-  },[initialFresh,initialAreaId,router]);
+  useEffect(() => {
+    if (!initialFresh) return;
+    try { clearActiveDraft(); }
+    catch {
+      setStorageError("This browser could not clear the active draft. Your saved transcript history remains available.");
+      return;
+    }
+    // history.replaceState drops ?new=1 without a Next.js navigation. router.replace
+    // on this same route never finished, which froze New visit on "Starting a new visit…".
+    window.history.replaceState(window.history.state, "", continuingVisitUrl(initialAreaId));
+  }, [initialFresh, initialAreaId]);
   const capture = useRef<CaptureSession | null>(null);
   const microphone = useRef<AbortController | null>(null);
   const upload = useRef<AbortController | null>(null);
@@ -161,7 +170,7 @@ function VisitCapture({initialAreaId,initialFresh}:{initialAreaId?:OutreachAreaI
     setReportBusy(false);
     setReportError("");
     try {
-      sessionStorage.removeItem(VISIT_DRAFT_KEY);
+      clearActiveDraft();
     } catch {
       setStorageError(
         "Cannot start another visit while draft storage is unavailable.",

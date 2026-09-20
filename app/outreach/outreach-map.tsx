@@ -6,8 +6,12 @@ import Link from "next/link";
 import Image from "next/image";
 import Script from "next/script";
 import { Glass } from "@samasante/liquid-glass";
-import { accessColor, categories, regions, pilotBounds, planningLocations, type AccessResult, type Category } from "@/lib/outreach/regions";
+import { accessColor, categories, regions, pilotBounds, planningLocations, unmappedUnits, district, ratePer10k, peoplePerListing, listingsToBenchmark, formatRate, WHO_FACILITY_BENCHMARK_PER_10K, type AccessResult, type Category, type Region } from "@/lib/outreach/regions";
 import styles from "./outreach.module.css";
+// Listings per 10,000 residents inside the same boundary; undefined until Google has answered.
+const rateOf = (region: Region, result?: AccessResult) => result && "count" in result ? ratePer10k(result.count, region.census.population2023) : undefined;
+const percent = (part: number, whole: number) => `${((part / whole) * 100).toFixed(1)}%`;
+const number = (value: number) => value.toLocaleString("en-US");
 function GlassMaterial() { return <Glass aria-hidden="true" className={styles.glassMaterial} style={{position:"absolute",inset:0,width:"100%",height:"100%",pointerEvents:"none",borderRadius:"inherit",background:"rgba(243,232,188,.24)"}} optics={{frost:8,strength:.012,dispersion:.08,brightness:.02}} />; }
 const PLAN_KEY = "mashwara-outreach-plans-v1";
 const subscribe = (fn: () => void) => {window.addEventListener("storage",fn);window.addEventListener("outreach-plan",fn);return()=>{window.removeEventListener("storage",fn);window.removeEventListener("outreach-plan",fn)}};
@@ -52,8 +56,7 @@ export default function OutreachMap() {
     if (!ready || !map.current) return;
     const overlays: google.maps.Polygon[]=[];
     for(const settlement of regions){
-      const result=results[category]?.[settlement.id];
-      const value=result && "count" in result ? result.count : undefined;
+      const value=rateOf(settlement, results[category]?.[settlement.id]);
       const polygon = new google.maps.Polygon({map:map.current,paths:settlement.boundary,geodesic:true,fillColor:accessColor(value),fillOpacity:value===undefined?.14:.52,strokeColor:settlement.id===selected?"#035352":accessColor(value),strokeOpacity:.9,strokeWeight:settlement.id===selected?3:1,zIndex:settlement.id===selected?2:1});
       polygon.addListener("click",()=>choose(settlement.id)); overlays.push(polygon);
     }
@@ -87,13 +90,6 @@ export default function OutreachMap() {
       setPlanMessage(exists?"Removed from your visit plan.":`${area.name} added to your visit plan on this device.`);
     }catch{setPlanMessage("This browser could not save your plan. Please allow local storage.")}
   }
-  function removePlan(id: string){
-    try {
-      localStorage.setItem(PLAN_KEY,JSON.stringify(plans.filter(plan=>plan!==id)));
-      window.dispatchEvent(new Event("outreach-plan"));
-      setPlanMessage("Removed from your visit plan.");
-    } catch { setPlanMessage("This browser could not update your plan. Please allow local storage."); }
-  }
   const hasData=Object.keys(current).length>0;
   return <main className={styles.page}>
     <header className={styles.header}>
@@ -121,6 +117,7 @@ export default function OutreachMap() {
             const result=current[s.id]; const value=result && "count" in result?result.count:undefined;
             return <LiquidButton key={s.id} className={styles.areaButton} aria-pressed={selected===s.id} onClick={()=>choose(s.id)}><span className={styles.number}>{String(index+1).padStart(2,"0")}</span><span><strong>{s.name}</strong><small>{result && "error" in result?"Data unavailable":value===undefined?(loading?"Checking listings…":"Not checked yet"):`${value} ${category==="medical"?(value===1?"medical-care listing":"medical-care listings"):(value===1?"pharmacy":"pharmacies")}`}</small>{plans.includes(s.id) && <small>In your visit plan</small>}</span><span className={styles.dot} style={{background:accessColor(value)}}/></LiquidButton>;
           })}</div>
+          {unmappedUnits.map(unit=><p key={unit.id} className={styles.listHint}>Not shown: {unit.name} sub-tehsil, {number(unit.census.population2023)} people. It has no boundary in the 2017 dataset, so it is not shaded.</p>)}
           <p className={styles.googleAttribution} translate="no">Listing counts: Google Maps</p>
         </aside>
         <div className={styles.mapColumn}>
