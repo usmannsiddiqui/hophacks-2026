@@ -13,9 +13,12 @@
   --color-ask: #8a5a12;
   --color-ask-wash: #fdf4e6;
   --color-ask-line: #e6cfa4;
-  --color-flag: #b3261e;
-  --color-flag-wash: #fbeceb;
-  --color-flag-line: #e9bdb9;
+  --color-flag: #922f27;
+  --color-flag-wash: #f7ebcf;
+  --color-flag-line: #be7661;
+  --color-moderate: #6f5268;
+  --color-moderate-wash: #ece1dc;
+  --color-moderate-line: #b7a1ac;
 }
 @theme inline {
   --font-sans: var(--font-figtree);
@@ -396,7 +399,7 @@ h3 {
   white-space: nowrap;
 }
 .flag-pill.moderate {
-  background: var(--color-ask);
+  background: var(--color-moderate);
 }
 .flag-pill.outlined {
   background: transparent;
@@ -404,30 +407,53 @@ h3 {
   border: 1px solid var(--color-line);
 }
 .flag-card {
-  border: 1px solid var(--color-flag-line);
-  background: var(--color-flag-wash);
-  border-radius: 16px;
-  padding: 20px 24px;
-  margin-bottom: 16px;
+  display: grid;
+  grid-template-columns: 110px minmax(0, 1fr);
+  gap: 24px;
+  border: 0;
+  border-top: 1px solid var(--color-line);
+  background: transparent;
+  border-radius: 0;
+  padding: 24px 0;
+  margin: 0;
   break-inside: avoid;
 }
 .flag-card.moderate {
-  background: var(--color-ask-wash);
-  border-color: var(--color-ask-line);
+  background: transparent;
 }
-.severity {
+.flag-card-severity {
+  display: flex;
+  align-items: center;
+  align-self: start;
+  gap: 8px;
+  padding-top: 3px;
   color: var(--color-flag);
-  font-size: 11px;
-  display: block;
-  margin-bottom: 6px;
+  font-size: 13px;
+  font-weight: 700;
 }
-.moderate .severity {
-  color: var(--color-ask);
+.moderate .flag-card-severity {
+  color: var(--color-moderate);
 }
+.flag-severity-mark {
+  width: 7px;
+  height: 7px;
+  background: currentColor;
+  border-radius: 50%;
+  flex: 0 0 auto;
+}
+.flag-card h3 { font-size: 18px; font-weight: 600; line-height: 1.45; margin: 0; }
 .flag-card p {
   font-size: 14px;
   color: #514b47;
   margin: 8px 0;
+}
+.flag-card-source { display:flex; flex-wrap:wrap; align-items:baseline; gap:8px; font-size:12px; color:var(--color-ink-muted); }
+.flag-card-source a { display:inline-flex; align-items:center; min-height:32px; text-decoration:underline; text-decoration-color:#03535255; text-underline-offset:4px; }
+.flag-card-source a:hover { text-decoration-color:currentColor; }
+.flag-source-print { overflow-wrap:anywhere; }
+@media(max-width:600px) {
+  .flag-card { grid-template-columns:1fr; gap:10px; padding:20px 0; }
+  .flag-card-source a { min-height:44px; }
 }
 .citation {
   font-size: 11px;
@@ -1129,7 +1155,7 @@ textarea {
     font-size: 14px;
   }
   .report-sheet .flag-card {
-    padding: 12px;
+    padding: 12px 0;
     background: none;
   }
   .report-sheet .flag-card p {
@@ -1162,6 +1188,8 @@ textarea {
 .voice-upload { margin:20px 0; }
 .voice-upload summary { cursor:pointer; min-height:44px; }
 .voice-saved { padding:24px 0; line-height:2.2; }
+.voice-patient-context { display:block; margin:0 0 20px; color:var(--color-ink-muted); font-size:14px; line-height:1.6; overflow-wrap:anywhere; }
+.visit-footer-actions { display:flex; flex-wrap:wrap; align-items:center; gap:12px; margin-top:32px; }
 @media(max-width:600px){ .voice-card{border:0;border-radius:0;margin:0;padding:28px 20px;} .voice-preview-note{padding:10px 20px;} }
 
 /* Follow-up questions: xAI speaks the Urdu question, records the patient's answer. */
@@ -1184,25 +1212,49 @@ textarea {
 .visit-report-shell { margin-top:32px; }
 .visit-report-toolbar { margin-bottom:12px; align-items:center; }
 .visit-report-sheet { padding:40px; overflow-wrap:anywhere; }
-.report-draft-label { font-size:12px; color:var(--color-ink-muted); }
+.visit-report-sheet .report-signature { margin-top:32px; padding:20px 0 8px; line-height:1.65; color:var(--color-ink-muted); }
+.visit-report-sheet .report-signature p { margin:0; }
 .visit-report-patient { display:grid; grid-template-columns:2fr 1fr 1fr; gap:16px; margin:24px 0 32px; }
 .visit-report-patient div { border-top:1px solid var(--color-line); padding-top:10px; }
 .visit-report-patient dt { color:var(--color-ink-muted); font-size:12px; }
 .visit-report-patient dd { margin:4px 0 0; font-weight:600; }
-.visit-report-list { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:12px; }
-.visit-report-item { border:1px solid var(--color-line); border-radius:10px; padding:16px; min-width:0; break-inside:avoid; }
-.visit-report-item.unidentified { border-style:dashed; }
+.visit-report-list { display:block; list-style:none; counter-reset:medicine; padding:0; margin:20px 0 0; }
+.visit-report-item { display:grid; grid-template-columns:28px minmax(0,1fr) minmax(0,1fr); gap:22px; border:0; border-top:1px solid var(--color-line); border-radius:0; padding:25px 0; min-width:0; break-inside:avoid; counter-increment:medicine; }
+.visit-report-item::before { content:counter(medicine,decimal-leading-zero); padding-top:4px; font-size:12px; font-variant-numeric:tabular-nums; color:var(--color-ink-muted); }
+.visit-report-item.unidentified { border-style:solid; }
 .visit-report-item h3,.visit-report-item p { margin:0 0 8px; }
+.visit-report-item h3 { font-size:19px; font-weight:600; line-height:1.4; }
+.visit-medicine-role { color:var(--color-ink-muted); font-size:13px; }
+.visit-medicine-account { min-width:0; text-align:right; }
+.visit-medicine-account>.urdu { font-size:23px; margin:-5px 0 4px; }
 .visit-report-evidence { margin-top:10px; }
-.visit-report-evidence summary { cursor:pointer; font-size:12px; font-weight:600; }
+.visit-report-evidence summary { cursor:pointer; font-size:12px; font-weight:500; color:var(--color-ink-muted); min-height:32px; padding:4px 0; }
+.visit-medicine-account .visit-report-evidence summary { list-style:none; text-decoration:underline; text-decoration-color:#03535240; text-underline-offset:4px; }
+.visit-medicine-account .visit-report-evidence summary::-webkit-details-marker { display:none; }
+.visit-medicine-account .visit-report-evidence summary::after { content:" +"; margin-left:8px; text-decoration:none; }
+.visit-medicine-account .visit-report-evidence[open] summary::after { content:" −"; }
 .visit-report-evidence p { margin-top:8px; }
-.visit-report-source { margin-top:28px; border-top:1px solid var(--color-line); padding-top:18px; }
-.visit-report-source summary { cursor:pointer; font-weight:600; }
-.visit-report-source h3 { margin-top:20px; font-size:13px; }
+.visit-report-source { margin-top:32px; border-block:1px solid var(--color-line); }
+.visit-report-source > summary { display:flex; align-items:center; justify-content:space-between; gap:24px; padding:20px 0; min-height:64px; cursor:pointer; list-style:none; }
+.visit-report-source > summary::-webkit-details-marker { display:none; }
+.transcript-title { display:block; font-size:17px; font-weight:600; line-height:1.5; }
+.transcript-hint { display:block; margin-top:4px; font-size:13px; line-height:1.5; color:var(--color-ink-muted); }
+.transcript-toggle { flex:none; }
+.visit-report-source[open] .transcript-toggle-vertical { display:none; }
+.visit-report-source > summary:hover .transcript-title { text-decoration:underline; text-underline-offset:4px; }
+.visit-report-source > summary:focus-visible { outline:2px solid var(--color-ink); outline-offset:4px; border-radius:4px; }
+.transcript-content { padding:0 0 24px; }
+.transcript-content h3 { margin:24px 0 8px; font-size:14px; }
+.transcript-content h3:first-child { margin-top:8px; }
+.transcript-content > .urdu { margin:16px 0 0; line-height:2.5; }
 @media(max-width:600px){
   .visit-report-sheet{padding:28px 20px;}
   .visit-report-patient,.visit-report-list{grid-template-columns:1fr;}
+  .visit-report-item{grid-template-columns:22px minmax(0,1fr);gap:12px;}
+  .visit-medicine-account{grid-column:2;}
+  .visit-report-evidence summary{min-height:44px;}
   .visit-report-toolbar{align-items:flex-start;gap:12px;flex-direction:column;}
+  .visit-footer-actions{align-items:stretch;flex-direction:column;}
 }
 @media print {
   .voice-page:has(.visit-report-shell) .topbar,
@@ -1212,9 +1264,11 @@ textarea {
   .voice-page:has(.visit-report-shell),
   .voice-page:has(.visit-report-shell) .voice-card { margin:0; padding:0; border:0; max-width:none; }
   .visit-report-shell { margin:0; }
-  .visit-report-list { grid-template-columns:1fr 1fr; }
+  .visit-report-item { grid-template-columns:22px minmax(0,1fr) minmax(0,1fr); gap:14px; padding:14px 0; }
+  .visit-medicine-account { grid-column:auto; }
   .visit-report-evidence > :not(summary),
   .visit-report-source > :not(summary) { display:block !important; }
+  .transcript-hint,.transcript-toggle { display:none; }
   .print-only { display:block; }
   .screen-only { display:none !important; }
 }
@@ -1414,6 +1468,8 @@ input,textarea,select { background:#fffbeb99; border-color:#03535240; }
 /* Shared liquid-glass controls, adapted to the locked cream/teal palette. */
 .liquid-button.liquid-button,
 a.button {
+  --glass-edge-light: rgba(255,255,247,.95);
+  --glass-edge-dark: rgba(3,65,62,.42);
   position: relative;
   display: inline-flex;
   align-items: center;
@@ -1421,30 +1477,45 @@ a.button {
   gap: 9px;
   min-height: 44px;
   padding: 10px 20px;
-  border: 1px solid rgba(3, 83, 82, .22);
+  border: 1px solid rgba(3, 83, 82, .28);
   border-radius: 999px;
   color: #035352;
-  background: linear-gradient(165deg, #fffef3b8, #fffbe247 55%, #e8ddb55c);
-  box-shadow: inset 0 1px 1px #ffffffed, inset 0 -1px 2px #03535214,
-    inset 1px 0 1px #ffffff80, 0 3px 8px #0353520c;
-  -webkit-backdrop-filter: blur(10px);
-  backdrop-filter: blur(10px);
+  background: linear-gradient(160deg, #fffef3c2, #fffbe23d 48%, #d8c99466);
+  box-shadow: 0 2px 5px #03535212, 0 6px 14px #0353520b,
+    inset 0 0 8px #fffef35c;
+  -webkit-backdrop-filter: blur(8px) saturate(1.15);
+  backdrop-filter: blur(8px) saturate(1.15);
   font-weight: 600;
   line-height: 1.4;
   text-decoration: none;
   text-align: center;
   cursor: pointer;
   touch-action: manipulation;
-  transition: transform 160ms ease, box-shadow 160ms ease, background 160ms ease;
+  isolation: isolate;
+  transition: transform 220ms cubic-bezier(.2,.7,.2,1), box-shadow 220ms ease, background 220ms ease;
+}
+.liquid-button::before, a.button::before {
+  content:""; position:absolute; inset:0; border-radius:inherit; pointer-events:none;
+  box-shadow:inset 2px 2px 1px -1px var(--glass-edge-light),
+    inset -2px -2px 1px -1px var(--glass-edge-dark),
+    inset 1px -1px 1px -.5px #fffef399,
+    inset -1px 1px 1px -.5px #03535233,
+    inset 0 0 3px 1px #fffef34d;
+}
+.liquid-button::after, a.button::after {
+  content:""; position:absolute; inset:2px; border-radius:inherit; pointer-events:none;
+  border-top:1px solid #ffffff60; border-bottom:1px solid #03535214;
+  opacity:.7; transition:opacity 220ms ease;
 }
 .liquid-button.button:not(.secondary),
 a.button:not(.secondary),
 .liquid-button[aria-pressed="true"] {
   color: #fff5d3;
+  --glass-edge-light: rgba(218,249,224,.6);
+  --glass-edge-dark: rgba(0,36,33,.75);
   border-color: #024644;
-  background: linear-gradient(165deg, #287675, #0b5b59 52%, #034b49);
-  box-shadow: inset 0 1px 1px #ffffff66, inset 0 -2px 3px #002d2b45,
-    0 4px 10px #03535220;
+  background: linear-gradient(160deg, #327d75, #0d5b54 48%, #034942);
+  box-shadow: inset 0 0 8px #002d2b24, 0 3px 7px #03535226, 0 7px 16px #03535212;
 }
 .liquid-button.text-link { font-size: 13px; padding: 9px 16px; }
 .product-navigation { gap: 10px; flex-wrap: wrap; }
@@ -1456,12 +1527,12 @@ a.button:not(.secondary),
   .liquid-button.liquid-button:not(:disabled):hover,
   a.button:hover {
     transform: translateY(-1px);
-    box-shadow: inset 0 1px 2px #ffffffc7, inset 0 -1px 2px #03535220,
-      0 6px 14px #03535224;
+    box-shadow: inset 0 0 8px #ffffff18, 0 5px 14px #03535226;
   }
+  .liquid-button:not(:disabled):hover::after, a.button:hover::after { opacity:1; }
 }
 .liquid-button.liquid-button:not(:disabled):active,
-a.button:active { transform: translateY(1px); box-shadow: inset 0 2px 4px #003b3926; }
+a.button:active { transform: translateY(1.5px) scale(.985); box-shadow: inset 0 2px 5px #003b3933, 0 1px 2px #03535212; }
 .liquid-button.liquid-button:focus-visible,
 a.button:focus-visible { outline: 3px solid #035352; outline-offset: 4px; }
 .liquid-button.liquid-button:disabled {

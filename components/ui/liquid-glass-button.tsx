@@ -1,12 +1,12 @@
 import type { ComponentPropsWithRef } from "react";
 
-/** Native button semantics with the shared cream/teal glass treatment.
- * CSS supplies the optical layers, so controls need no effects or SVG filters.
- * Links share the liquid-button class and keep their native navigation behavior.
+/** Adapted from the supplied liquid-glass reference. CSS pseudo-elements provide
+ * its bevel and sheen without duplicating SVG filter IDs or blurring the label.
+ * Native props/ref and link semantics stay intact throughout the app.
  */
 export function LiquidButton({
   className = "",
   ...props
 }: ComponentPropsWithRef<"button">) {
-  return <button {...props} className={`liquid-button ${className}`} />;
+  return <button data-slot="button" {...props} className={`liquid-button ${className}`} />;
 }

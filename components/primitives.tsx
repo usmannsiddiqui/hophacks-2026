@@ -1,10 +1,10 @@
 import { LiquidButton } from "@/components/ui/liquid-glass-button";
 import Link from "next/link";
 import { GlassMaterial } from "./glass-material";
+import { ReportFlag } from "./report-flag";
 import type { ButtonHTMLAttributes, ReactNode } from "react";
 import type { Flag, MedItem, PatientFile, Question } from "@/lib/types";
 import {
-  citationName,
   cleanCopy,
   medicineName,
   roleName,
@@ -115,27 +115,9 @@ export function FlagCard({ flag, file }: { flag: Flag; file: PatientFile }) {
   const name = (id: string) =>
     medicineName(file.medList.find((m) => m.id === id)?.term ?? id);
   return (
-    <article className={`flag-card ${flag.severity}`}>
-      <span className="severity">
-        {flag.severity === "high" ? "High priority" : "Moderate priority"}
-      </span>
-      <h3>
-        {name(flag.a)} + {name(flag.b)}
-      </h3>
-      <p>{cleanCopy(flag.reason)}</p>
-      {/^https:\/\//.test(flag.citation) ? (
-        <a
-          className="citation"
-          href={flag.citation}
-          target="_blank"
-          rel="noreferrer"
-        >
-          {citationName(flag.citation)} ↗
-        </a>
-      ) : (
-        <span className="citation">{flag.citation}</span>
-      )}
-    </article>
+    <ReportFlag severity={flag.severity}
+      medicines={<>{name(flag.a)} + {name(flag.b)}</>}
+      reason={cleanCopy(flag.reason)} citation={flag.citation} />
   );
 }
 export function QuestionCard({

@@ -3,6 +3,7 @@ import { outreachAreaNames } from "@/lib/outreach/location";
 import type { ReactNode } from "react";
 import type { VisitDraft } from "@/lib/visit-draft";
 import { itemLabel, itemDetail } from "@/lib/display";
+import { ReportFlag } from "./report-flag";
 
 const roleLabel = {
   requested: "Requested",
@@ -35,9 +36,6 @@ export function VisitReportView({
       <article className="report-sheet visit-report-sheet">
         <header className="report-heading">
           <span className="brand">Mashwara</span>
-          <strong className="report-draft-label">
-            AI-generated account
-          </strong>
         </header>
         <h1>English visit report</h1>
         {draft.outreachAreaId && <p className="small muted">{outreachAreaNames[draft.outreachAreaId]}</p>}
@@ -54,24 +52,28 @@ export function VisitReportView({
         </section>
 
         <section className="section">
-          <h2>Medicines and remedies mentioned</h2>
+          <h2>Medicines &amp; remedies</h2>
           {report.medList.length ? (
-            <div className="visit-report-list">
+            <ol className="visit-report-list">
               {report.medList.map((item) => (
-                <div className={`visit-report-item ${item.term === "unidentified" ? "unidentified" : ""}`} key={item.id}>
+                <li className={`visit-report-item ${item.term === "unidentified" ? "unidentified" : ""}`} key={item.id}>
+                  <div className="visit-medicine-description">
                   <h3>{itemLabel(item)}</h3>
                   {itemDetail(item) && <p className="small">{itemDetail(item)}</p>}
-                  <p className="small">{roleLabel[item.role]}</p>
+                  <p className="visit-medicine-role">{roleLabel[item.role]}</p>
+                  </div>
+                  <div className="visit-medicine-account">
                   <p className="urdu" lang="ur" dir="rtl">{item.herWords}</p>
                   <details className="visit-report-evidence">
-                    <summary>Source excerpt</summary>
+                    <summary>In the original account</summary>
                     <p className="urdu small muted" lang="ur" dir="rtl">
                       Source: {item.source.excerpt}
                     </p>
                   </details>
-                </div>
+                  </div>
+                </li>
               ))}
-            </div>
+            </ol>
           ) : (
             <p>No medicines or remedies were identified in this account.</p>
           )}
@@ -99,20 +101,14 @@ export function VisitReportView({
         </section>
 
         <section className="section">
-          <h2>Sourced table flags</h2>
+          <h2>Points to review</h2>
           {report.flags.length ? report.flags.map((flag) => {
             const a = report.medList.find((item) => item.id === flag.a);
             const b = report.medList.find((item) => item.id === flag.b);
             return (
-              <div className={`flag-card ${flag.severity === "moderate" ? "moderate" : ""}`} key={flag.id}>
-                <strong>
-                  {flag.severity === "high" ? "High" : "Moderate"}: {a ? itemLabel(a) : "Unidentified"} + {b ? itemLabel(b) : "Unidentified"}
-                </strong>
-                <p>{flag.reason}</p>
-                <p className="small">
-                  Source: <a href={flag.citation} target="_blank" rel="noreferrer">{flag.citation}</a>
-                </p>
-              </div>
+              <ReportFlag key={flag.id} severity={flag.severity}
+                medicines={<>{a ? itemLabel(a) : "Unidentified"} + {b ? itemLabel(b) : "Unidentified"}</>}
+                reason={flag.reason} citation={flag.citation} />
             );
           }) : (
             <p>No matches in the limited sourced table. This does not establish safety.</p>
@@ -120,16 +116,23 @@ export function VisitReportView({
         </section>
 
         <details className="visit-report-source">
-          <summary>Source Urdu</summary>
-          <h3>Reviewed Urdu used for this draft</h3>
-          <p className="urdu" lang="ur" dir="rtl">{report.reviewedUrdu}</p>
-          <h3>Original Scribe transcription</h3>
-          <p className="urdu" lang="ur" dir="rtl">{report.rawUrdu}</p>
+          <summary>
+            <span><span className="transcript-title">Patient’s words</span><span className="transcript-hint">View the Urdu transcript</span></span>
+            <svg className="transcript-toggle" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" aria-hidden="true"><path d="M5 12h14"/><path className="transcript-toggle-vertical" d="M12 5v14"/></svg>
+          </summary>
+          <div className="transcript-content">
+            <h3>Reviewed account</h3>
+            <p className="small muted">The Urdu account used to prepare this report.</p>
+            <p className="urdu" lang="ur" dir="rtl">{report.reviewedUrdu}</p>
+            <h3>Original transcription</h3>
+            <p className="small muted">The original speech-to-text record, before corrections.</p>
+            <p className="urdu" lang="ur" dir="rtl">{report.rawUrdu}</p>
+          </div>
         </details>
 
         {decisionPanel}
         <footer className="report-signature">
-          <strong>AI-generated draft. This printout does not include pharmacist authorisation.</strong>
+          <p>This report does not include pharmacist authorisation.</p>
         </footer>
       </article>
     </section>

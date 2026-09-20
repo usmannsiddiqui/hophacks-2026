@@ -465,7 +465,7 @@ function VisitCapture({initialAreaId,initialFresh}:{initialAreaId?:OutreachAreaI
         </form>
       ) : (
         <>
-          <span className="eyebrow">{patient.name} · Urdu{outreachAreaId ? ` · ${outreachAreaNames[outreachAreaId]}` : ""}</span>
+          <p className="voice-patient-context">{patient.name} · Urdu{outreachAreaId ? ` · ${outreachAreaNames[outreachAreaId]}` : ""}</p>
           {stage === "capture" ? (
             <>
               <h1>Tell us in your own words.</h1>
@@ -696,10 +696,12 @@ function VisitCapture({initialAreaId,initialFresh}:{initialAreaId?:OutreachAreaI
                   onUpdateReport={() => void updateReportWithAnswers()}
                 />
               ) : null}
+              <div className="visit-footer-actions">
               {stage === "report" && <LiquidButton className="text-link" onClick={() => { reportRequest.current.cancel(); setReportBusy(false); setReportError(""); setStage("review"); }}>Edit the source transcript</LiquidButton>}
               <LiquidButton className="text-link" onClick={newVisit}>
                 Start another visit
               </LiquidButton>
+              </div>
             </>
           )}
         </>
