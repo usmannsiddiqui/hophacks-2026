@@ -1,6 +1,7 @@
 import { apiError } from "@/lib/api-response";
 import { FileError } from "@/lib/validation";
 import { getVisit, reviewVisit } from "@/lib/visits";
+import { rememberReviewedVisit } from "@/lib/remember-review";
 
 type Ctx = { params: Promise<{ id: string }> };
 
@@ -20,7 +21,11 @@ export async function GET(_request: Request, { params }: Ctx) {
 export async function PATCH(request: Request, { params }: Ctx) {
   try {
     const { id } = await params;
-    return Response.json(await reviewVisit(id, await request.json()));
+    const reviewed = await reviewVisit(id, await request.json());
+    // The one place a visit enters Backboard. reviewVisit rejects a second review, so
+    // this fires once per visit. Not awaited: memory must never delay or fail a decision.
+    void rememberReviewedVisit(reviewed);
+    return Response.json(reviewed);
   } catch (error) {
     return apiError(error);
   }

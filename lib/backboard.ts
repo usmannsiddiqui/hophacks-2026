@@ -22,6 +22,7 @@
  */
 
 import type { PatientFile } from "@/lib/types";
+import type { VisitRecord } from "@/lib/review";
 
 const BASE = "https://app.backboard.io/api";
 const TIMEOUT_MS = 8000;
@@ -151,7 +152,7 @@ export function signedVisitMemo(file: PatientFile): string {
     `Patient: ${file.patient.age} ${file.patient.sex}, speaks ${file.patient.language}.`,
     "",
     "Her account:",
-    file.history.english,
+    withoutName(file.history.english, file.patient.name),
     "",
     "Medicines on this visit:",
     ...file.medList.map(
@@ -169,7 +170,7 @@ export function signedVisitMemo(file: PatientFile): string {
   }
 
   if (file.advice) {
-    lines.push("", "Pharmacist advice (signed):", file.advice.english);
+    lines.push("", "Pharmacist advice (signed):", withoutName(file.advice.english, file.patient.name));
     const verdicts = Object.entries(file.advice.verdicts);
     if (verdicts.length) {
       lines.push(
@@ -192,6 +193,92 @@ export function signedVisitMemo(file: PatientFile): string {
 
   if (file.reviewedBy) {
     lines.push("", `Reviewed by ${file.reviewedBy.qualification} on ${file.reviewedBy.at}.`);
+  }
+
+  return lines.join("\n");
+}
+
+/**
+ * Take the patient's name out of free text before it leaves for Backboard.
+ *
+ * Not paranoia: she introduces herself in her own account ("my name is …"), so the name
+ * reaches the English narrative even though no field carries it. Without this the promise
+ * that Backboard holds no identifier is simply untrue.
+ *
+ * Whole name first, then each part of it, so "Ghulam Fatima", "Ghulam" and "Fatima" all
+ * go. Parts shorter than three characters are left alone — too likely to be a real word.
+ */
+function withoutName(text: string, name: string): string {
+  const parts = [name, ...name.split(/\s+/)]
+    .map((p) => p.trim())
+    .filter((p) => p.length >= 3)
+    .sort((a, b) => b.length - a.length);
+  let out = text;
+  for (const part of parts) {
+    out = out.replace(
+      new RegExp(part.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), "gi"),
+      "the patient",
+    );
+  }
+  return out;
+}
+
+/**
+ * What a reviewed visit looks like in memory.
+ *
+ * The `visits` analogue of signedVisitMemo. Built only from a visit a pharmacist has
+ * reviewed, so everything remembered carries a named professional's decision.
+ *
+ * Deliberately English-only: the pharmacist reviewed English, and extraction is more
+ * reliable on it. The Urdu stays in Neon where the readback needs it.
+ *
+ * Carries no name and no phone number — Backboard never receives an identifier.
+ */
+export function reviewedVisitMemo(visit: VisitRecord): string {
+  const { report, review } = visit;
+  const lines: string[] = [
+    `Visit ${visit.id} — ${visit.createdAt.slice(0, 10)}.`,
+    `Patient: ${visit.patient.age} ${visit.patient.sex}.`,
+    "",
+    "Her account:",
+    withoutName(report.english.account, visit.patient.name),
+  ];
+
+  if (report.medList.length) {
+    lines.push("", "Medicines she described:");
+    for (const m of report.medList) {
+      lines.push(`- ${m.term} — she called it "${m.herWords}"`);
+    }
+  }
+
+  if (report.flags.length) {
+    lines.push("", "Interactions flagged from the curated table:");
+    for (const f of report.flags) {
+      lines.push(`- ${f.a} + ${f.b} (${f.severity}): ${f.reason} [${f.citation}]`);
+    }
+  }
+
+  if (review) {
+    const term = (medId: string) =>
+      report.medList.find((m) => m.id === medId)?.term ?? medId;
+    lines.push("", `Pharmacist decision: ${review.outcome}.`);
+    for (const item of review.items) {
+      lines.push(
+        `- ${term(item.medId)}: ${item.decision}` +
+          (item.reason ? ` — ${item.reason}` : ""),
+      );
+    }
+    if (review.note.trim())
+      lines.push("", "Pharmacist note:", withoutName(review.note.trim(), visit.patient.name));
+    lines.push("", `Reviewed by ${review.by.qualification} on ${review.at}.`);
+  }
+
+  if (report.questions.length) {
+    lines.push(
+      "",
+      "Questions raised at this visit — ask if she returns:",
+      ...report.questions.map((q) => `- ${q.text.english} (${q.why})`),
+    );
   }
 
   return lines.join("\n");

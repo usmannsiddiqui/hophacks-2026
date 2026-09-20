@@ -17,8 +17,9 @@
 import { createHash } from "node:crypto";
 import { desc, eq, isNotNull, and } from "drizzle-orm";
 import { getDb } from "@/lib/db";
-import { files } from "@/lib/db/schema";
+import { files, visits } from "@/lib/db/schema";
 import type { PatientFile } from "@/lib/types";
+import type { VisitRecord } from "@/lib/review";
 
 const hasDb = () => Boolean(process.env.DATABASE_URL);
 
@@ -97,6 +98,72 @@ export async function caseLink(
     .select({ phoneHash: files.phoneHash, assistantId: files.assistantId })
     .from(files)
     .where(eq(files.id, id))
+    .limit(1);
+  return {
+    phoneHash: row[0]?.phoneHash ?? null,
+    assistantId: row[0]?.assistantId ?? null,
+  };
+}
+
+// ---------------------------------------------------------------------------
+// The same identity layer over `visits`.
+//
+// `visits` is where reports actually live (lib/visits.ts) and it is the path the
+// pharmacist console uses. Without these columns two visits by the same woman are
+// unrelated rows and there is nothing to follow up from.
+//
+// Note: lib/visits.ts falls back to an in-memory map with no DATABASE_URL. Identity is
+// not tracked in that mode — these return empty rather than pretending otherwise.
+// ---------------------------------------------------------------------------
+
+/** Every visit this patient has had, newest first. */
+export async function findPatientVisits(hash: string): Promise<VisitRecord[]> {
+  if (!hasDb()) return [];
+  const rows = await getDb()
+    .select()
+    .from(visits)
+    .where(eq(visits.phoneHash, hash))
+    .orderBy(desc(visits.createdAt));
+  return rows.map((r) => r.data);
+}
+
+/** Her Backboard assistant, if an earlier visit already created one. */
+export async function findVisitAssistantId(hash: string): Promise<string | null> {
+  if (!hasDb()) return null;
+  const row = await getDb()
+    .select({ assistantId: visits.assistantId })
+    .from(visits)
+    .where(and(eq(visits.phoneHash, hash), isNotNull(visits.assistantId)))
+    .orderBy(desc(visits.createdAt))
+    .limit(1);
+  return row[0]?.assistantId ?? null;
+}
+
+/** Link a visit row to a patient and their assistant. Columns only; the JSON is untouched. */
+export async function linkVisit(
+  id: string,
+  hash: string | null,
+  assistantId: string | null,
+): Promise<void> {
+  if (!hasDb() || (!hash && !assistantId)) return;
+  await getDb()
+    .update(visits)
+    .set({
+      ...(hash ? { phoneHash: hash } : {}),
+      ...(assistantId ? { assistantId } : {}),
+    })
+    .where(eq(visits.id, id));
+}
+
+/** The identity columns stored beside one visit row. */
+export async function visitLink(
+  id: string,
+): Promise<{ phoneHash: string | null; assistantId: string | null }> {
+  if (!hasDb()) return { phoneHash: null, assistantId: null };
+  const row = await getDb()
+    .select({ phoneHash: visits.phoneHash, assistantId: visits.assistantId })
+    .from(visits)
+    .where(eq(visits.id, id))
     .limit(1);
   return {
     phoneHash: row[0]?.phoneHash ?? null,

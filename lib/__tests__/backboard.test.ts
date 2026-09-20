@@ -1,6 +1,8 @@
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import file from "@/data/files/mw-1042.json";
-import { signedVisitMemo } from "@/lib/backboard";
+import { reviewedVisitMemo, signedVisitMemo } from "@/lib/backboard";
+import { sampleSubmission } from "@/lib/sample-visit";
+import type { VisitRecord } from "@/lib/review";
 import { normalisePhone, phoneHash } from "@/lib/patients";
 import type { PatientFile } from "@/lib/types";
 
@@ -91,5 +93,61 @@ describe("failing soft", () => {
     const { rememberSignedVisit } = await import("@/lib/remember-visit");
     // Must not throw and must not touch the network.
     await expect(rememberSignedVisit(f)).resolves.toBe("skipped");
+  });
+});
+
+describe("what Backboard is told about a reviewed visit", () => {
+  const submission = sampleSubmission();
+  const visit = {
+    id: "MV-0001",
+    createdAt: new Date().toISOString(),
+    patient: submission.patient,
+    report: submission.report,
+    status: "reviewed",
+    review: {
+      schemaVersion: 1 as const,
+      outcome: "declined" as const,
+      items: submission.report.medList.map((m, i) => ({
+        medId: m.id,
+        decision: (i === 0 ? "declined" : "authorised") as "declined" | "authorised",
+        reason: i === 0 ? "Interacts with her blood thinner." : "",
+      })),
+      note: `Stop the Disprin, ${submission.patient.name}.`,
+      urdu: "ڈسپرین بند کر دیں۔",
+      by: { name: "Dr Ayesha Khan", qualification: "PharmD", registration: "PK-12345" },
+      at: new Date().toISOString(),
+    },
+  } as unknown as VisitRecord;
+
+  const memo = reviewedVisitMemo(visit);
+
+  it("strips her name, even when she says it herself in her own account", () => {
+    // The sample account opens with "My name is Ghulam Fatima" — the name reaches the
+    // English narrative without any field carrying it. This is the regression guard.
+    for (const part of submission.patient.name.split(/\s+/)) {
+      if (part.length >= 3) expect(memo.toLowerCase()).not.toContain(part.toLowerCase());
+    }
+  });
+
+  it("strips her name from the pharmacist's note too", () => {
+    expect(memo).toContain("Stop the Disprin");
+    expect(memo).not.toContain(submission.patient.name);
+  });
+
+  it("keeps the clinical substance a pharmacist would need on a revisit", () => {
+    expect(memo).toContain(visit.id);
+    for (const m of submission.report.medList) expect(memo).toContain(m.term);
+  });
+
+  it("records what was decided and why it was refused", () => {
+    expect(memo).toContain("declined");
+    expect(memo).toContain("Interacts with her blood thinner.");
+  });
+
+  it("carries every flag with its citation", () => {
+    for (const f of submission.report.flags) {
+      expect(memo).toContain(f.reason);
+      expect(memo).toContain(f.citation);
+    }
   });
 });

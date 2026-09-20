@@ -32,11 +32,19 @@ export const files = pgTable(
  * decision are the JSON; the columns exist only so the queue can be listed and polled
  * without deserialising every report.
  */
-export const visits = pgTable("visits", {
-  id: text("id").primaryKey(),
-  status: text("status").notNull(),
-  outcome: text("outcome"),
-  data: jsonb("data").$type<VisitRecord>().notNull(),
-  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
-  updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
-});
+export const visits = pgTable(
+  "visits",
+  {
+    id: text("id").primaryKey(),
+    status: text("status").notNull(),
+    outcome: text("outcome"),
+    /** sha256(phone + pepper). Null for visits sent without a phone number. */
+    phoneHash: text("phone_hash"),
+    /** Backboard assistant for this patient — one per patient, one thread per visit. */
+    assistantId: text("assistant_id"),
+    data: jsonb("data").$type<VisitRecord>().notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+    updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [index("visits_phone_hash_idx").on(t.phoneHash)],
+);
